@@ -7,11 +7,11 @@ We provide a development environment on _Docker_, which handles Python package d
 ### Setup DevEnv
 ```bash
 # Make scripts executable
-chmod +x build_image.sh
+chmod +x build.sh
 chmod +x start.sh
 
 # Build Docker image
-./build_image.sh
+./build.sh
 ```
 
 ### Enter DevEnv
