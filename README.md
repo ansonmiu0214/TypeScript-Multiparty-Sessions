@@ -22,3 +22,8 @@ chmod +x start.sh
 # To leave the development environment:
 exit
 ```
+
+## Usage
+```bash
+python3.7 -m mpst_ts <filename> <protocol> <role> {node,browser}
+```
