@@ -1,0 +1,6 @@
+module BinarySimple;
+
+global protocol HelloWorldBinary(role Alice, role Bob) {
+  Hello(String) from Alice to Bob;
+  Hello(String) from Bob to Alice;
+}

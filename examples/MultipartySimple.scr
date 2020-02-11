@@ -1,0 +1,8 @@
+module MultipartySimple;
+
+global protocol HelloWorldMPST(role Svr, role Alice, role Bob) {
+  Hello(String) from Alice to Svr;
+  Hello(String) from Svr to Bob;
+  Hello(String) from Bob to Svr;
+  Hello(String) from Svr to Alice;
+}
