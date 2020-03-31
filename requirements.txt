@@ -1,5 +1,5 @@
 asn1crypto==0.24.0
-cryptography==2.1.4
+cryptography==2.3
 idna==2.6
 Jinja2==2.11.1
 keyring==10.6.0
