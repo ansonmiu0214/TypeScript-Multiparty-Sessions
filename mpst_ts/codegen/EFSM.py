@@ -10,7 +10,7 @@ class Action(ABC):
     succ: int
     payloads: List[str]
 
-    _label_regex = '(?P<role>[a-zA-Z0-9]+)(?P<op>[!?])(?P<label>[a-zA-Z]+)\((?P<payloads>[a-zA-Z]+)\)'
+    _label_regex = '(?P<role>[a-zA-Z0-9]+)(?P<op>[!?])(?P<label>[a-zA-Z]+)\((?P<payloads>[a-zA-Z]*)\)'
     _delimit_to_cnstr = {}
 
     @classmethod
@@ -52,20 +52,28 @@ class ReceiveAction(Action, delimiter='?'):
 
 @dataclass
 class State(ABC):
-    id: int
-    actions: Mapping[str, Action] = field(default_factory=dict)
+    _id: int
+    _actions: Mapping[str, Action] = field(default_factory=dict)
 
     def add_action(self, action: Action):
-        if action.label in self.actions:
+        if action.label in self._actions:
             # TODO: handle duplicate label
             pass
 
-        self.actions[action.label] = action
+        self._actions[action.label] = action
+
+    @property
+    def role(self):
+        action, *_ = self.actions.values()
+        return action.role
+
+    @property
+    def actions(self):
+        return self._actions
     
     @property
     def labels(self):
-        for action in self.actions.values():
-            yield action.label
+        return [action.label for action in self.actions.values()]
 
 class SendState(State):
     pass
@@ -80,14 +88,16 @@ class EFSMBuilder:
     _receive_states: Mapping[int, State]
     _initial_state: int
     _terminal_state_candidates: Set[int]
-    
-    def __init__(self, name: str, nodes: List[int]):
+    _metadata: dict
+
+    def __init__(self, name: str, nodes: List[int], metadata):
         self._name = name
         self._roles = set()
         self._send_states = {}
         self._receive_states = {}
         self._initial_state = min(nodes)
         self._terminal_state_candidates = set(nodes)
+        self._metadata = metadata
 
     def add_send_state(self, state: int, action: SendAction):
         send_state = self._send_states.get(state, SendState(state))
@@ -114,16 +124,63 @@ class EFSMBuilder:
         if self._terminal_state_candidates:
             [terminal_state] = self._terminal_state_candidates
         
-        return EFSM(self._name, self._roles, self._send_states, self._receive_states, self._initial_state, terminal_state)
+        return EFSM(self._name, self._roles, self._send_states, self._receive_states, self._initial_state, terminal_state, self._metadata)
 
 
 @dataclass    
 class EFSM:
-    name: str
-    roles: Set[str]
-    send_states: Mapping[int, State]
-    receive_states: Mapping[int, State]
-    initial_state: int
-    terminal_state: Optional[int]
+    _name: str
+    _roles: Set[str]
+    _send_states: Mapping[int, State]
+    _receive_states: Mapping[int, State]
+    _initial_state: int
+    _terminal_state: Optional[int]
+    _metadata: dict
 
-    pass
+    @property
+    def roles(self):
+        return self._roles
+
+    @property
+    def initial_state(self):
+        return self._initial_state
+
+    @property
+    def send_states(self):
+        return self._send_states
+
+    def is_send_state(self, state_id):
+        return state_id in self.send_states
+
+    @property
+    def receive_states(self):
+        return self._receive_states
+    
+    def is_receive_state(self, state_id):
+        return state_id in self.receive_states
+
+    def get_receive_states_by_role(self, role):
+        return {state_id: receive_state
+                for state_id, receive_state in self.receive_states.items()
+                if receive_state.role == role}
+
+    @property
+    def terminal_state(self):
+        return self._terminal_state
+
+    def has_terminal_state(self):
+        return self.terminal_state is not None
+
+    def is_terminal_state(self, state_id):
+        return state_id == self.terminal_state
+
+    @property
+    def states(self):
+        return dict(**self.send_states, **self.receive_states)
+
+    @property
+    def metadata(self):
+        return self._metadata
+
+    def __getitem__(self, item):
+        return self.states[item]
