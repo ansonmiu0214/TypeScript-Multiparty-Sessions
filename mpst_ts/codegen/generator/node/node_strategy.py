@@ -29,12 +29,12 @@ class NodeStrategy(CodeGenerationStrategy,
         role = efsm.metadata['role']
 
         # Generate EFSM
-        files.append((f'mpst_ts/{protocol}/EFSM.ts',
+        files.append((f'sandbox/node/{protocol}/EFSM.ts',
                       self.template_generator.render(path='efsm.ts.j2',
                                                      payload={'efsm': efsm})))
 
         # Generate runtime
-        files.append((f'mpst_ts/{protocol}/{role}.ts',
+        files.append((f'sandbox/node/{protocol}/{role}.ts',
                       self.template_generator.render(path='runtime.ts.j2',
                                                      payload={'efsm': efsm})))
 
