@@ -2,6 +2,7 @@ FROM ubuntu
 
 WORKDIR /home
 
+COPY sandbox /home/sandbox
 COPY requirements.txt /home
 COPY build_image.sh /home
 
