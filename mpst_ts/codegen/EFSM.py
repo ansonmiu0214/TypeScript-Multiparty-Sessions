@@ -63,6 +63,10 @@ class State(ABC):
         self._actions[action.label] = action
 
     @property
+    def id(self):
+        return self._id
+
+    @property
     def role(self):
         action, *_ = self.actions.values()
         return action.role

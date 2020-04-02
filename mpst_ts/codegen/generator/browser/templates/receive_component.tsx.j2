@@ -1,0 +1,32 @@
+import { Component } from 'react';
+
+import { ReceiveHandlerMap } from '../Session';
+
+type P = {
+  register: (handlers: ReceiveHandlerMap) => void
+}
+
+export abstract class S{{ state.id }}<
+  _P = {},
+  _S = {},
+  _SS = any
+> extends Component<
+  P & _P,
+  _S,
+  _SS
+>
+{
+
+  componentDidMount() {
+    this.props.register({
+      {% for label in state.labels -%}
+      {{ label }}: this.{{ label }}.bind(this){{ ',' if not loop.last else '' }}
+      {%- endfor %}
+    });
+  }
+
+  {% for label, action in state.actions.items() -%}
+  abstract {{ label }}(): void;
+  {%- endfor %}
+
+}

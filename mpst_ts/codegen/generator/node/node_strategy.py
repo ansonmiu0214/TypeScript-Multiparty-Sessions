@@ -18,8 +18,8 @@ class NodeStrategy(CodeGenerationStrategy,
         """
 
         Files to generate:
-            {Protocol}/EFSM.ts
-            {Protocol}/{Role}.ts
+            {protocol}/EFSM.ts
+            {protocol}/{role}.ts
 
         Returns:
             A generator of (filepath, content_to_write).
