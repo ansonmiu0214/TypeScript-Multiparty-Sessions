@@ -9,6 +9,7 @@ class NodeStrategy(CodeGenerationStrategy,
 
     def __init__(self):
         super().__init__()
+        self.output_dir = 'sandbox/node'
 
         dirname = os.path.join(os.path.dirname(__file__), 'templates')
         self.template_generator = TemplateGenerator(dirname=dirname)
@@ -29,12 +30,12 @@ class NodeStrategy(CodeGenerationStrategy,
         role = efsm.metadata['role']
 
         # Generate EFSM
-        files.append((f'sandbox/node/{protocol}/EFSM.ts',
+        files.append((os.path.join(self.output_dir, protocol, 'EFSM.ts'),
                       self.template_generator.render(path='efsm.ts.j2',
                                                      payload={'efsm': efsm})))
 
         # Generate runtime
-        files.append((f'sandbox/node/{protocol}/{role}.ts',
+        files.append((os.path.join(self.output_dir, protocol, f'{role}.ts'),
                       self.template_generator.render(path='runtime.ts.j2',
                                                      payload={'efsm': efsm})))
 

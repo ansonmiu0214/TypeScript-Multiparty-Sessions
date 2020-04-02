@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import os
+import subprocess
 
 from ..EFSM import EFSM
 
@@ -36,4 +37,4 @@ class CodeGenerator:
                 file_.write(content)
 
             # Pipe through code prettifier
-            ...
+            subprocess.run(['tsfmt', '-r', path])

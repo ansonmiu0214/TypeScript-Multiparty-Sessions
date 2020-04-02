@@ -3,7 +3,7 @@ import WebSocket from 'ws';
 import {
   Roles,
   Labels,
-  {% for state in efsm.states %}
+  {%- for state in efsm.states %}
   S{{ state }},
   {%- endfor %}
 } from './EFSM';
@@ -45,7 +45,7 @@ export class {{ efsm.metadata.role }}
     this.roleToSocket = {
       {% for role in efsm.roles -%}
       [Roles.{{ role }}]: undefined,
-      {% endfor %}
+      {%- endfor %}
     };
 
     const onSubsribe = (event: WebSocketMessage) => {
@@ -117,7 +117,7 @@ class _{{ efsm.metadata.role }}
     this.state = stateId;
     switch (this.state)
     {
-      {% for state_id, state in efsm.send_states.items() %}
+      {% for state_id, state in efsm.send_states.items() -%}
       case {{ state_id }}:
       {
         const _stateImpl: S{{ state_id }} = stateImpl;
@@ -125,17 +125,17 @@ class _{{ efsm.metadata.role }}
 
         switch (_stateImpl[0])
         {
-          {% for label, action in state.actions.items() %}
+          {% for label, action in state.actions.items() -%}
           case Labels.S{{ state_id }}.{{ label }}:
           {
             return this.execute({{ action.succ }}, _stateImpl[1]);
           }
-          {% endfor %}
+          {%- endfor %}
         }
       }
       {% endfor -%}
 
-      {% for state_id, state in efsm.receive_states.items() %}
+      {% for state_id, state in efsm.receive_states.items() -%}
       case {{ state_id }}:
       {
         const _stateImpl: S{{ state_id }} = stateImpl;
@@ -147,12 +147,12 @@ class _{{ efsm.metadata.role }}
           const succ: any = _stateImpl[label]();
           switch (label)
           {
-            {% for label, action in state.actions.items() %}
+            {% for label, action in state.actions.items() -%}
             case Labels.S{{ state_id }}.{{ label }}:
             {
               return this.execute({{ action.succ }}, succ);
             }
-            {% endfor %}
+            {%- endfor %}
           }
         }
 
@@ -167,13 +167,13 @@ class _{{ efsm.metadata.role }}
       }
       {% endfor -%}
 
-      {% if efsm.has_terminal_state() %}
+      {% if efsm.has_terminal_state() -%}
       case {{ efsm.terminal_state }}:
       {
         this.end();
         break;
       }
-      {% endif %}
+      {%- endif %}
     }
   }
 

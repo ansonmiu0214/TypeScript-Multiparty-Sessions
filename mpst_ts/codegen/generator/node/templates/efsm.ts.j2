@@ -4,7 +4,7 @@ export enum Roles
 {
   {% for role in efsm.roles -%}
   {{ role }} = "{{ role }}" {{ ', ' if not loop.last else '' }}
-  {% endfor %}
+  {%- endfor %}
 }
 
 export namespace Labels
@@ -14,17 +14,17 @@ export namespace Labels
   {
     {% for label in state.labels -%}
     {{ label }} = "{{ label }}" {{ ', ' if not loop.last else '' }}
-    {% endfor %}
+    {%- endfor %}
   }
-  {% endfor %}
+  {%- endfor %}
   {% for state_id, state in efsm.send_states.items() -%}
   export enum S{{ state_id }} 
   {
     {% for label in state.labels -%}
     {{ label }} = "{{ label }}" {{ ', ' if not loop.last else '' }}
-    {% endfor %}
+    {%- endfor %}
   }
-  {% endfor %}
+  {%- endfor %}
 }
 
 {% if efsm.has_terminal_state() -%}
@@ -34,13 +34,13 @@ export type S{{ efsm.terminal_state }} = Session.Terminate;
 {% for state_id, state in efsm.send_states.items() -%}
 export type S{{ state_id }} = {% for label, action in state.actions.items() -%}
 [Labels.S{{ state_id }}.{{ label }}, S{{ action.succ }}]{{ '|' if not loop.last else '' }}
-{% endfor %}
+{%- endfor %}
 {% endfor -%}
 
 {% for state_id, state in efsm.receive_states.items() -%}
 export type S{{ state_id }} = {
   {% for label, action in state.actions.items() -%}
   [Labels.S{{ state_id }}.{{ label }}]: () => S{{ action.succ }}{{ ',' if not loop.last else '' }}
-  {% endfor %}
+  {%- endfor %}
 }
-{% endfor %}
+{%- endfor %}
