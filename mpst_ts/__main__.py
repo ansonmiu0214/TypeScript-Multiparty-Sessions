@@ -19,9 +19,9 @@ def get_argument_parser() -> ArgumentParser:
 
     return parser
 
-def main(args: typing.List[str]) -> int:
+def main(args: typing.List[str]) -> int: 
     parser = get_argument_parser()
-    parsed_args = parser.parse_args()
+    parsed_args = parser.parse_args(args)
 
     return_code, output = scribble.get_graph(parsed_args.filename, parsed_args.protocol, parsed_args.role)
     if return_code:
@@ -37,4 +37,5 @@ def main(args: typing.List[str]) -> int:
 
     return 0
 
-sys.exit(main(sys.argv[1:]))
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
