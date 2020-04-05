@@ -27,3 +27,16 @@ exit
 ```bash
 python3.7 -m mpst_ts <filename> <protocol> <role> {node,browser}
 ```
+
+## Tests
+
+### System Tests
+
+Performs the following steps for each example Scribble protocol:
+1. Generate TypeScript code into the sandbox environment;
+2. Compile using the TypeScript compiler.
+
+```bash
+python3.7 -m mpst_ts.tests.system
+```
+ 
