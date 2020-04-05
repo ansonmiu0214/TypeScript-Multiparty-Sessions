@@ -1,7 +1,5 @@
 // EFSM.ts
 
-import { SendComponentFactoryFactory } from './Session';
-
 export enum SendState {
   {% for state in efsm.send_states.values() -%}
   S{{ state.id }} = 'S{{ state.id }}',
