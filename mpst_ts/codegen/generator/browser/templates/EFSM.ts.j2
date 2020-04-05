@@ -1,0 +1,23 @@
+// EFSM.ts
+
+import { SendComponentFactoryFactory } from './Session';
+
+export enum SendState {
+  {% for state in efsm.send_states.values() -%}
+  S{{ state.id }} = 'S{{ state.id }}',
+  {%- endfor %}
+}
+
+export enum ReceiveState {
+  {% for state in efsm.receive_states.values() -%}
+  S{{ state.id }} = 'S{{ state.id }}',
+  {%- endfor %}
+}
+
+export enum TerminalState {
+  {% if efsm.has_terminal_state() -%}
+  S{{ efsm.terminal_state }} = 'S{{ efsm.terminal_state }}',
+  {%- endif %}
+}
+
+export type State = ReceiveState | SendState | TerminalState
