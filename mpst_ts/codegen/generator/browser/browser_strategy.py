@@ -34,8 +34,8 @@ class BrowserStrategy(CodeGenerationStrategy,
         role = efsm.metadata['role']
 
         # Generate EFSM
-        files.append((os.path.join(self.output_dir, protocol, 'EFSM.tsx'),
-                     self.template_generator.render(path='EFSM.tsx.j2',
+        files.append((os.path.join(self.output_dir, protocol, 'EFSM.ts'),
+                     self.template_generator.render(path='EFSM.ts.j2',
                                                     payload={'efsm': efsm})))
 
         # Generate Session
@@ -52,12 +52,14 @@ class BrowserStrategy(CodeGenerationStrategy,
         for state in efsm.send_states.values():
             files.append((os.path.join(self.output_dir, protocol, role, f'S{state.id}.tsx'),
                           self.template_generator.render(path='send_component.tsx.j2',
-                                                    payload={'state': state})))
+                                                    payload={'efsm': efsm,
+                                                             'state': state})))
 
         for state in efsm.receive_states.values():
             files.append((os.path.join(self.output_dir, protocol, role, f'S{state.id}.tsx'),
                           self.template_generator.render(path='receive_component.tsx.j2',
-                                                    payload={'state': state})))
+                                                    payload={'efsm': efsm,
+                                                             'state': state})))
 
         if efsm.has_terminal_state():
             files.append((os.path.join(self.output_dir, protocol, role, f'S{efsm.terminal_state}.tsx'),
