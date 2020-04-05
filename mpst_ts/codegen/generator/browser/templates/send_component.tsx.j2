@@ -1,17 +1,36 @@
-import { Component } from 'react';
+import React from 'react';
+
+import { ReceiveState, SendState, TerminalState } from './../EFSM'; 
+import { SendComponentFactory, SendComponentFactoryFactory } from './../Session';
 
 type P = {
-  {%- for label, action in state.actions.items() -%}
-  {{ label }}: SendComponentFactory<any>{{ ',' if not loop.last else '' }}
-  {%- endfor %}
+  factory: SendComponentFactoryFactory
 }
 
 export abstract class S{{ state.id }}<
   _P = {},
   _S = {},
   _SS = any
-> extends Component<
+> extends React.Component<
   P & _P,
   _S,
   _SS
-> {}
+> {
+
+  {% for label, action in state.actions.items() -%}
+  protected {{ label }}: SendComponentFactory<any>
+  {%- endfor %}
+
+  constructor(props: P & _P) {
+    super(props);
+    {% for label, action in state.actions.items() -%}
+    {%- if efsm.is_send_state(action.succ) -%}
+    this.{{ label }} = props.factory<any>('{{ label }}' , SendState.S{{ action.succ }});
+    {%- elif efsm.is_receive_state(action.succ) -%}
+    this.{{ label }} = props.factory<any>('{{ label }}' , ReceiveState.S{{ action.succ }});
+    {%- else -%}
+    this.{{ label }} = props.factory<any>('{{ label }}' , TerminalState.S{{ action.succ }});
+    {%- endif -%}
+    {%- endfor %}
+  }
+}
