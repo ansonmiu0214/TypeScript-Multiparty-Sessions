@@ -1,8 +1,8 @@
 // Runtime.tsx
 import React from 'react';
 
-import { State, SendState, ReceiveState, TerminalState } from './../EFSM';
-import { Constructor, ReceiveHandler, isSendState, isReceiveState, isTerminalState, SendComponentFactory } from './../Session';
+import { State, SendState, ReceiveState, TerminalState } from './EFSM';
+import { Constructor, ReceiveHandler, isSendState, isReceiveState, isTerminalState, SendComponentFactory } from './Session';
 {% for state in efsm.send_states.values() -%}
 import { S{{ state.id }} } from './S{{ state.id }}';
 {%- endfor %}

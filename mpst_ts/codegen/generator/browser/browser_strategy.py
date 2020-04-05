@@ -33,15 +33,14 @@ class BrowserStrategy(CodeGenerationStrategy,
         protocol = efsm.metadata['protocol']
         role = efsm.metadata['role']
 
+        # Generate Session
+        files.append((os.path.join(self.output_dir, protocol, role, 'Session.ts'),
+                     self.template_generator.render(path='Session.ts',
+                                                    payload={})))
         # Generate EFSM
-        files.append((os.path.join(self.output_dir, protocol, 'EFSM.ts'),
+        files.append((os.path.join(self.output_dir, protocol, role, 'EFSM.ts'),
                      self.template_generator.render(path='EFSM.ts.j2',
                                                     payload={'efsm': efsm})))
-
-        # Generate Session
-        files.append((os.path.join(self.output_dir, protocol, 'Session.tsx'),
-                     self.template_generator.render(path='Session.tsx',
-                                                    payload={})))
 
         # Generate runtime
         files.append((os.path.join(self.output_dir, protocol, role, f'{role}.tsx'),

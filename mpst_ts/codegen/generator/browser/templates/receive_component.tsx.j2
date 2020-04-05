@@ -1,7 +1,6 @@
 import { Component } from 'react';
-import { State, ReceiveState, SendState, TerminalState } from './../EFSM';
-
-import { IReceive, ReceiveHandler } from '../Session';
+import { State, ReceiveState, SendState, TerminalState } from './EFSM';
+import { IReceive, ReceiveHandler } from './Session';
 
 type P = {
   register: (handle: ReceiveHandler) => void
@@ -17,8 +16,8 @@ enum Labels {
 type {{ label }}Message = {
   label: Labels.{{ label }},
   payload: []
-}
-{%- endfor %}
+};
+{% endfor %}
 
 type Message = {% for label in state.actions -%}{{ label ~ 'Message' ~ (' | ' if not loop.last else '') }}{%- endfor %}
 
