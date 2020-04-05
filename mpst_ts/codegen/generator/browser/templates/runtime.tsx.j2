@@ -1,1 +1,135 @@
 // Runtime.tsx
+import React from 'react';
+
+import { State, SendState, ReceiveState, TerminalState } from './../EFSM';
+import { Constructor, ReceiveHandler, isSendState, isReceiveState, isTerminalState, SendComponentFactory } from './../Session';
+{% for state in efsm.send_states.values() -%}
+import { S{{ state.id }} } from './S{{ state.id }}';
+{%- endfor %}
+{% for state in efsm.receive_states.values() -%}
+import { S{{ state.id }} } from './S{{ state.id }}';
+{%- endfor %}
+{% if efsm.has_terminal_state() -%}
+import { S{{ efsm.terminal_state }} } from './S{{ efsm.terminal_state }}';
+{%- endif %}
+
+type P = {
+  endpoint: string,
+  states: {
+    {% for state in efsm.send_states.values() -%}
+    S{{ state.id }}: Constructor<S{{ state.id }}>,
+    {%- endfor %}
+    {% for state in efsm.receive_states.values() -%}
+    S{{ state.id }}: Constructor<S{{ state.id }}>,
+    {%- endfor %}
+    {% if efsm.has_terminal_state() -%}
+    S{{ efsm.terminal_state }}: Constructor<S{{ efsm.terminal_state }}>,
+    {%- endif %}
+  },
+  waiting: JSX.Element
+}
+
+type S = {
+  ws: WebSocket,
+  handle?: ReceiveHandler,
+  elem: JSX.Element
+}
+
+export default class {{ efsm.metadata.role }} extends React.Component<P, S> {
+
+  constructor(props: P) {
+    super(props);
+
+    // Set up WebSocket
+    this.state = {
+      ws: new WebSocket(props.endpoint),
+      handle: undefined,
+      elem: props.waiting
+    };
+
+    // Bind functions
+    this.onReceiveInit = this.onReceiveInit.bind(this);
+    this.onReceiveMessage = this.onReceiveMessage.bind(this);
+    this.buildSendElement = this.buildSendElement.bind(this);
+    this.registerReceiveHandler = this.registerReceiveHandler.bind(this);
+  }
+
+  componentDidMount() {
+    this.state.ws.addEventListener('message', this.onReceiveInit);
+    this.state.ws.addEventListener('open', () => this.state.ws.send(JSON.stringify({
+      connect: '{{ efsm.metadata.role }}'
+    })));
+  }
+
+  private onReceiveInit(message: MessageEvent) {
+    this.state.ws.removeEventListener('message', this.onReceiveInit);
+    this.state.ws.addEventListener('message', this.onReceiveMessage);
+
+    {% if efsm.is_send_state(efsm.initial_state) -%}
+    this.advance(SendState.S{{ efsm.initial_state }});
+    {% elif efsm.is_receive_state(efsm.initial_state) -%}
+    this.advance(ReceiveState.S{{ efsm.initial_state }});
+    {% else -%}
+    this.advance(TerminalState.S{{ efsm.initial_state }});
+    {% endif %}
+  }
+
+  private advance(state: State) {
+    if (isSendState(state)) {
+      const View = this.props.states[state];
+      this.setState({
+        elem: <View factory={this.buildSendElement} />
+      });
+    } else if (isReceiveState(state)) {
+      const View = this.props.states[state];
+      this.setState({
+        elem: <View register={this.registerReceiveHandler} />
+      });
+    } else if (isTerminalState(state)) {
+      const View = this.props.states[state];
+      this.setState({
+        elem: <View />
+      });
+    }
+  }
+
+  private buildSendElement<T>(label: string, successor: State): SendComponentFactory<T> {
+    return (event: string, handler: (event: UIEvent) => T) => {
+
+      const send = (payload: T) => this.sendMessage(label, payload, successor);
+
+      return class extends React.Component {
+        render() {
+          const children = React.Children.map(this.props.children, child => React.cloneElement(child as React.ReactElement<any>, {
+            [`on${event}`]: (event: MouseEvent) => send(handler(event))
+          }));
+          return children;
+        }
+      }
+    }
+  }
+
+  private sendMessage(label: string, payload: any, successor: State) {
+    this.state.ws.send(JSON.stringify({ label, payload }));
+    this.advance(successor);
+  }
+
+  private registerReceiveHandler(handle: ReceiveHandler) {
+    // TODO: check if message has arrived?
+    this.setState({ handle });
+  }
+
+  private onReceiveMessage(message: MessageEvent) {
+    if (this.state.handle) {
+      const nextState = this.state.handle(message.data);
+      this.advance(nextState);
+    } else {
+      // Queue message.
+    }
+  }
+
+  render() {
+    return this.state.elem;
+  }
+
+}
