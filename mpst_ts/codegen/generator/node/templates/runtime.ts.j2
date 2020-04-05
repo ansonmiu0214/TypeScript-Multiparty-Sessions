@@ -95,20 +95,21 @@ class _{{ efsm.metadata.role }}
   {
     this.wss = wss;
     this.roleToSocket = roleToSocket;
-    
+
     // Bind message handler.
     Object.values(this.roleToSocket).forEach(socket => {
       socket.addEventListener('message', this.receive.bind(this));
     });
+
+    // Initialise queues for receiving.
+    this.handlerQueue = []
+    this.messageQueue = []
 
     // Initialise state machine.
     this.state = {{ efsm.initial_state }};
     this.initialState = initialState;
     this.execute({{ efsm.initial_state }}, initialState);
 
-    // Initialise queues for receiving.
-    this.handlerQueue = []
-    this.messageQueue = []
   }
 
   private execute(stateId: any,
@@ -164,6 +165,7 @@ class _{{ efsm.metadata.role }}
         {
           this.handlerQueue.push(handler);
         }
+        break;
       }
       {% endfor -%}
 
@@ -185,9 +187,9 @@ class _{{ efsm.metadata.role }}
     this.roleToSocket[role].send(message);
   }
 
-  private receive(message: any)
+  private receive(message: WebSocketMessage)
   {
-    const parsedMessage = JSON.parse(message);
+    const parsedMessage = JSON.parse(message.data);
 
     if (this.handlerQueue.length > 0)
     {
