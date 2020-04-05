@@ -1,28 +1,58 @@
 import { Component } from 'react';
+import { State, ReceiveState, SendState, TerminalState } from './../EFSM';
 
-import { ReceiveHandlerMap } from '../Session';
+import { IReceive, ReceiveHandler } from '../Session';
 
 type P = {
-  register: (handlers: ReceiveHandlerMap) => void
+  register: (handle: ReceiveHandler) => void
 }
+
+enum Labels {
+  {% for label in state.actions -%}
+  {{ label }} = '{{ label}}',
+  {%- endfor %}
+}
+
+{% for label, action in state.actions.items() -%}
+type {{ label }}Message = {
+  label: Labels.{{ label }},
+  payload: []
+}
+{%- endfor %}
+
+type Message = {% for label in state.actions -%}{{ label ~ 'Message' ~ (' | ' if not loop.last else '') }}{%- endfor %}
 
 export abstract class S{{ state.id }}<
   _P = {},
   _S = {},
   _SS = any
 > extends Component<
-  P & _P,
+  _P & P,
   _S,
   _SS
 >
 {
 
   componentDidMount() {
-    this.props.register({
-      {% for label in state.labels -%}
-      {{ label }}: this.{{ label }}.bind(this){{ ',' if not loop.last else '' }}
+    this.props.register(this.handle.bind(this));
+  }
+
+  handle(message: any): State {
+    const parsedMessage = JSON.parse(message) as Message;
+    switch (parsedMessage.label) {
+      {% for label, action in state.actions.items() -%}
+      case Labels.{{ label }}: {
+        this.{{ label }}();
+        {%- if efsm.is_send_state(action.succ) -%}
+        return SendState.S{{ action.succ }};
+        {%- elif efsm.is_receive_state(action.succ) -%}
+        return ReceiveState.S{{ action.succ }};
+        {%- else -%}
+        return TerminalState.S{{ action.succ }};
+        {%- endif -%}
+      }
       {%- endfor %}
-    });
+    }
   }
 
   {% for label, action in state.actions.items() -%}
