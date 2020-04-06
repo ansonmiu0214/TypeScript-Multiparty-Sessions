@@ -1,12 +1,9 @@
-enum Labels {
-  {% for label in state.labels -%}
-  {{ label }} = '{{ label }}',
-  {%- endfor %}
-};
+import { Labels, S{{ state.id }}, SendState, ReceiveState, TerminalState } from './EFSM';
+import { EfsmNextStateHandler, MessageHandler } from './Session';
 
 {% for action in state.actions.values() -%}
 type {{ action.label ~ 'Message' }} = {
-  label: Labels.{{ action.label }},
+  label: Labels.S{{ state.id }}.{{ action.label }},
   payload: []
 }
 {% endfor %}
@@ -25,7 +22,7 @@ export function buildStateHandler(
       const parsedMessage = JSON.parse(message) as Message;
       switch (parsedMessage.label) {
         {% for action in state.actions.values() -%}
-        case Labels.{{ action.label }}: {
+        case Labels.S{{ state.id }}.{{ action.label }}: {
           const successor = handler[parsedMessage.label]();
           {% if efsm.is_send_state(action.succ) -%}
           return next(SendState.S{{ action.succ }})(successor);

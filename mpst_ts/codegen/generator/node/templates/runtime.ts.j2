@@ -1,11 +1,13 @@
 import WebSocket from 'ws';
 
 import {
-  Roles,
-  Labels,
-  {%- for state in efsm.states %}
-  S{{ state }},
-  {%- endfor %}
+  MessageHandler,
+  isSendState, isReceiveState, isTerminalState,  
+} from './Session';
+import {
+  Roles, Implementation, S{{ efsm.initial_state }},
+  State, SendState, ReceiveState, TerminalState,
+  stateModule,
 } from './EFSM';
 
 /**
@@ -76,9 +78,109 @@ export class {{ efsm.metadata.role }}
 
 }
 
-/**
- * Session
- */
+class _{{ efsm.metadata.role }} {
+
+    private wss: WebSocket.Server
+    private roleToSocket: RoleToSocket
+    
+    private initialState: S{{ efsm.initial_state }}
+    private messageQueue: any[] = []
+    private handlerQueue: (MessageHandler)[] = []
+
+    constructor(wss: WebSocket.Server,
+                roleToSocket: RoleToSocket,
+                initialState: S{{ efsm.initial_state }}) {
+      this.wss = wss;
+      this.roleToSocket = roleToSocket;
+      this.initialState = initialState;
+
+      // Bind instance methods.
+      this.next = this.next.bind(this);
+      this.receive = this.receive.bind(this);
+      this.send = this.send.bind(this); 
+    
+      // Bind socket message handler.
+      Object.values(this.roleToSocket).forEach(socket => {
+        socket.addEventListener('message', this.receive);
+      });
+
+      // Initialise queues for receiving.
+      this.messageQueue = []
+      this.handlerQueue = []
+
+      // Initialise state machine.
+      {% if efsm.is_send_state(efsm.initial_state) -%}
+      this.next(SendState.S{{ efsm.initial_state }})(initialState);
+      {% elif efsm.is_receive_state(efsm.initial_state) -%}
+      this.next(ReceiveState.S{{ efsm.initial_state }})(initialState);
+      {% else -%}
+      this.next(TerminalState.S{{ efsm.initial_state }})(initialState);
+      {% endif -%}
+    }
+
+    // =====================
+    // State machine methods
+    // =====================
+    next<S extends State>(state: S): ((implementation: Implementation<S>) => any) {
+      if (isSendState(state)) {
+        return this.nextSend(state);
+      } else if (isReceiveState(state)) {
+        return this.nextReceive(state);
+      } else if (isTerminalState(state)) {      
+        return this.nextTerminal(state);
+      } else {
+        throw new Error();
+      }
+    }
+
+    nextSend<S extends SendState>(state: S): ((implementation: Implementation<S>) => any) {
+      return stateModule[state].buildStateHandler(this.next, this.send) as ((implementation: Implementation<S>) => any);
+    }
+
+    nextReceive<S extends ReceiveState>(state: S): ((implementation: Implementation<S>) => any) {
+
+      // This callback gets invoked when the receive state builds the message handler
+      // correctly typed with respect to the concrete state.
+      const onMessageHandlerConstructed = (messageHandler: MessageHandler) => {
+        if (this.messageQueue.length > 0) {
+          messageHandler(this.messageQueue.shift());
+        } else {
+          this.handlerQueue.push(messageHandler);
+        }
+      }
+
+      return stateModule[state].buildStateHandler(this.next, onMessageHandlerConstructed) as ((implementation: Implementation<S>) => any);
+
+    }
+
+    nextTerminal<S extends TerminalState>(state: S): ((implementation: Implementation<S>) => any) {
+      return (_: Implementation<S>) => {
+        // Close all sockets.
+        Object.values(this.roleToSocket).forEach(socket => socket.close());
+
+        return new {{ efsm.metadata.role }}(this.wss, this.initialState);
+      }
+    }
+
+    // ===============
+    // Channel methods
+    // ===============
+
+    send(role: Roles, label: string, payload: any[]) {
+      this.roleToSocket[role].send(JSON.stringify({ label, payload }));
+    }
+
+    receive({ data }: WebSocketMessage) {
+      if (this.handlerQueue.length > 0) {
+        this.handlerQueue.shift()!(data);
+      } else {
+        this.messageQueue.push(data);
+      }
+    }
+}
+
+
+/*
 class _{{ efsm.metadata.role }}
 {
 
@@ -214,3 +316,4 @@ class _{{ efsm.metadata.role }}
   }
 
 }
+*/

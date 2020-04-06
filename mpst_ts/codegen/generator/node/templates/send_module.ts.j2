@@ -1,8 +1,5 @@
-enum Labels {
-  {% for label in state.labels -%}
-  {{ label }} = '{{ label }}',
-  {%- endfor %}
-};
+import { Labels, Roles, S{{ state.id }}, SendState, ReceiveState, TerminalState } from './EFSM';
+import { EfsmNextStateHandler } from './Session';
 
 export function buildStateHandler(
   next: EfsmNextStateHandler,
@@ -17,7 +14,7 @@ export function buildStateHandler(
     // Transition to successor state.
     switch (handler[0]) {
       {% for action in state.actions.values() -%}
-        case Labels.{{ action.label }}: {
+        case Labels.S{{ state.id }}.{{ action.label }}: {
           const successor = handler[1];
           {% if efsm.is_send_state(action.succ) -%}
           return next(SendState.S{{ action.succ }})(successor);

@@ -1,14 +1,18 @@
-export enum Session { Terminate = 'Terminate' };
+// ==============
+// Protocol roles
+// ==============
 
-export enum Roles 
-{
+export enum Roles {
   {% for role in efsm.roles -%}
   {{ role }} = "{{ role }}" {{ ', ' if not loop.last else '' }}
   {%- endfor %}
 };
 
-export namespace Labels
-{
+// ==============
+// Message labels
+// ==============
+
+export namespace Labels {
   {% for state_id, state in efsm.receive_states.items() -%}
   export enum S{{ state_id }} 
   {
@@ -27,8 +31,37 @@ export namespace Labels
   {%- endfor %}
 };
 
+// ======
+// States
+// ======
+
+export enum SendState {
+  {% for state in efsm.send_states.values() -%}
+  S{{ state.id }} = 'S{{ state.id }}',
+  {%- endfor %}
+};
+
+export enum ReceiveState {
+  {% for state in efsm.receive_states.values() -%}
+  S{{ state.id }} = 'S{{ state.id }}',
+  {%- endfor %}
+};
+
+export enum TerminalState {
+  {% if efsm.has_terminal_state() -%}
+  S{{ efsm.terminal_state }} = 'S{{ efsm.terminal_state }}',
+  {%- endif %}
+};
+
+export type State = SendState | ReceiveState | TerminalState
+
+// ===============
+// Implementations
+// ===============
 {% if efsm.has_terminal_state() -%}
-export type S{{ efsm.terminal_state }} = Session.Terminate;
+type _Terminate = 'Terminate';
+export const Terminate: _Terminate = 'Terminate';
+export type S{{ efsm.terminal_state }} = _Terminate;
 {% endif -%}
 
 {% for state_id, state in efsm.send_states.items() -%}
@@ -38,10 +71,44 @@ export type S{{ state_id }} = {% for label, action in state.actions.items() -%}
 {% endfor -%}
 
 {% for state_id, state in efsm.receive_states.items() -%}
-export type S{{ state_id }} = 
-{
+export type S{{ state_id }} = {
   {% for label, action in state.actions.items() -%}
   [Labels.S{{ state_id }}.{{ label }}]: () => S{{ action.succ }}{{ ',' if not loop.last else '' }}
   {%- endfor %}
 };
 {% endfor %}
+
+export type SendImplementation = {% for state in efsm.send_states.values() -%}
+S{{ state.id }} {{ '|' if not loop.last else '' }}
+{%- endfor %};
+
+export type ReceiveImplementation = {% for state in efsm.receive_states.values() -%}
+S{{ state.id }} {{ '|' if not loop.last else '' }}
+{%- endfor %};
+
+{% if efsm.has_terminal_state() -%}
+export type TerminalImplementation = S{{ efsm.terminal_state }};
+{%- endif %}
+export type Implementation<S extends State> = 
+  S extends ReceiveState ? ReceiveImplementation : 
+  S extends SendState ? SendImplementation : {{ 'TerminalImplementation' if efsm.has_terminal_state() else 'never' }};
+
+// =============
+// State Modules
+// =============
+
+{% for state in efsm.send_states.values() -%}
+import * as ModuleS{{ state.id }} from './S{{ state.id }}';
+{% endfor %}
+{% for state in efsm.receive_states.values() -%}
+import * as ModuleS{{ state.id }} from './S{{ state.id }}';
+{% endfor %}
+
+export const stateModule = {
+  {% for state in efsm.send_states.values() -%}
+  [SendState.S{{ state.id }}]: ModuleS{{ state.id }},
+  {%- endfor %}
+  {% for state in efsm.receive_states.values() -%}
+  [ReceiveState.S{{ state.id }}]: ModuleS{{ state.id }},
+  {%- endfor %}
+}
