@@ -1,0 +1,33 @@
+enum Labels {
+  {% for label in state.labels -%}
+  {{ label }} = '{{ label }}',
+  {%- endfor %}
+};
+
+export function buildStateHandler(
+  next: EfsmNextStateHandler,
+  sendMessage: (role: Roles, label: string, payload: any[]) => void
+  ) {
+
+  return (handler: S{{ state.id }}) => {
+
+    // Send message
+    sendMessage(Roles.{{ state.role }}, handler[0], []);
+
+    // Transition to successor state.
+    switch (handler[0]) {
+      {% for action in state.actions.values() -%}
+        case Labels.{{ action.label }}: {
+          const successor = handler[1];
+          {% if efsm.is_send_state(action.succ) -%}
+          return next(SendState.S{{ action.succ }})(successor);
+          {% elif efsm.is_receive_state(action.succ) -%}
+          return next(ReceiveState.S{{ action.succ }})(successor);
+          {% else -%}
+          return next(TerminalState.S{{ action.succ }})(successor);
+          {% endif %}
+        }
+        {%- endfor %}
+    }
+  }
+}
