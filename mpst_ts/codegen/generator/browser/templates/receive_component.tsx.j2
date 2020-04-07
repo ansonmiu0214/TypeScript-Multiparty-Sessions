@@ -19,7 +19,7 @@ type {{ label }}Message = {
 };
 {% endfor %}
 
-type Message = {% for label in state.labels -%}{{ label ~ 'Message' ~ (' | ' if not loop.last else '') }}{%- endfor %}
+type Message = {% for label in state.labels -%}{{ '| ' ~ label ~ 'Message' }}{%- endfor %}
 
 export abstract class S{{ state.id }}<
   _P = {},
