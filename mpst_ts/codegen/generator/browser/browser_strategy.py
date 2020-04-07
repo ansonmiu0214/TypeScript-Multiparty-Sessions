@@ -48,13 +48,13 @@ class BrowserStrategy(CodeGenerationStrategy,
                                                     payload={'efsm': efsm})))
 
         # Generate states
-        for state in efsm.send_states.values():
+        for state in efsm.send_states:
             files.append((os.path.join(self.output_dir, protocol, role, f'S{state.id}.tsx'),
                           self.template_generator.render(path='send_component.tsx.j2',
                                                     payload={'efsm': efsm,
                                                              'state': state})))
 
-        for state in efsm.receive_states.values():
+        for state in efsm.receive_states:
             files.append((os.path.join(self.output_dir, protocol, role, f'S{state.id}.tsx'),
                           self.template_generator.render(path='receive_component.tsx.j2',
                                                     payload={'efsm': efsm,

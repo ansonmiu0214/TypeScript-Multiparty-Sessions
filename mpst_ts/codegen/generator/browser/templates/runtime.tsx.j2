@@ -3,28 +3,16 @@ import React from 'react';
 
 import { State, SendState, ReceiveState, TerminalState } from './EFSM';
 import { Constructor, ReceiveHandler, isSendState, isReceiveState, isTerminalState, SendComponentFactory } from './Session';
-{% for state in efsm.send_states.values() -%}
+{% for state in efsm.states %}
 import { S{{ state.id }} } from './S{{ state.id }}';
 {%- endfor %}
-{% for state in efsm.receive_states.values() -%}
-import { S{{ state.id }} } from './S{{ state.id }}';
-{%- endfor %}
-{% if efsm.has_terminal_state() -%}
-import { S{{ efsm.terminal_state }} } from './S{{ efsm.terminal_state }}';
-{%- endif %}
 
 type P = {
   endpoint: string,
   states: {
-    {% for state in efsm.send_states.values() -%}
+    {% for state in efsm.states -%}
     S{{ state.id }}: Constructor<S{{ state.id }}>,
     {%- endfor %}
-    {% for state in efsm.receive_states.values() -%}
-    S{{ state.id }}: Constructor<S{{ state.id }}>,
-    {%- endfor %}
-    {% if efsm.has_terminal_state() -%}
-    S{{ efsm.terminal_state }}: Constructor<S{{ efsm.terminal_state }}>,
-    {%- endif %}
   },
   waiting: JSX.Element
 }
@@ -124,7 +112,7 @@ export default class {{ efsm.metadata.role }} extends React.Component<P, S> {
       const nextState = this.state.handle(message.data);
       this.advance(nextState);
     } else {
-      // Queue message.
+      // TODO: queue message.
     }
   }
 

@@ -7,19 +7,19 @@ type P = {
 }
 
 enum Labels {
-  {% for label in state.actions -%}
+  {% for label in state.labels -%}
   {{ label }} = '{{ label}}',
   {%- endfor %}
 }
 
-{% for label, action in state.actions.items() -%}
+{% for label in state.labels -%}
 type {{ label }}Message = {
   label: Labels.{{ label }},
   payload: []
 };
 {% endfor %}
 
-type Message = {% for label in state.actions -%}{{ label ~ 'Message' ~ (' | ' if not loop.last else '') }}{%- endfor %}
+type Message = {% for label in state.labels -%}{{ label ~ 'Message' ~ (' | ' if not loop.last else '') }}{%- endfor %}
 
 export abstract class S{{ state.id }}<
   _P = {},
@@ -39,9 +39,9 @@ export abstract class S{{ state.id }}<
   handle(message: any): State {
     const parsedMessage = JSON.parse(message) as Message;
     switch (parsedMessage.label) {
-      {% for label, action in state.actions.items() -%}
-      case Labels.{{ label }}: {
-        this.{{ label }}();
+      {% for action in state.actions -%}
+      case Labels.{{ action.label }}: {
+        this.{{ action.label }}();
         {%- if efsm.is_send_state(action.succ) -%}
         return SendState.S{{ action.succ }};
         {%- elif efsm.is_receive_state(action.succ) -%}
@@ -54,7 +54,7 @@ export abstract class S{{ state.id }}<
     }
   }
 
-  {% for label, action in state.actions.items() -%}
+  {% for label in state.labels -%}
   abstract {{ label }}(): void;
   {%- endfor %}
 

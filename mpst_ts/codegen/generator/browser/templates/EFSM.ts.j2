@@ -1,13 +1,13 @@
 // EFSM.ts
 
 export enum SendState {
-  {% for state in efsm.send_states.values() -%}
+  {% for state in efsm.send_states -%}
   S{{ state.id }} = 'S{{ state.id }}',
   {%- endfor %}
 }
 
 export enum ReceiveState {
-  {% for state in efsm.receive_states.values() -%}
+  {% for state in efsm.receive_states -%}
   S{{ state.id }} = 'S{{ state.id }}',
   {%- endfor %}
 }

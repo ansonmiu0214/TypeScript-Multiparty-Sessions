@@ -17,19 +17,19 @@ export abstract class S{{ state.id }}<
   _SS
 > {
 
-  {% for label, action in state.actions.items() -%}
+  {% for label in state.labels -%}
   protected {{ label }}: SendComponentFactory<any>
   {%- endfor %}
 
   constructor(props: P & _P) {
     super(props);
-    {% for label, action in state.actions.items() -%}
+    {% for action in state.actions -%}
     {%- if efsm.is_send_state(action.succ) -%}
-    this.{{ label }} = props.factory<any>('{{ label }}' , SendState.S{{ action.succ }});
+    this.{{ action.label }} = props.factory<any>('{{ action.label }}' , SendState.S{{ action.succ }});
     {%- elif efsm.is_receive_state(action.succ) -%}
-    this.{{ label }} = props.factory<any>('{{ label }}' , ReceiveState.S{{ action.succ }});
+    this.{{ action.label }} = props.factory<any>('{{ action.label }}' , ReceiveState.S{{ action.succ }});
     {%- else -%}
-    this.{{ label }} = props.factory<any>('{{ label }}' , TerminalState.S{{ action.succ }});
+    this.{{ action.label }} = props.factory<any>('{{ action.label }}' , TerminalState.S{{ action.succ }});
     {%- endif -%}
     {%- endfor %}
   }
