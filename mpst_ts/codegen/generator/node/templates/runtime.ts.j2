@@ -135,6 +135,7 @@ class _{{ efsm.metadata.role }} {
 
     nextSend<S extends SendState>(state: S): ((implementation: Implementation<S>) => any) {
       // TODO: how to fix this mandatory type assertion?
+      // return stateModule[state].buildStateHandler(this.next, this.send);
       return stateModule[state].buildStateHandler(this.next, this.send) as ((implementation: Implementation<S>) => any);
     }
 
@@ -150,8 +151,8 @@ class _{{ efsm.metadata.role }} {
         }
       }
 
+      // return stateModule[state].buildStateHandler(this.next, onMessageHandlerConstructed);
       return stateModule[state].buildStateHandler(this.next, onMessageHandlerConstructed) as ((implementation: Implementation<S>) => any);
-
     }
 
     nextTerminal<S extends TerminalState>(state: S): ((implementation: Implementation<S>) => any) {
