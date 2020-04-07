@@ -4,7 +4,7 @@ import { EfsmNextStateHandler } from './Session';
 export function buildStateHandler(
   next: EfsmNextStateHandler,
   sendMessage: (role: Roles, label: string, payload: any[]) => void
-  ) {
+) {
 
   return (handler: S{{ state.id }}) => {
 
@@ -13,7 +13,7 @@ export function buildStateHandler(
 
     // Transition to successor state.
     switch (handler[0]) {
-      {% for action in state.actions.values() -%}
+      {% for action in state.actions -%}
         case Labels.S{{ state.id }}.{{ action.label }}: {
           const successor = handler[1];
           {% if efsm.is_send_state(action.succ) -%}

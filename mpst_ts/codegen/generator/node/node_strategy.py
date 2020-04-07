@@ -35,14 +35,14 @@ class NodeStrategy(CodeGenerationStrategy,
                                                      payload={'efsm': efsm})))
 
         # Generate modules for send states
-        for state in efsm.send_states.values():
+        for state in efsm.send_states:
             files.append((os.path.join(self.output_dir, protocol, f'S{state.id}.ts'),
                       self.template_generator.render(path='send_module.ts.j2',
                                                      payload={'efsm': efsm,
                                                               'state': state})))
 
         # Generate modules for receive states
-        for state in efsm.receive_states.values():
+        for state in efsm.receive_states:
             files.append((os.path.join(self.output_dir, protocol, f'S{state.id}.ts'),
                       self.template_generator.render(path='receive_module.ts.j2',
                                                      payload={'efsm': efsm,
