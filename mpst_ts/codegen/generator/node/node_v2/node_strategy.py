@@ -1,8 +1,8 @@
 import os
 
-from ..utils import CodeGenerationStrategy
-from ...EFSM import EFSM
-from ....utils import TemplateGenerator
+from ...utils import CodeGenerationStrategy
+from ....EFSM import EFSM
+from .....utils import TemplateGenerator
 
 class NodeStrategy(CodeGenerationStrategy,
                    target='node'):
