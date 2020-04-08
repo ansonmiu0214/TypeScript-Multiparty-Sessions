@@ -1,0 +1,149 @@
+// ==============
+// Protocol roles
+// ==============
+
+export enum Roles {
+  {% for role in efsm.other_roles -%}
+  {{ role }} = "{{ role }}",
+  {%- endfor %}
+};
+
+// ==============
+// Message labels
+// ==============
+
+export namespace Labels {
+  {% for state in efsm.receive_states -%}
+  export enum S{{ state.id }} 
+  {
+    {% for label in state.labels -%}
+    {{ label }} = "{{ label }}",
+    {%- endfor %}
+  };
+  {%- endfor %}
+  {% for state in efsm.send_states -%}
+  export enum S{{ state.id }} 
+  {
+    {% for label in state.labels -%}
+    {{ label }} = "{{ label }}",
+    {%- endfor %}
+  };
+  {%- endfor %}
+};
+
+// =======
+// Message
+// =======
+namespace Message {
+{% for state in efsm.receive_states -%}
+  {% for action in state.actions -%}
+  type S{{ state ~ action.label }} = {
+    label: Labels.S{{ state }}.{{ action.label }},
+    payload: []
+  };
+  {%- endfor %}
+
+  export type S{{ state }} = {% for action in state.actions -%}
+  | S{{ state ~ action.label }}
+  {%- endfor %};
+{%- endfor %}
+};
+
+// ================
+// Message handlers
+// ================
+
+export namespace Handler {
+
+  {% for state in efsm.send_states -%}
+  export type S{{ state }} =
+    {% for action in state.actions -%}
+    | [Labels.S{{ state }}.{{ action.label }}, Implementation.S{{ action.succ }}]
+    {%- endfor %};
+  {%- endfor %}
+
+  {% for state in efsm.receive_states -%}
+  export type S{{ state }} = {
+    {% for action in state.actions -%}
+    [Labels.S{{ state }}.{{ action.label }}]: () => Implementation.S{{ action.succ }},
+    {%- endfor %}
+  }
+  {%- endfor %}
+
+  {% if efsm.has_terminal_state() -%}
+  export type S{{ efsm.terminal_state }} = 'Terminate';
+  {% endif -%}
+};
+
+// =================================
+// "Implementation"
+// := wrapper around message handler
+// =================================
+
+export namespace Implementation {
+  abstract class Send {
+    type: 'Send' = 'Send';
+    abstract performSend(next: EfsmTransitionHandler, sendMessage: (role: Roles, label: string, payload: any[]) => void): void;
+  }
+
+  abstract class Receive {
+    type: 'Receive' = 'Receive';
+    abstract prepareReceive(next: EfsmTransitionHandler, register: (messageHandler: MessageHandler) => void): void;
+  }
+
+  abstract class Terminal {
+    type: 'Terminal' = 'Terminal';
+  }
+
+  export type Type = Send | Receive | Terminal;
+
+  {% for state in efsm.states -%}
+  {% if efsm.is_send_state(state) -%}
+  export class S{{ state }} extends Send {
+
+    constructor(private handler: Handler.S{{ state }}) {
+      super();
+    }
+
+    performSend(next: EfsmTransitionHandler, sendMessage: (role: Roles, label: string, payload: any[]) => void) {
+      sendMessage(Roles.{{ state.role }}, this.handler[0], []);
+      next(this.handler[1]);
+    }
+
+  }
+  {% elif efsm.is_receive_state(state) -%}
+  export class S{{ state }} extends Receive {
+
+    constructor(private handler: Handler.S{{ state}}) {
+      super();
+    }
+
+    prepareReceive(next: EfsmTransitionHandler, register: (messageHandler: MessageHandler) => void) {
+      const messageHandler = (message: any) => {
+        const parsedMessage = JSON.parse(message) as Message.S{{ state.id }};
+        const successor = this.handler[parsedMessage.label]();
+        next(successor);
+      }
+
+      register(messageHandler);
+    }
+
+  }
+  {% else -%}
+  export class S{{ state }} extends Terminal {
+
+    constructor(private handler: Handler.S{{ state }}) {
+      super();
+    }
+
+  }
+  {% endif -%}
+  {%- endfor %}
+}
+
+// =============
+// Runtime types
+// =============
+
+export type EfsmTransitionHandler = (implementation: Implementation.Type) => void
+export type MessageHandler = (message: any) => void
