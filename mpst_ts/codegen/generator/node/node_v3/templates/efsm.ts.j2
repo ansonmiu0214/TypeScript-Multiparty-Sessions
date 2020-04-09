@@ -35,18 +35,16 @@ export namespace Labels {
 // Message
 // =======
 namespace Message {
-{% for state in efsm.receive_states -%}
+{% for state in efsm.nonterminal_states -%}
   {% for action in state.actions -%}
-  type S{{ state ~ action.label }} = {
+  export type S{{ state ~ action.label }} = {
     label: Labels.S{{ state }}.{{ action.label }},
-    payload: []
+    payload: [{%- for payload in action.payloads -%}{{ payload ~ ', ' }}{%- endfor -%}],
   };
-  {%- endfor %}
-
+  {% endfor %}
   export type S{{ state }} = {% for action in state.actions -%}
-  | S{{ state ~ action.label }}
-  {%- endfor %};
-{%- endfor %}
+  | S{{ state ~ action.label }}{% endfor %};
+{% endfor %}
 };
 
 // ================
@@ -57,14 +55,14 @@ export namespace Handler {
   {% for state in efsm.send_states -%}
   export type S{{ state }} =
     {% for action in state.actions -%}
-    | [Labels.S{{ state }}.{{ action.label }}, Implementation.S{{ action.succ }}]
+    | [Labels.S{{ state }}.{{ action.label }}, Message.S{{ state ~ action.label }}['payload'], Implementation.S{{ action.succ }}]
     {%- endfor %};
   {% endfor %}
   {% for state in efsm.receive_states -%}
   export type S{{ state }} = {
     {% for action in state.actions -%}
-    [Labels.S{{ state }}.{{ action.label }}]: () => Implementation.S{{ action.succ }},
-    {%- endfor %}
+    [Labels.S{{ state }}.{{ action.label }}]: (...payload: Message.S{{ state ~ action.label }}['payload']) => Implementation.S{{ action.succ }},
+    {% endfor %}
   }
   {% endfor %}
   {% if efsm.has_terminal_state() -%}
@@ -112,8 +110,9 @@ export namespace Implementation {
       next: EfsmTransitionHandler,
       sendMessage: (role: Roles, label: string, payload: any[]) => void
     ) {
-      sendMessage(Roles.{{ state.role }}, this.handler[0], []);
-      next(this.handler[1]);
+      const [label, payload, successor] = this.handler;
+      sendMessage(Roles.{{ state.role }}, label, payload);
+      return next(successor);
     }
 
   }
@@ -130,8 +129,14 @@ export namespace Implementation {
     ) {
       const messageHandler = (message: any) => {
         const parsedMessage = JSON.parse(message) as Message.S{{ state.id }};
-        const successor = this.handler[parsedMessage.label]();
-        next(successor);
+        switch (parsedMessage.label) {
+          {% for action in state.actions -%}
+          case Labels.S{{ state }}.{{ action.label }}: {
+            const successor = this.handler[parsedMessage.label](...parsedMessage.payload);
+            return next(successor);
+          }
+          {% endfor %}
+        }
       }
 
       register(messageHandler);
