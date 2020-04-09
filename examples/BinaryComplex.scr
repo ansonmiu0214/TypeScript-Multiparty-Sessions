@@ -20,3 +20,22 @@ global protocol Calculator(role Svr, role Client) {
     Terminate() from Svr to Client;
   }
 }
+
+global protocol CompactCalculator(role Svr, role Client) {
+  choice at Client {
+    Add(number, number) from Client to Svr;
+    Res(number) from Svr to Client;
+    do CompactCalculator(Svr, Client);
+  } or {
+    Mult(number, number) from Client to Svr;
+    Res(number) from Svr to Client;
+    do CompactCalculator(Svr, Client);
+  } or {
+    Double(number) from Client to Svr;
+    Res(number) from Svr to Client;
+    do CompactCalculator(Svr, Client);
+  } or {
+    Quit() from Client to Svr;
+    Terminate() from Svr to Client;
+  }
+}
