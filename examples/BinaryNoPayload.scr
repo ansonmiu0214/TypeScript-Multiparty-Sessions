@@ -4,3 +4,10 @@ global protocol Hello(role Alice, role Bob) {
   Hello() from Alice to Bob;
   Hello() from Bob to Alice;
 }
+
+global protocol LongHello(role Alice, role Bob) {
+  Hello1() from Alice to Bob;
+  Hello2() from Bob to Alice;
+  Bye1() from Alice to Bob;
+  Bye2() from Bob to Alice;
+}

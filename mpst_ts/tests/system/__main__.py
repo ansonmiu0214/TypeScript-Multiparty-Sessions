@@ -6,10 +6,16 @@ import subprocess
 import mpst_ts
 
 protocols_to_test = [
-    ('examples/BinaryNoPayload.scr', 'Hello', {
-        'node': ['Bob'],
-        'browser': ['Alice'],
-    }),
+    ('examples/BinaryNoPayload.scr', [
+        ('Hello', {
+            'node': ['Bob'],
+            'browser': ['Alice'],
+        }),
+        ('LongHello', {
+            'node': ['Bob'],
+            'browser': ['Alice'],
+        })
+    ]),
 ]
 
 def test_factory(scr, protocol, role, target):
@@ -39,11 +45,12 @@ def test_factory(scr, protocol, role, target):
 
 if __name__ == "__main__":
     suite  = unittest.TestSuite()
-    for scr, protocol, targets in protocols_to_test:
-        for target, roles in targets.items():
-            for role in roles:
-                TestClass = test_factory(scr, protocol, role, target)
-                suite.addTests(unittest.makeSuite(TestClass))
+    for scr, protocols in protocols_to_test:
+        for protocol, targets in protocols:
+            for target, roles in targets.items():
+                for role in roles:
+                    TestClass = test_factory(scr, protocol, role, target)
+                    suite.addTests(unittest.makeSuite(TestClass))
 
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
