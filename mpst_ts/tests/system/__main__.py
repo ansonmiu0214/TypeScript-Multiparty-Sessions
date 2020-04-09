@@ -5,24 +5,7 @@ import subprocess
 
 import mpst_ts
 
-protocols_to_test = [
-    ('examples/BinaryNoPayload.scr', [
-        ('Hello', {
-            'node': ['Bob'],
-            'browser': ['Alice'],
-        }),
-        ('LongHello', {
-            'node': ['Bob'],
-            'browser': ['Alice'],
-        })
-    ]),
-    ('examples/BinaryComplex.scr', [
-        ('Calculator', {
-            'node': ['Svr'],
-            'browser': ['Client'],
-        }),
-    ]),
-]
+from . import protocols_to_test
 
 def test_factory(scr, protocol, role, target):
 
