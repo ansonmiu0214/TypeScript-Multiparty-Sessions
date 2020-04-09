@@ -16,6 +16,11 @@ protocols_to_test = [
             'browser': ['Alice'],
         })
     ]),
+    ('examples/BinaryComplex.scr', [
+        ('Calculator', {
+            'node': ['Svr'],
+        }),
+    ]),
 ]
 
 def test_factory(scr, protocol, role, target):
