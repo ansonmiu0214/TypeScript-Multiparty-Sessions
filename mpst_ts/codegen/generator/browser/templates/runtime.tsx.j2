@@ -12,7 +12,7 @@ type P = {
   states: {
     {% for state in efsm.states -%}
     S{{ state.id }}: Constructor<S{{ state.id }}>,
-    {%- endfor %}
+    {% endfor %}
   },
   waiting: JSX.Element
 }
