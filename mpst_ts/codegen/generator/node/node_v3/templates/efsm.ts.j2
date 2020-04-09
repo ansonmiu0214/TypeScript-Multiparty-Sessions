@@ -39,7 +39,7 @@ namespace Message {
   {% for action in state.actions -%}
   export type S{{ state ~ action.label }} = {
     label: Labels.S{{ state }}.{{ action.label }},
-    payload: [{%- for payload in action.payloads -%}{{ payload ~ ', ' }}{%- endfor -%}],
+    payload: [{{ action.payloads|join(', ') }}],
   };
   {% endfor %}
   export type S{{ state }} = {% for action in state.actions -%}
