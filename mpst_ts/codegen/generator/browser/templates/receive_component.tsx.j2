@@ -12,10 +12,10 @@ enum Labels {
   {%- endfor %}
 }
 
-{% for label in state.labels -%}
-type {{ label }}Message = {
-  label: Labels.{{ label }},
-  payload: []
+{% for action in state.actions -%}
+type {{ action.label }}Message = {
+  label: Labels.{{ action.label }},
+  payload: [{{ action.payloads|join(', ') }}],
 };
 {% endfor %}
 
@@ -41,21 +41,21 @@ export abstract class S{{ state.id }}<
     switch (parsedMessage.label) {
       {% for action in state.actions -%}
       case Labels.{{ action.label }}: {
-        this.{{ action.label }}();
-        {%- if efsm.is_send_state(action.succ) -%}
+        this.{{ action.label }}(...parsedMessage.payload);
+        {% if efsm.is_send_state(action.succ) -%}
         return SendState.S{{ action.succ }};
-        {%- elif efsm.is_receive_state(action.succ) -%}
+        {% elif efsm.is_receive_state(action.succ) -%}
         return ReceiveState.S{{ action.succ }};
-        {%- else -%}
+        {% else -%}
         return TerminalState.S{{ action.succ }};
-        {%- endif -%}
+        {% endif -%}
       }
       {%- endfor %}
     }
   }
 
-  {% for label in state.labels -%}
-  abstract {{ label }}(): void;
+  {% for action in state.actions -%}
+  abstract {{ action.label }}({%- for payload in action.payloads -%}{{ 'payload' ~ loop.index ~ ': ' ~ payload ~ ', ' }}{%- endfor -%}): void;
   {%- endfor %}
 
 }
