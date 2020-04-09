@@ -19,6 +19,7 @@ protocols_to_test = [
     ('examples/BinaryComplex.scr', [
         ('Calculator', {
             'node': ['Svr'],
+            'browser': ['Client'],
         }),
     ]),
 ]
