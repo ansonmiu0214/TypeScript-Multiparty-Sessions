@@ -54,22 +54,19 @@ namespace Message {
 // ================
 
 export namespace Handler {
-
   {% for state in efsm.send_states -%}
   export type S{{ state }} =
     {% for action in state.actions -%}
     | [Labels.S{{ state }}.{{ action.label }}, Implementation.S{{ action.succ }}]
     {%- endfor %};
-  {%- endfor %}
-
+  {% endfor %}
   {% for state in efsm.receive_states -%}
   export type S{{ state }} = {
     {% for action in state.actions -%}
     [Labels.S{{ state }}.{{ action.label }}]: () => Implementation.S{{ action.succ }},
     {%- endfor %}
   }
-  {%- endfor %}
-
+  {% endfor %}
   {% if efsm.has_terminal_state() -%}
   export type S{{ efsm.terminal_state }} = 'Terminate';
   {% endif -%}
@@ -83,12 +80,18 @@ export namespace Handler {
 export namespace Implementation {
   abstract class Send {
     type: 'Send' = 'Send';
-    abstract performSend(next: EfsmTransitionHandler, sendMessage: (role: Roles, label: string, payload: any[]) => void): void;
+    abstract performSend(
+      next: EfsmTransitionHandler,
+      sendMessage: (role: Roles, label: string, payload: any[]) => void
+    ): void;
   }
 
   abstract class Receive {
     type: 'Receive' = 'Receive';
-    abstract prepareReceive(next: EfsmTransitionHandler, register: (messageHandler: MessageHandler) => void): void;
+    abstract prepareReceive(
+      next: EfsmTransitionHandler,
+      register: (messageHandler: MessageHandler) => void
+    ): void;
   }
 
   abstract class Terminal {
@@ -105,7 +108,10 @@ export namespace Implementation {
       super();
     }
 
-    performSend(next: EfsmTransitionHandler, sendMessage: (role: Roles, label: string, payload: any[]) => void) {
+    performSend(
+      next: EfsmTransitionHandler,
+      sendMessage: (role: Roles, label: string, payload: any[]) => void
+    ) {
       sendMessage(Roles.{{ state.role }}, this.handler[0], []);
       next(this.handler[1]);
     }
@@ -118,7 +124,10 @@ export namespace Implementation {
       super();
     }
 
-    prepareReceive(next: EfsmTransitionHandler, register: (messageHandler: MessageHandler) => void) {
+    prepareReceive(
+      next: EfsmTransitionHandler, 
+      register: (messageHandler: MessageHandler) => void
+    ) {
       const messageHandler = (message: any) => {
         const parsedMessage = JSON.parse(message) as Message.S{{ state.id }};
         const successor = this.handler[parsedMessage.label]();
