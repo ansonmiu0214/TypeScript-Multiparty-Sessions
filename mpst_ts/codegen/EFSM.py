@@ -11,7 +11,7 @@ class Action(ABC):
     payloads: List[str]
     succ: 'State' = field(init=False)
 
-    _label_regex = '(?P<role>[a-zA-Z0-9]+)(?P<op>[!?])(?P<label>[a-zA-Z]+)\((?P<payloads>[a-zA-Z]*)\)'
+    _label_regex = '(?P<role>.+)(?P<op>[!?])(?P<label>.+)\((?P<payloads>.*)\)'
     _delimit_to_cnstr = {}
 
     @classmethod
@@ -23,7 +23,7 @@ class Action(ABC):
     def parse(cls, efsm_str: str, succ_id: str) -> 'Action':
         matcher = re.match(cls._label_regex, efsm_str)
         if not matcher:
-            raise ValueError(f'Invalid action: "{efsm_str}""')
+            raise ValueError(f'Invalid action: "{efsm_str}"')
 
         components = matcher.groupdict()
         Cnstr = Action._delimit_to_cnstr.get(components['op'])
