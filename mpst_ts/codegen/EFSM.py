@@ -30,10 +30,11 @@ class Action(ABC):
         if not Cnstr:
             raise ValueError(f'Unsupported operation: "{components["op"]}"')
 
+        payloads = [payload.strip() for payload in components['payloads'].split(',') if payload.strip()]
         return Cnstr(role=components['role'],
                      label=components['label'],
                      succ_id=succ_id,
-                     payloads=components['payloads'].split(','))
+                     payloads=payloads)
 
     @abstractmethod
     def add_to_efsm(self, state_id: str, efsm: 'EfsmBuilder'):
