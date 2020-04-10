@@ -19,11 +19,13 @@ type P = {
 
 type S = {
   ws: WebSocket,
-  handle?: ReceiveHandler,
   elem: JSX.Element
 }
 
 export default class {{ efsm.metadata.role }} extends React.Component<P, S> {
+
+  private message?: any
+  private handle?: ReceiveHandler
 
   constructor(props: P) {
     super(props);
@@ -31,9 +33,11 @@ export default class {{ efsm.metadata.role }} extends React.Component<P, S> {
     // Set up WebSocket
     this.state = {
       ws: new WebSocket(props.endpoint),
-      handle: undefined,
-      elem: props.waiting
+      elem: props.waiting,
     };
+
+    this.message = undefined;
+    this.handle = undefined;
 
     // Bind functions
     this.onReceiveInit = this.onReceiveInit.bind(this);
@@ -103,16 +107,26 @@ export default class {{ efsm.metadata.role }} extends React.Component<P, S> {
   }
 
   private registerReceiveHandler(handle: ReceiveHandler) {
-    // TODO: check if message has arrived?
-    this.setState({ handle });
+    if (this.message !== undefined) {
+      // Message received already -- process.
+      const nextState = handle(this.message);
+      this.message = undefined;
+      this.advance(nextState);
+    } else {
+      // No message received -- `queue' handler.
+      this.handle = handle;
+    }
   }
 
   private onReceiveMessage(message: MessageEvent) {
-    if (this.state.handle) {
-      const nextState = this.state.handle(message.data);
+    if (this.handle !== undefined) {
+      // Handler registered -- process.
+      const nextState = this.handle(message.data);
+      this.handle = undefined;
       this.advance(nextState);
     } else {
-      // TODO: queue message.
+      // No handler registered -- `queue' message.
+      this.message = message;
     }
   }
 
