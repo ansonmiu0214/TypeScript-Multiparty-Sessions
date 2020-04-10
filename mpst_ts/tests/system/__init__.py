@@ -14,5 +14,9 @@ protocols_to_test = [
             'node': ['Svr'],
             'browser': ['Client'],
         }),
+        ('CompactCalculator', {
+            'node': ['Svr'],
+            'browser': ['Client'],
+        }),
     ]),
 ]
