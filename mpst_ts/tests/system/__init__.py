@@ -1,5 +1,5 @@
 protocols_to_test = [
-    ('examples/BinaryNoPayload.scr', [
+    ('protocols/BinaryNoPayload.scr', [
         ('Hello', {
             'node': ['Bob'],
             'browser': ['Alice'],
@@ -9,7 +9,7 @@ protocols_to_test = [
             'browser': ['Alice'],
         })
     ]),
-    ('examples/BinaryComplex.scr', [
+    ('protocols/BinaryComplex.scr', [
         ('Calculator', {
             'node': ['Svr'],
             'browser': ['Client'],
