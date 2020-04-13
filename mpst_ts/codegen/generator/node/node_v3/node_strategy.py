@@ -7,9 +7,9 @@ from .....utils import TemplateGenerator
 class NodeStrategy(CodeGenerationStrategy,
                    target='node'):
 
-    def __init__(self):
+    def __init__(self, output_dir: str = 'sandbox/node'):
         super().__init__()
-        self.output_dir = 'sandbox/node'
+        self.output_dir = output_dir
 
         dirname = os.path.join(os.path.dirname(__file__), 'templates')
         self.template_generator = TemplateGenerator(dirname=dirname)

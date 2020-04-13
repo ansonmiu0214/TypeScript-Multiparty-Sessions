@@ -16,6 +16,7 @@ def get_argument_parser() -> ArgumentParser:
     parser.add_argument('protocol', type=str, help='Name of protocol')
     parser.add_argument('role', type=str, help='Role to project')
     parser.add_argument('target', choices=supported_targets, help='Code generation target')
+    parser.add_argument('-o', '--output', type=str, help='Output directory for generation')
 
     return parser
 
@@ -32,7 +33,7 @@ def main(args: typing.List[str]) -> int:
                                    protocol=parsed_args.protocol,
                                    role=parsed_args.role)
 
-    code_generator = generator.CodeGenerator(target=parsed_args.target)
+    code_generator = generator.CodeGenerator(target=parsed_args.target, output_dir=parsed_args.output)
     code_generator.generate(efsm)
 
     return 0

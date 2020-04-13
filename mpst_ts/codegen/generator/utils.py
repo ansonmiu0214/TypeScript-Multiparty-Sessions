@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import os
 import subprocess
+import typing
 
 from ..EFSM import EFSM
 
@@ -22,8 +23,11 @@ class CodeGenerationStrategy(ABC):
 
 class CodeGenerator:
 
-    def __init__(self, *, target):
-        self.strategy = CodeGenerationStrategy.target_to_strategy[target]()
+    def __init__(self, *, target, output_dir: typing.Optional[str]):
+        if output_dir is not None:
+            self.strategy = CodeGenerationStrategy.target_to_strategy[target](output_dir)
+        else:
+            self.strategy = CodeGenerationStrategy.target_to_strategy[target]()
 
     def generate(self, efsm: EFSM):
         files_to_generate = self.strategy.generate(efsm)
