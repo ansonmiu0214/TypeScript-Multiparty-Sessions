@@ -21,7 +21,7 @@ type {{ action.label }}Message = {
 
 type Message = {% for label in state.labels -%}{{ '| ' ~ label ~ 'Message' }}{%- endfor %}
 
-export abstract class S{{ state.id }}<
+export default abstract class S{{ state.id }}<
   _P = {},
   _S = {},
   _SS = any

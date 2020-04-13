@@ -2,9 +2,14 @@
 import React from 'react';
 
 import { State, SendState, ReceiveState, TerminalState } from './EFSM';
-import { Constructor, ReceiveHandler, isSendState, isReceiveState, isTerminalState, SendComponentFactory } from './Session';
+import { 
+  Constructor, ReceiveHandler, 
+  isSendState, isReceiveState, isTerminalState,
+  SendComponentFactory, 
+  DOMEvents, FunctionArguments, EventHandler
+} from './Session';
 {% for state in efsm.states %}
-import { S{{ state.id }} } from './S{{ state.id }}';
+import S{{ state.id }} from './S{{ state.id }}';
 {%- endfor %}
 
 type P = {
@@ -86,15 +91,16 @@ export default class {{ efsm.metadata.role }} extends React.Component<P, S> {
   }
 
   private buildSendElement<T>(label: string, successor: State): SendComponentFactory<T> {
-    return (event: string, handler: (event: UIEvent) => T) => {
-
+    return <K extends keyof DOMEvents> (eventLabel: K, handler: EventHandler<T, K>) => {
       const send = (payload: T) => this.sendMessage(label, payload, successor);
 
       return class extends React.Component {
         render() {
-          const children = React.Children.map(this.props.children, child => React.cloneElement(child as React.ReactElement<any>, {
-            [`on${event}`]: (event: MouseEvent) => send(handler(event))
-          }));
+          const children = React.Children.map(this.props.children, child => (
+            React.cloneElement(child as React.ReactElement<any>, {
+              [eventLabel as string]: (event: FunctionArguments<DOMEvents[K]>) => send(handler(event))
+            })
+          ));
           return children;
         }
       }
