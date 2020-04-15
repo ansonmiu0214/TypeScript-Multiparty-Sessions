@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import os
+import shutil
 import subprocess
 import typing
 
@@ -31,11 +32,16 @@ class CodeGenerator:
 
     def generate(self, efsm: EFSM):
         files_to_generate = self.strategy.generate(efsm)
-        for path, content in files_to_generate:
-            # Create directory if not already exists
-            dir_ = os.path.dirname(path)
-            os.makedirs(dir_, exist_ok=True)
 
+        dirs = set(os.path.dirname(path) for path, _ in files_to_generate)
+        for dir_ in dirs:
+            if os.path.exists(dir_):
+                # Delete directory if already exists
+                shutil.rmtree(dir_)
+            
+            os.makedirs(dir_)
+
+        for path, content in files_to_generate:
             # Write content to file
             with open(path, 'w') as file_:
                 file_.write(content)
