@@ -1,1 +1,1 @@
-from .browser_strategy import BrowserStrategy
+from .browser_v2 import BrowserStrategy
