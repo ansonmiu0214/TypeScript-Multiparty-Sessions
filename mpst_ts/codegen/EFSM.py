@@ -112,15 +112,13 @@ class EfsmBuilder:
     _receive_states: Mapping[str, ReceiveState]
     _initial_state_id: str
     _terminal_state_candidates: Set[str]
-    _metadata: Mapping[str, str]
 
-    def __init__(self, nodes: List[str], metadata: Mapping[str, str]):
+    def __init__(self, nodes: List[str]):
         self._roles = set()
         self._send_states = {}
         self._receive_states = {}
         self._initial_state_id = min(nodes)
         self._terminal_state_candidates = set(nodes)
-        self._metadata = metadata
 
     def add_action_to_send_state(self, state_id: str, action: SendAction):
         send_state = self._send_states.get(state_id, SendState(state_id))
@@ -148,7 +146,6 @@ class EfsmBuilder:
             self._send_states,
             self._receive_states,
             self._initial_state_id,
-            self._metadata,
             terminal_state_id
         )
 
@@ -158,7 +155,6 @@ class EFSM:
     _send_states: Mapping[str, SendState]
     _receive_states: Mapping[str, ReceiveState]
     _initial_state_id: str
-    _metadata: Mapping[str, str]
     _terminal_state_id: Optional[str]
 
     _states: Mapping[str, State] = field(init=False)
@@ -216,10 +212,6 @@ class EFSM:
             raise Exception(f'Trying to access non-existent terminal state')
 
         return self[self._terminal_state_id]
-
-    @property
-    def metadata(self):
-        return self._metadata
 
     def __getitem__(self, state_id: str):
         return self._states[state_id]

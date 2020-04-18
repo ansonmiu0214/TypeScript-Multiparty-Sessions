@@ -3,7 +3,7 @@
 // ==============
 
 export enum Roles {
-  {% for role in efsm.other_roles -%}
+  {% for role in endpoint.efsm.other_roles -%}
   {{ role }} = "{{ role }}",
   {%- endfor %}
 };
@@ -13,7 +13,7 @@ export enum Roles {
 // ==============
 
 export namespace Labels {
-  {% for state in efsm.receive_states -%}
+  {% for state in endpoint.efsm.receive_states -%}
   export enum S{{ state.id }} 
   {
     {% for label in state.labels -%}
@@ -21,7 +21,7 @@ export namespace Labels {
     {%- endfor %}
   };
   {%- endfor %}
-  {% for state in efsm.send_states -%}
+  {% for state in endpoint.efsm.send_states -%}
   export enum S{{ state.id }} 
   {
     {% for label in state.labels -%}
@@ -36,20 +36,20 @@ export namespace Labels {
 // ======
 
 export enum SendState {
-  {% for state in efsm.send_states -%}
+  {% for state in endpoint.efsm.send_states -%}
   S{{ state.id }} = 'S{{ state.id }}',
   {%- endfor %}
 };
 
 export enum ReceiveState {
-  {% for state in efsm.receive_states -%}
+  {% for state in endpoint.efsm.receive_states -%}
   S{{ state.id }} = 'S{{ state.id }}',
   {%- endfor %}
 };
 
 export enum TerminalState {
-  {% if efsm.has_terminal_state() -%}
-  S{{ efsm.terminal_state.id }} = 'S{{ efsm.terminal_state.id }}',
+  {% if endpoint.efsm.has_terminal_state() -%}
+  S{{ endpoint.efsm.terminal_state.id }} = 'S{{ endpoint.efsm.terminal_state.id }}',
   {%- endif %}
 };
 
@@ -58,19 +58,19 @@ export type State = SendState | ReceiveState | TerminalState
 // ===============
 // Implementations
 // ===============
-{% if efsm.has_terminal_state() -%}
+{% if endpoint.efsm.has_terminal_state() -%}
 type _Terminate = 'Terminate';
 export const Terminate: _Terminate = 'Terminate';
-export type S{{ efsm.terminal_state.id }} = _Terminate;
+export type S{{ endpoint.efsm.terminal_state.id }} = _Terminate;
 {% endif -%}
 
-{% for state in efsm.send_states -%}
+{% for state in endpoint.efsm.send_states -%}
 export type S{{ state.id }} = {% for action in state.actions -%}
 | [Labels.S{{ state.id }}.{{ action.label }}, S{{ action.succ }}]
 {%- endfor %};
 {% endfor -%}
 
-{% for state in efsm.receive_states -%}
+{% for state in endpoint.efsm.receive_states -%}
 export type S{{ state.id }} = {
   {% for action in state.actions -%}
   [Labels.S{{ state.id }}.{{ action.label }}]: () => S{{ action.succ }},
@@ -79,40 +79,40 @@ export type S{{ state.id }} = {
 {% endfor %}
 
 export type SendImplementation<S extends SendState> = 
-{% for state in efsm.send_states -%}
+{% for state in endpoint.efsm.send_states -%}
 S extends SendState.S{{ state.id }} ? S{{ state.id }} :
 {% endfor -%}
 never;
 
 export type ReceiveImplementation<S extends ReceiveState> = 
-{% for state in efsm.receive_states -%}
+{% for state in endpoint.efsm.receive_states -%}
 S extends ReceiveState.S{{ state.id }} ? S{{ state.id }} :
 {% endfor -%}
 never;
 
-{% if efsm.has_terminal_state() -%}
-export type TerminalImplementation = S{{ efsm.terminal_state.id }};
+{% if endpoint.efsm.has_terminal_state() -%}
+export type TerminalImplementation = S{{ endpoint.efsm.terminal_state.id }};
 {%- endif %}
 export type Implementation<S extends State> = 
   S extends ReceiveState ? ReceiveImplementation<S> : 
-  S extends SendState ? SendImplementation<S> : {{ 'TerminalImplementation' if efsm.has_terminal_state() else 'never' }};
+  S extends SendState ? SendImplementation<S> : {{ 'TerminalImplementation' if endpoint.efsm.has_terminal_state() else 'never' }};
 
 // =============
 // State Modules
 // =============
 
-{% for state in efsm.send_states -%}
+{% for state in endpoint.efsm.send_states -%}
 import * as ModuleS{{ state.id }} from './S{{ state.id }}';
 {% endfor %}
-{% for state in efsm.receive_states -%}
+{% for state in endpoint.efsm.receive_states -%}
 import * as ModuleS{{ state.id }} from './S{{ state.id }}';
 {% endfor %}
 
 export const stateModule = {
-  {% for state in efsm.send_states -%}
+  {% for state in endpoint.efsm.send_states -%}
   [SendState.S{{ state.id }}]: ModuleS{{ state.id }},
   {%- endfor %}
-  {% for state in efsm.receive_states -%}
+  {% for state in endpoint.efsm.receive_states -%}
   [ReceiveState.S{{ state.id }}]: ModuleS{{ state.id }},
   {%- endfor %}
 }

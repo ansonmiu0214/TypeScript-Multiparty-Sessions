@@ -1,7 +1,7 @@
 import os
 
 from ...utils import CodeGenerationStrategy
-from ....efsm import EFSM
+from ....endpoint import Endpoint
 from .....utils import TemplateGenerator
 
 class BrowserStrategy(CodeGenerationStrategy,
@@ -14,7 +14,7 @@ class BrowserStrategy(CodeGenerationStrategy,
         dirname = os.path.join(os.path.dirname(__file__), 'templates')
         self.template_generator = TemplateGenerator(dirname=dirname)
 
-    def generate(self, efsm: EFSM):
+    def generate(self, endpoint: Endpoint):
         """
 
         Files to generate:
@@ -30,8 +30,8 @@ class BrowserStrategy(CodeGenerationStrategy,
         """
 
         files = []
-        protocol = efsm.metadata['protocol']
-        role = efsm.metadata['role']
+        protocol = endpoint.protocol
+        role = endpoint.role
 
         # Generate Session
         files.append((os.path.join(self.output_dir, protocol, role, 'Session.ts'),
@@ -40,29 +40,29 @@ class BrowserStrategy(CodeGenerationStrategy,
         # Generate EFSM
         files.append((os.path.join(self.output_dir, protocol, role, 'EFSM.ts'),
                      self.template_generator.render(path='EFSM.ts.j2',
-                                                    payload={'efsm': efsm})))
+                                                    payload={'endpoint': endpoint})))
 
         # Generate runtime
         files.append((os.path.join(self.output_dir, protocol, role, f'{role}.tsx'),
                       self.template_generator.render(path='runtime.tsx.j2',
-                                                    payload={'efsm': efsm})))
+                                                    payload={'endpoint': endpoint})))
 
         # Generate states
-        for state in efsm.send_states:
+        for state in endpoint.efsm.send_states:
             files.append((os.path.join(self.output_dir, protocol, role, f'S{state.id}.tsx'),
                           self.template_generator.render(path='send_component.tsx.j2',
-                                                    payload={'efsm': efsm,
+                                                    payload={'endpoint': endpoint,
                                                              'state': state})))
 
-        for state in efsm.receive_states:
+        for state in endpoint.efsm.receive_states:
             files.append((os.path.join(self.output_dir, protocol, role, f'S{state.id}.tsx'),
                           self.template_generator.render(path='receive_component.tsx.j2',
-                                                    payload={'efsm': efsm,
+                                                    payload={'endpoint': endpoint,
                                                              'state': state})))
 
-        if efsm.has_terminal_state():
-            files.append((os.path.join(self.output_dir, protocol, role, f'S{efsm.terminal_state}.tsx'),
+        if endpoint.efsm.has_terminal_state():
+            files.append((os.path.join(self.output_dir, protocol, role, f'S{endpoint.efsm.terminal_state}.tsx'),
                           self.template_generator.render(path='terminal_component.tsx.j2',
-                                                         payload={'state': efsm.terminal_state})))
+                                                         payload={'state': endpoint.efsm.terminal_state})))
 
         return files

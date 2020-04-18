@@ -8,14 +8,14 @@ import {
   SendComponentFactory, 
   DOMEvents, FunctionArguments, EventHandler
 } from './Session';
-{% for state in efsm.states %}
+{% for state in endpoint.efsm.states %}
 import S{{ state.id }} from './S{{ state.id }}';
 {%- endfor %}
 
 type P = {
   endpoint: string,
   states: {
-    {% for state in efsm.states -%}
+    {% for state in endpoint.efsm.states -%}
     S{{ state.id }}: Constructor<S{{ state.id }}>,
     {% endfor %}
   },
@@ -27,7 +27,7 @@ type S = {
   elem: JSX.Element
 }
 
-export default class {{ efsm.metadata.role }} extends React.Component<P, S> {
+export default class {{ endpoint.role }} extends React.Component<P, S> {
 
   private message?: any
   private handle?: ReceiveHandler
@@ -54,7 +54,7 @@ export default class {{ efsm.metadata.role }} extends React.Component<P, S> {
   componentDidMount() {
     this.state.ws.addEventListener('message', this.onReceiveInit);
     this.state.ws.addEventListener('open', () => this.state.ws.send(JSON.stringify({
-      connect: '{{ efsm.metadata.role }}'
+      connect: '{{ endpoint.role }}'
     })));
   }
 
@@ -62,12 +62,12 @@ export default class {{ efsm.metadata.role }} extends React.Component<P, S> {
     this.state.ws.removeEventListener('message', this.onReceiveInit);
     this.state.ws.addEventListener('message', this.onReceiveMessage);
 
-    {% if efsm.is_send_state(efsm.initial_state) -%}
-    this.advance(SendState.S{{ efsm.initial_state }});
-    {% elif efsm.is_receive_state(efsm.initial_state) -%}
-    this.advance(ReceiveState.S{{ efsm.initial_state }});
+    {% if endpoint.efsm.is_send_state(endpoint.efsm.initial_state) -%}
+    this.advance(SendState.S{{ endpoint.efsm.initial_state }});
+    {% elif endpoint.efsm.is_receive_state(endpoint.efsm.initial_state) -%}
+    this.advance(ReceiveState.S{{ endpoint.efsm.initial_state }});
     {% else -%}
-    this.advance(TerminalState.S{{ efsm.initial_state }});
+    this.advance(TerminalState.S{{ endpoint.efsm.initial_state }});
     {% endif %}
   }
 

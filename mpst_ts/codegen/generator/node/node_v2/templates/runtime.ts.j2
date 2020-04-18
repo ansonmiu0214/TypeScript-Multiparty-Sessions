@@ -5,7 +5,7 @@ import {
   isSendState, isReceiveState, isTerminalState,  
 } from './Session';
 import {
-  Roles, Implementation, S{{ efsm.initial_state.id }},
+  Roles, Implementation, S{{ endpoint.efsm.initial_state.id }},
   State, SendState, ReceiveState, TerminalState,
   stateModule,
 } from './EFSM';
@@ -31,7 +31,7 @@ interface JoinMessage {
 /**
  * Joining
  */
-export class {{ efsm.metadata.role }}
+export class {{ endpoint.role }}
 {
 
   private wss: WebSocket.Server
@@ -39,13 +39,13 @@ export class {{ efsm.metadata.role }}
   private roleToSocket: Partial<RoleToSocket>
 
   constructor(wss: WebSocket.Server,
-              initialState: S{{ efsm.initial_state.id }})
+              initialState: S{{ endpoint.efsm.initial_state.id }})
   {
     this.wss = wss;
-    this.waiting = new Set<Roles>([{% for role in efsm.other_roles %}Roles.{{ role ~ (',' if not loop.last else '') }}{% endfor %}])
+    this.waiting = new Set<Roles>([{% for role in endpoint.efsm.other_roles %}Roles.{{ role ~ (',' if not loop.last else '') }}{% endfor %}])
 
     this.roleToSocket = {
-      {% for role in efsm.other_roles -%}
+      {% for role in endpoint.efsm.other_roles -%}
       [Roles.{{ role }}]: undefined,
       {%- endfor %}
     };
@@ -68,7 +68,7 @@ export class {{ efsm.metadata.role }}
             connected: true
           }));
         }
-        new _{{ efsm.metadata.role }}(this.wss, this.roleToSocket as RoleToSocket, initialState);
+        new _{{ endpoint.role }}(this.wss, this.roleToSocket as RoleToSocket, initialState);
       }
     }
 
@@ -78,18 +78,18 @@ export class {{ efsm.metadata.role }}
 
 }
 
-class _{{ efsm.metadata.role }} {
+class _{{ endpoint.role }} {
 
     private wss: WebSocket.Server
     private roleToSocket: RoleToSocket
     
-    private initialState: S{{ efsm.initial_state.id }}
+    private initialState: S{{ endpoint.efsm.initial_state.id }}
     private messageQueue: any[] = []
     private handlerQueue: (MessageHandler)[] = []
 
     constructor(wss: WebSocket.Server,
                 roleToSocket: RoleToSocket,
-                initialState: S{{ efsm.initial_state.id }}) {
+                initialState: S{{ endpoint.efsm.initial_state.id }}) {
       this.wss = wss;
       this.roleToSocket = roleToSocket;
       this.initialState = initialState;
@@ -109,12 +109,12 @@ class _{{ efsm.metadata.role }} {
       this.handlerQueue = []
 
       // Initialise state machine.
-      {% if efsm.is_send_state(efsm.initial_state) -%}
-      this.next(SendState.S{{ efsm.initial_state.id }})(initialState);
-      {% elif efsm.is_receive_state(efsm.initial_state) -%}
-      this.next(ReceiveState.S{{ efsm.initial_state.id }})(initialState);
+      {% if endpoint.efsm.is_send_state(endpoint.efsm.initial_state) -%}
+      this.next(SendState.S{{ endpoint.efsm.initial_state.id }})(initialState);
+      {% elif endpoint.efsm.is_receive_state(endpoint.efsm.initial_state) -%}
+      this.next(ReceiveState.S{{ endpoint.efsm.initial_state.id }})(initialState);
       {% else -%}
-      this.next(TerminalState.S{{ efsm.initial_state.id }})(initialState);
+      this.next(TerminalState.S{{ endpoint.efsm.initial_state.id }})(initialState);
       {% endif -%}
     }
 
@@ -160,7 +160,7 @@ class _{{ efsm.metadata.role }} {
         // Close all sockets.
         Object.values(this.roleToSocket).forEach(socket => socket.close());
 
-        return new {{ efsm.metadata.role }}(this.wss, this.initialState);
+        return new {{ endpoint.role }}(this.wss, this.initialState);
       }
     }
 

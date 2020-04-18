@@ -1,20 +1,20 @@
 // EFSM.ts
 
 export enum SendState {
-  {% for state in efsm.send_states -%}
+  {% for state in endpoint.efsm.send_states -%}
   S{{ state.id }} = 'S{{ state.id }}',
   {%- endfor %}
 }
 
 export enum ReceiveState {
-  {% for state in efsm.receive_states -%}
+  {% for state in endpoint.efsm.receive_states -%}
   S{{ state.id }} = 'S{{ state.id }}',
   {%- endfor %}
 }
 
 export enum TerminalState {
-  {% if efsm.has_terminal_state() -%}
-  S{{ efsm.terminal_state }} = 'S{{ efsm.terminal_state }}',
+  {% if endpoint.efsm.has_terminal_state() -%}
+  S{{ endpoint.efsm.terminal_state }} = 'S{{ endpoint.efsm.terminal_state }}',
   {%- endif %}
 }
 

@@ -1,7 +1,7 @@
 import os
 
 from ...utils import CodeGenerationStrategy
-from ....efsm import EFSM
+from ....endpoint import Endpoint
 from .....utils import TemplateGenerator
 
 class NodeStrategy(CodeGenerationStrategy,
@@ -14,7 +14,7 @@ class NodeStrategy(CodeGenerationStrategy,
         dirname = os.path.join(os.path.dirname(__file__), 'templates')
         self.template_generator = TemplateGenerator(dirname=dirname)
 
-    def generate(self, efsm: EFSM):
+    def generate(self, endpoint: Endpoint):
         """
 
         Files to generate:
@@ -26,17 +26,17 @@ class NodeStrategy(CodeGenerationStrategy,
         """
 
         files = []
-        protocol = efsm.metadata['protocol']
-        role = efsm.metadata['role']
+        protocol = endpoint.protocol
+        role = endpoint.role
 
         # Generate EFSM
         files.append((os.path.join(self.output_dir, protocol, 'EFSM.ts'),
                       self.template_generator.render(path='efsm.ts.j2',
-                                                     payload={'efsm': efsm})))
+                                                     payload={'endpoint': endpoint})))
 
         # Generate runtime
         files.append((os.path.join(self.output_dir, protocol, f'{role}.ts'),
                       self.template_generator.render(path='runtime.ts.j2',
-                                                     payload={'efsm': efsm})))
+                                                     payload={'endpoint': endpoint})))
 
         return files

@@ -16,9 +16,9 @@ export function buildStateHandler(
       {% for action in state.actions -%}
         case Labels.S{{ state.id }}.{{ action.label }}: {
           const successor = handler[1];
-          {% if efsm.is_send_state(action.succ) -%}
+          {% if endpoint.efsm.is_send_state(action.succ) -%}
           return next(SendState.S{{ action.succ }})(successor);
-          {% elif efsm.is_receive_state(action.succ) -%}
+          {% elif endpoint.efsm.is_receive_state(action.succ) -%}
           return next(ReceiveState.S{{ action.succ }})(successor);
           {% else -%}
           return next(TerminalState.S{{ action.succ }})(successor);

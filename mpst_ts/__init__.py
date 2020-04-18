@@ -36,18 +36,14 @@ def main(args: typing.List[str]) -> int:
         print(output, file=sys.stderr)
         return return_code
 
-    efsm = codegen.parse.from_data(output,
-                                   protocol=parsed_args.protocol,
-                                   role=parsed_args.role)
+    efsm = codegen.parse.from_data(output)
 
     endpoint = codegen.Endpoint(protocol=parsed_args.protocol,
                                 role=parsed_args.role,
                                 efsm=efsm,
                                 types=custom_types)
-    print(endpoint)
-    return 0
 
     code_generator = generator.CodeGenerator(target=parsed_args.target, output_dir=parsed_args.output)
-    code_generator.generate(efsm)
+    code_generator.generate(endpoint)
 
     return 0

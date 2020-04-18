@@ -6,19 +6,19 @@ from .efsm import Action, EFSM, EfsmBuilder, ReceiveAction, SendAction
 def extract(token: str) -> str:
     return token[1:-1]
 
-def from_file(path: str, **metadata) -> EFSM:
+def from_file(path: str) -> EFSM:
     [graph] = pydot.graph_from_dot_file(path)
-    return _parse_graph(graph, metadata)
+    return _parse_graph(graph)
 
-def from_data(data: str, **metadata) -> EFSM:
+def from_data(data: str) -> EFSM:
     [graph] = pydot.graph_from_dot_data(data)
-    return _parse_graph(graph, metadata)
+    return _parse_graph(graph)
 
-def _parse_graph(graph: pydot.Dot, metadata) -> EFSM:
+def _parse_graph(graph: pydot.Dot) -> EFSM:
     nodes = [extract(node.get_name())
             for node in graph.get_nodes()]
 
-    efsm = EfsmBuilder(nodes, metadata)
+    efsm = EfsmBuilder(nodes)
     for edge in graph.get_edge_list():
         src = extract(edge.get_source())
         dst = extract(edge.get_destination())

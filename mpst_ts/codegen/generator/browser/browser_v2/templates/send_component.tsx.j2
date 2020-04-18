@@ -23,9 +23,9 @@ export default abstract class S{{ state.id }}<
   constructor(props: P & _P) {
     super(props);
     {% for action in state.actions -%}
-    {% if efsm.is_send_state(action.succ) -%}
+    {% if endpoint.efsm.is_send_state(action.succ) -%}
     this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>('{{ action.label }}' , SendState.S{{ action.succ }});
-    {% elif efsm.is_receive_state(action.succ) -%}
+    {% elif endpoint.efsm.is_receive_state(action.succ) -%}
     this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>('{{ action.label }}' , ReceiveState.S{{ action.succ }});
     {% else -%}
     this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>('{{ action.label }}' , TerminalState.S{{ action.succ }});

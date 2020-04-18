@@ -3,7 +3,7 @@
 // ==============
 
 export enum Roles {
-  {% for role in efsm.other_roles -%}
+  {% for role in endpoint.efsm.other_roles -%}
   {{ role }} = "{{ role }}",
   {%- endfor %}
 };
@@ -13,7 +13,7 @@ export enum Roles {
 // ==============
 
 export namespace Labels {
-  {% for state in efsm.receive_states -%}
+  {% for state in endpoint.efsm.receive_states -%}
   export enum S{{ state.id }} 
   {
     {% for label in state.labels -%}
@@ -21,7 +21,7 @@ export namespace Labels {
     {%- endfor %}
   };
   {%- endfor %}
-  {% for state in efsm.send_states -%}
+  {% for state in endpoint.efsm.send_states -%}
   export enum S{{ state.id }} 
   {
     {% for label in state.labels -%}
@@ -35,7 +35,7 @@ export namespace Labels {
 // Message
 // =======
 namespace Message {
-{% for state in efsm.nonterminal_states -%}
+{% for state in endpoint.efsm.nonterminal_states -%}
   {% for action in state.actions -%}
   export type S{{ state ~ action.label }} = {
     label: Labels.S{{ state }}.{{ action.label }},
@@ -52,21 +52,21 @@ namespace Message {
 // ================
 
 export namespace Handler {
-  {% for state in efsm.send_states -%}
+  {% for state in endpoint.efsm.send_states -%}
   export type S{{ state }} =
     {% for action in state.actions -%}
     | [Labels.S{{ state }}.{{ action.label }}, Message.S{{ state ~ action.label }}['payload'], Implementation.S{{ action.succ }}]
     {%- endfor %};
   {% endfor %}
-  {% for state in efsm.receive_states -%}
+  {% for state in endpoint.efsm.receive_states -%}
   export type S{{ state }} = {
     {% for action in state.actions -%}
     [Labels.S{{ state }}.{{ action.label }}]: (...payload: Message.S{{ state ~ action.label }}['payload']) => Implementation.S{{ action.succ }},
     {% endfor %}
   }
   {% endfor %}
-  {% if efsm.has_terminal_state() -%}
-  export type S{{ efsm.terminal_state }} = 'Terminate';
+  {% if endpoint.efsm.has_terminal_state() -%}
+  export type S{{ endpoint.efsm.terminal_state }} = 'Terminate';
   {% endif -%}
 };
 
@@ -98,8 +98,8 @@ export namespace Implementation {
 
   export type Type = Send | Receive | Terminal;
 
-  {% for state in efsm.states -%}
-  {% if efsm.is_send_state(state) -%}
+  {% for state in endpoint.efsm.states -%}
+  {% if endpoint.efsm.is_send_state(state) -%}
   export class S{{ state }} extends Send {
 
     constructor(private handler: Handler.S{{ state }}) {
@@ -116,7 +116,7 @@ export namespace Implementation {
     }
 
   }
-  {% elif efsm.is_receive_state(state) -%}
+  {% elif endpoint.efsm.is_receive_state(state) -%}
   export class S{{ state }} extends Receive {
 
     constructor(private handler: Handler.S{{ state}}) {

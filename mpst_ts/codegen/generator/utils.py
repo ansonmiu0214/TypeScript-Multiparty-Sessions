@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import typing
 
-from ..efsm import EFSM
+from ..endpoint import Endpoint
 
 class CodeGenerationStrategy(ABC):
 
@@ -19,7 +19,7 @@ class CodeGenerationStrategy(ABC):
         return super().__init_subclass__()
     
     @abstractmethod
-    def generate(self, efsm: EFSM):
+    def generate(self, endpoint: Endpoint):
         pass
 
 class CodeGenerator:
@@ -30,8 +30,8 @@ class CodeGenerator:
         else:
             self.strategy = CodeGenerationStrategy.target_to_strategy[target]()
 
-    def generate(self, efsm: EFSM):
-        files_to_generate = self.strategy.generate(efsm)
+    def generate(self, endpoint: Endpoint):
+        files_to_generate = self.strategy.generate(endpoint)
 
         dirs = set(os.path.dirname(path) for path, _ in files_to_generate)
         for dir_ in dirs:
