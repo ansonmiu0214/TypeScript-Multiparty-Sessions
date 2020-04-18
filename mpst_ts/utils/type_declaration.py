@@ -48,7 +48,14 @@ def process(filepath: str) -> typing.Iterable[DataType]:
     primitives = set(DataType.from_primitives('number', 'boolean', 'string'))
 
     to_add = primitives - existing_types
-    line_to_insert = max(line_num for line_num, _ in type_decls) + 1
+
+    if type_decls:
+        line_to_insert = max(line_num for line_num, _ in type_decls) + 1
+    else:
+        # No existing type declarations:
+        # just insert after module line
+        line_to_insert = 1
+        
     updated_lines = lines[:line_to_insert] + [primitive.to_scribble() for primitive in to_add] + lines[line_to_insert:]
 
     with open(filepath, 'w') as file_:
