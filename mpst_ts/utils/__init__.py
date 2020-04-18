@@ -1,1 +1,2 @@
 from .template_generator import TemplateGenerator
+import mpst_ts.utils.type_declaration as type_declaration

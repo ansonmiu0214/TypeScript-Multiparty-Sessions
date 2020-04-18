@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import typing
 
-from ..EFSM import EFSM
+from ..efsm import EFSM
 
 class CodeGenerationStrategy(ABC):
 

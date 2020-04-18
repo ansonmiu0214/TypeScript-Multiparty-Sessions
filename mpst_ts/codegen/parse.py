@@ -1,7 +1,7 @@
 import pydot
 import re
 
-from .EFSM import Action, EFSM, EfsmBuilder, ReceiveAction, SendAction
+from .efsm import Action, EFSM, EfsmBuilder, ReceiveAction, SendAction
 
 def extract(token: str) -> str:
     return token[1:-1]
