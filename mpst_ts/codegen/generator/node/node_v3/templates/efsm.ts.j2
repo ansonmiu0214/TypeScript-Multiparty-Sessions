@@ -1,3 +1,6 @@
+{% for type in endpoint.types -%}
+import { {{ type.external ~ ((' as ' ~ type.alias) if type.external != type.alias else '') }} } from "{{ type.path }}";
+{% endfor %}
 // ==============
 // Protocol roles
 // ==============

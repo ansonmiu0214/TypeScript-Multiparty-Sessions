@@ -3,6 +3,10 @@ import React from 'react';
 import { ReceiveState, SendState, TerminalState } from './EFSM'; 
 import { SendComponentFactory, SendComponentFactoryFactory } from './Session';
 
+{% for type in endpoint.types -%}
+import { {{ type.external ~ ((' as ' ~ type.alias) if type.external != type.alias else '') }} } from "{{ type.path }}";
+{% endfor %}
+
 type P = {
   factory: SendComponentFactoryFactory
 }

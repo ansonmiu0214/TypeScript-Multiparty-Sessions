@@ -1,6 +1,11 @@
-import { Component } from 'react';
+import React from 'react';
+
 import { State, ReceiveState, SendState, TerminalState } from './EFSM';
-import { IReceive, ReceiveHandler } from './Session';
+import { ReceiveHandler } from './Session';
+
+{% for type in endpoint.types -%}
+import { {{ type.external ~ ((' as ' ~ type.alias) if type.external != type.alias else '') }} } from "{{ type.path }}";
+{% endfor %}
 
 type P = {
   register: (handle: ReceiveHandler) => void
@@ -25,7 +30,7 @@ export default abstract class S{{ state.id }}<
   _P = {},
   _S = {},
   _SS = any
-> extends Component<
+> extends React.Component<
   _P & P,
   _S,
   _SS
