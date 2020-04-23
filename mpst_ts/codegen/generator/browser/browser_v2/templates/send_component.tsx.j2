@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { ReceiveState, SendState, TerminalState } from './EFSM'; 
+import { ReceiveState, SendState, TerminalState, Roles } from './EFSM'; 
 import { SendComponentFactory, SendComponentFactoryFactory } from './Session';
 
 {% for type in endpoint.types -%}
@@ -28,11 +28,11 @@ export default abstract class S{{ state.id }}<
     super(props);
     {% for action in state.actions -%}
     {% if endpoint.efsm.is_send_state(action.succ) -%}
-    this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>('{{ action.label }}' , SendState.S{{ action.succ }});
+    this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>(Roles.{{ state.role }}, '{{ action.label }}' , SendState.S{{ action.succ }});
     {% elif endpoint.efsm.is_receive_state(action.succ) -%}
-    this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>('{{ action.label }}' , ReceiveState.S{{ action.succ }});
+    this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>(Roles.{{ state.role }}, '{{ action.label }}' , ReceiveState.S{{ action.succ }});
     {% else -%}
-    this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>('{{ action.label }}' , TerminalState.S{{ action.succ }});
+    this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>(Roles.{{ state.role }}, '{{ action.label }}' , TerminalState.S{{ action.succ }});
     {% endif -%}
     {% endfor %}
   }

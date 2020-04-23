@@ -93,8 +93,8 @@ class _{{ endpoint.role }} {
     this.send = this.send.bind(this);
     
     // Bind socket message handler.
-    Object.values(this.roleToSocket).forEach(socket => {
-      socket.addEventListener('message', this.receive);
+    Object.entries(this.roleToSocket).forEach(([role, socket]) => {
+      socket.addEventListener('message', this.receive(role));
     });
 
     // Initialise queues for receiving.
@@ -126,15 +126,23 @@ class _{{ endpoint.role }} {
   // Channel methods
   // ===============
 
-    send(role: Roles, label: string, payload: any[]) {
-      this.roleToSocket[role].send(JSON.stringify({ label, payload }));
+    send(to: Roles, label: string, payload: any[], from: string = '{{ endpoint.role }}') {
+      this.roleToSocket[to].send(JSON.stringify({ role: from, label, payload }));
     }
 
-    receive({ data }: WebSocketMessage) {
-      if (this.handlerQueue.length > 0) {
-        this.handlerQueue.shift()!(data);
-      } else {
-        this.messageQueue.push(data);
+    receive(from: string) {
+      return ({ data }: WebSocketMessage) => {
+        const { role, label, payload } = JSON.parse(data);
+        if (role !== '{{ endpoint.role }}') {
+          // Route message
+          this.send(role, label, payload, from);
+        } else {
+          if (this.handlerQueue.length > 0) {
+            this.handlerQueue.shift()!(data);
+          } else {
+            this.messageQueue.push(data);
+          }
+        }
       }
     }
 

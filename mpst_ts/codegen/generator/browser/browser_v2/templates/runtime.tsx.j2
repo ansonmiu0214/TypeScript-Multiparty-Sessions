@@ -1,7 +1,7 @@
 // Runtime.tsx
 import React from 'react';
 
-import { State, SendState, ReceiveState, TerminalState } from './EFSM';
+import { State, SendState, ReceiveState, TerminalState, Roles } from './EFSM';
 import { 
   Constructor, ReceiveHandler, 
   isSendState, isReceiveState, isTerminalState,
@@ -90,9 +90,9 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
     }
   }
 
-  private buildSendElement<T>(label: string, successor: State): SendComponentFactory<T> {
+  private buildSendElement<T>(role: Roles, label: string, successor: State): SendComponentFactory<T> {
     return <K extends keyof DOMEvents> (eventLabel: K, handler: EventHandler<T, K>) => {
-      const send = (payload: T) => this.sendMessage(label, payload, successor);
+      const send = (payload: T) => this.sendMessage(role, label, payload, successor);
 
       return class extends React.Component {
         render() {
@@ -107,8 +107,8 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
     }
   }
 
-  private sendMessage(label: string, payload: any, successor: State) {
-    this.state.ws.send(JSON.stringify({ label, payload }));
+  private sendMessage(role: Roles, label: string, payload: any, successor: State) {
+    this.state.ws.send(JSON.stringify({ role, label, payload }));
     this.advance(successor);
   }
 
