@@ -1,8 +1,16 @@
 module MultipartySimple;
+type <typescript> "number" from "" as number;
+type <typescript> "string" from "" as string;
+type <typescript> "boolean" from "" as boolean;
 
-global protocol HelloWorldMPST(role Svr, role Alice, role Bob) {
-  Hello(String) from Alice to Svr;
-  Hello(String) from Svr to Bob;
-  Hello(String) from Bob to Svr;
-  Hello(String) from Svr to Alice;
+global protocol TwoBid(role Svr, role Alice, role Bob) {
+  Bid(number) from Alice to Svr;
+  TwoBids(number, number) from Bob to Svr;
+  choice at Svr {
+    Win() from Svr to Alice;
+    Lose() from Svr to Bob;
+  } or {
+    Lose() from Svr to Alice;
+    Win() from Svr to Bob;
+  }
 }
