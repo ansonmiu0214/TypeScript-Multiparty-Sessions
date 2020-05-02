@@ -117,7 +117,7 @@ class EfsmBuilder:
         self._roles = set()
         self._send_states = {}
         self._receive_states = {}
-        self._initial_state_id = min(nodes)
+        self._initial_state_id = str(min(int(node) for node in nodes))
         self._terminal_state_candidates = set(nodes)
 
     def add_action_to_send_state(self, state_id: str, action: SendAction):
