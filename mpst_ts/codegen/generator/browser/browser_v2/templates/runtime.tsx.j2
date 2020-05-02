@@ -101,11 +101,11 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
               [eventLabel as string]: (event: FunctionArguments<DOMEvents[K]>) => {
                 const result = handler(event);
                 if (result instanceof Promise) {
-
+                  result.then(send).catch(console.error);
                 } else {
-                  send(handler(event))
+                  send(result);
                 }
-              };
+              }
             })
           ));
           return children;
@@ -122,9 +122,13 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
   private registerReceiveHandler(handle: ReceiveHandler) {
     if (this.message !== undefined) {
       // Message received already -- process.
-      const nextState = handle(this.message);
+      const continuation = handle(this.message);
       this.message = undefined;
-      this.advance(nextState);
+      if (continuation instanceof Promise) {
+        continuation.then(this.advance).catch(console.error);
+      } else {
+        this.advance(continuation);
+      }
     } else {
       // No message received -- `queue' handler.
       this.handle = handle;
@@ -134,9 +138,13 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
   private onReceiveMessage(message: MessageEvent) {
     if (this.handle !== undefined) {
       // Handler registered -- process.
-      const nextState = this.handle(message.data);
+      const continuation = this.handle(message.data);
       this.handle = undefined;
-      this.advance(nextState);
+      if (continuation instanceof Promise) {
+        continuation.then(this.advance).catch(console.error);
+      } else {
+        this.advance(continuation);
+      }
     } else {
       // No handler registered -- `queue' message.
       this.message = message;
