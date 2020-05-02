@@ -98,7 +98,14 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
         render() {
           const children = React.Children.map(this.props.children, child => (
             React.cloneElement(child as React.ReactElement<any>, {
-              [eventLabel as string]: (event: FunctionArguments<DOMEvents[K]>) => send(handler(event))
+              [eventLabel as string]: (event: FunctionArguments<DOMEvents[K]>) => {
+                const result = handler(event);
+                if (result instanceof Promise) {
+
+                } else {
+                  send(handler(event))
+                }
+              };
             })
           ));
           return children;

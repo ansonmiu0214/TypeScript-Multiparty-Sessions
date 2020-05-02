@@ -1,6 +1,10 @@
 {% for type in endpoint.types -%}
 import { {{ type.external ~ ((' as ' ~ type.alias) if type.external != type.alias else '') }} } from "{{ type.path }}";
 {% endfor %}
+
+type MaybePromise<T> = T | Promise<T>;
+type FromJust<T> = T extends MaybePromise<infer R> ? R : unknown;
+
 // ==============
 // Protocol roles
 // ==============
@@ -58,13 +62,13 @@ export namespace Handler {
   {% for state in endpoint.efsm.send_states -%}
   export type S{{ state }} =
     {% for action in state.actions -%}
-    | [Labels.S{{ state }}.{{ action.label }}, Message.S{{ state ~ action.label }}['payload'], Implementation.S{{ action.succ }}]
+    | MaybePromise<[Labels.S{{ state }}.{{ action.label }}, Message.S{{ state ~ action.label }}['payload'], Implementation.S{{ action.succ }}]>
     {%- endfor %};
   {% endfor %}
   {% for state in endpoint.efsm.receive_states -%}
   export type S{{ state }} = {
     {% for action in state.actions -%}
-    [Labels.S{{ state }}.{{ action.label }}]: (...payload: Message.S{{ state ~ action.label }}['payload']) => Implementation.S{{ action.succ }},
+    [Labels.S{{ state }}.{{ action.label }}]: (...payload: Message.S{{ state ~ action.label }}['payload']) => MaybePromise<Implementation.S{{ action.succ }}>,
     {% endfor %}
   }
   {% endfor %}
@@ -113,9 +117,16 @@ export namespace Implementation {
       next: EfsmTransitionHandler,
       sendMessage: (role: Roles, label: string, payload: any[]) => void
     ) {
-      const [label, payload, successor] = this.handler;
-      sendMessage(Roles.{{ state.role }}, label, payload);
-      return next(successor);
+      const thunk = ([label, payload, successor]: FromJust<Handler.S{{ state }}>) => {
+        sendMessage(Roles.{{ state.role }}, label, payload);
+        return next(successor);
+      }
+      if (this.handler instanceof Promise) {
+        // Asynchronous implementation -- wait for completion
+        this.handler.then(thunk).catch(console.error);
+      } else {
+        thunk(this.handler);
+      }
     }
 
   }
@@ -136,7 +147,12 @@ export namespace Implementation {
           {% for action in state.actions -%}
           case Labels.S{{ state }}.{{ action.label }}: {
             const successor = this.handler[parsedMessage.label](...parsedMessage.payload);
-            return next(successor);
+            if (successor instanceof Promise) {
+              successor.then(next).catch(console.error);
+            } else {
+              next(successor);
+            }
+            return;
           }
           {% endfor %}
         }
