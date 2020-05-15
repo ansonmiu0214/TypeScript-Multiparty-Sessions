@@ -7,8 +7,16 @@ import { Roles, Implementation, MessageHandler } from './EFSM';
  *
  * TODO: decouple from this file.
  */
-type Partial<T> = { [K in keyof T]: T[K] | undefined }
-type RoleToSocket = { [Role in Roles]: WebSocket }
+type Partial<T> = { [K in keyof T]: T[K] | undefined };
+type RoleToSocket = { [Role in Roles]: WebSocket };
+type RoleToMessageQueue = { [Role in Roles]: any[] };
+type RoleToHandlerQueue = { [Role in Roles]: MessageHandler[] };
+
+interface MPSTMessage {
+  role: Roles | '{{ endpoint.role }}'
+  label: string
+  payload: any[]
+}
 
 interface WebSocketMessage {
   data: any
@@ -76,8 +84,8 @@ class _{{ endpoint.role }} {
   private roleToSocket: RoleToSocket
   
   private initialState: Implementation.S{{ endpoint.efsm.initial_state.id }}
-  private messageQueue: any[] = []
-  private handlerQueue: (MessageHandler)[] = []
+  private messageQueue: RoleToMessageQueue
+  private handlerQueue: RoleToHandlerQueue
 
   constructor(wss: WebSocket.Server,
               roleToSocket: RoleToSocket,
@@ -93,14 +101,22 @@ class _{{ endpoint.role }} {
     this.send = this.send.bind(this);
     
     // Bind socket message handler.
-    Object.entries(this.roleToSocket).forEach(([role, socket]) => {
-      socket.addEventListener('message', this.receive(role));
-    });
-
+    Object.values(Roles).forEach(role => {
+      this.roleToSocket[role].addEventListener('message', this.receive(role));
+    })
+    
     // Initialise queues for receiving.
-    this.messageQueue = []
-    this.handlerQueue = []
-
+    this.messageQueue = {
+      {% for role in endpoint.efsm.other_roles -%}
+      [Roles.{{ role }}]: [],
+      {%- endfor %}
+    };
+    this.handlerQueue = {
+      {% for role in endpoint.efsm.other_roles -%}
+      [Roles.{{ role }}]: [],
+      {%- endfor %}
+    };
+    
     // Initialise state machine.
     this.next(initialState);
   }
@@ -130,27 +146,29 @@ class _{{ endpoint.role }} {
       this.roleToSocket[to].send(JSON.stringify({ role: from, label, payload }));
     }
 
-    receive(from: string) {
+    receive(from: Roles) {
       return ({ data }: WebSocketMessage) => {
-        const { role, label, payload } = JSON.parse(data);
+        const { role, label, payload } = JSON.parse(data) as MPSTMessage;
         if (role !== '{{ endpoint.role }}') {
           // Route message
           this.send(role, label, payload, from);
         } else {
-          if (this.handlerQueue.length > 0) {
-            this.handlerQueue.shift()!(data);
+          const handler = this.handlerQueue[from].shift();
+          if (handler !== undefined) {
+            handler(data);
           } else {
-            this.messageQueue.push(data);
+            this.messageQueue[from].push(data);
           }
         }
       }
     }
 
-    registerMessageHandler(messageHandler: MessageHandler) {
-      if (this.messageQueue.length > 0) {
-        messageHandler(this.messageQueue.shift());
+    registerMessageHandler(from: Roles, messageHandler: MessageHandler) {
+      const message = this.messageQueue[from].shift();
+      if (message !== undefined) {
+        messageHandler(message);
       } else {
-        this.handlerQueue.push(messageHandler);
+        this.handlerQueue[from].push(messageHandler);
       }
     }
 

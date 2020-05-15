@@ -27,7 +27,7 @@ export namespace Labels {
     {{ label }} = "{{ label }}",
     {%- endfor %}
   };
-  {%- endfor %}
+  {% endfor %}
   {% for state in endpoint.efsm.send_states -%}
   export enum S{{ state.id }} 
   {
@@ -35,14 +35,14 @@ export namespace Labels {
     {{ label }} = "{{ label }}",
     {%- endfor %}
   };
-  {%- endfor %}
+  {% endfor %}
 };
 
 // =======
 // Message
 // =======
 namespace Message {
-{% for state in endpoint.efsm.nonterminal_states -%}
+{% for state in endpoint.efsm.nonterminal_states %}
   {% for action in state.actions -%}
   export type S{{ state ~ action.label }} = {
     label: Labels.S{{ state }}.{{ action.label }},
@@ -95,7 +95,7 @@ export namespace Implementation {
     type: 'Receive' = 'Receive';
     abstract prepareReceive(
       next: EfsmTransitionHandler,
-      register: (messageHandler: MessageHandler) => void
+      register: (from: Roles, messageHandler: MessageHandler) => void
     ): void;
   }
 
@@ -139,7 +139,7 @@ export namespace Implementation {
 
     prepareReceive(
       next: EfsmTransitionHandler, 
-      register: (messageHandler: MessageHandler) => void
+      register: (from: Roles, messageHandler: MessageHandler) => void
     ) {
       const messageHandler = (message: any) => {
         const parsedMessage = JSON.parse(message) as Message.S{{ state.id }};
@@ -155,13 +155,13 @@ export namespace Implementation {
             return;
           }
           {% endfor %}
-          default: {
-            throw new Error(`Unexpected receive: ${parsedMessage.label}`);
-          }
+          // default: {
+          //   throw new Error(`Unexpected receive: ${parsedMessage.label}`);
+          // }
         }
       }
 
-      register(messageHandler);
+      register(Roles.{{ state.role }}, messageHandler);
     }
 
   }
