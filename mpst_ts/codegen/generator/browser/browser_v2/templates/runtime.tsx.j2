@@ -27,10 +27,19 @@ type S = {
   elem: JSX.Element
 }
 
+// FIXME: relocate
+type RoleToMessageQueue = { [Role in Roles]: any[] };
+type RoleToHandlerQueue = { [Role in Roles]: ReceiveHandler[] };
+interface MPSTMessage {
+  role: Roles
+  label: string
+  payload: any[]
+}
+
 export default class {{ endpoint.role }} extends React.Component<P, S> {
 
-  private message?: any
-  private handle?: ReceiveHandler
+  private messageQueue: RoleToMessageQueue
+  private handlerQueue: RoleToHandlerQueue
 
   constructor(props: P) {
     super(props);
@@ -41,8 +50,17 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
       elem: props.waiting,
     };
 
-    this.message = undefined;
-    this.handle = undefined;
+    // Set up messageand handler queues
+    this.messageQueue = {
+      {% for role in endpoint.efsm.other_roles -%}
+      [Roles.{{ role }}]: [],
+      {%- endfor %}
+    };
+    this.handlerQueue = {
+      {% for role in endpoint.efsm.other_roles -%}
+      [Roles.{{ role }}]: [],
+      {%- endfor %}
+    };
 
     // Bind functions
     this.onReceiveInit = this.onReceiveInit.bind(this);
@@ -119,11 +137,11 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
     this.advance(successor);
   }
 
-  private registerReceiveHandler(handle: ReceiveHandler) {
-    if (this.message !== undefined) {
+  private registerReceiveHandler(role: Roles, handle: ReceiveHandler) {
+    const message = this.messageQueue[role].shift();
+    if (message !== undefined) {
       // Message received already -- process.
-      const continuation = handle(this.message);
-      this.message = undefined;
+      const continuation = handle(message);
       if (continuation instanceof Promise) {
         continuation.then(this.advance).catch(console.error);
       } else {
@@ -131,15 +149,16 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
       }
     } else {
       // No message received -- `queue' handler.
-      this.handle = handle;
+      this.handlerQueue[role].push(handle);
     }
   }
 
-  private onReceiveMessage(message: MessageEvent) {
-    if (this.handle !== undefined) {
+  private onReceiveMessage({ data }: MessageEvent) {
+    const message = JSON.parse(data) as MPSTMessage;
+    const handler = this.handlerQueue[message.role].shift();
+    if (handler !== undefined) {
       // Handler registered -- process.
-      const continuation = this.handle(message.data);
-      this.handle = undefined;
+      const continuation = handler(data);
       if (continuation instanceof Promise) {
         continuation.then(this.advance).catch(console.error);
       } else {
@@ -147,7 +166,7 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
       }
     } else {
       // No handler registered -- `queue' message.
-      this.message = message;
+      this.messageQueue[message.role].push(message);
     }
   }
 
