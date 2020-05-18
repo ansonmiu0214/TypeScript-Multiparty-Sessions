@@ -1,6 +1,7 @@
 // Runtime.tsx
 import React from 'react';
 
+import * as Cancellation from './Cancellation';
 import { State, SendState, ReceiveState, TerminalState, Roles } from './EFSM';
 import { 
   Constructor, ReceiveHandler, 
@@ -19,7 +20,9 @@ type P = {
     S{{ state.id }}: Constructor<S{{ state.id }}>,
     {% endfor %}
   },
-  waiting: JSX.Element
+  waiting: JSX.Element,
+  connectFailed: JSX.Element,
+  cancellation: (role: '{{ endpoint.role }}' | Roles, reason?: string) => JSX.Element,
 }
 
 type S = {
@@ -50,7 +53,7 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
       elem: props.waiting,
     };
 
-    // Set up messageand handler queues
+    // Set up message and handler queues
     this.messageQueue = {
       {% for role in endpoint.efsm.other_roles -%}
       [Roles.{{ role }}]: [],
@@ -67,18 +70,56 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
     this.onReceiveMessage = this.onReceiveMessage.bind(this);
     this.buildSendElement = this.buildSendElement.bind(this);
     this.registerReceiveHandler = this.registerReceiveHandler.bind(this);
+    this.cancel = this.cancel.bind(this);
   }
 
   componentDidMount() {
-    this.state.ws.addEventListener('message', this.onReceiveInit);
-    this.state.ws.addEventListener('open', () => this.state.ws.send(JSON.stringify({
+    this.state.ws.onmessage = this.onReceiveInit;
+    this.state.ws.onopen = () => this.state.ws.send(JSON.stringify({
       connect: '{{ endpoint.role }}'
-    })));
+    }));
+
+    // Handle error
+    this.state.ws.onerror = (event) => {
+      this.setState({ elem: this.props.connectFailed });
+    }
+
+    // FIXME: 
+    // generate 2 onclose handlers
+    // 1) for joining -- catch role occupide error
+    // 2) for sesion -- catch server/client disconnect & error 
+
+    this.state.ws.onclose = ({ code, wasClean, reason }) => {
+      if (!wasClean) {
+        // FIXME: cannot connect
+        // code is also 1006
+        return;
+      }
+
+      switch (code) {
+        case Cancellation.Receive.SERVER_DISCONNECT:
+          // Server role disconnected
+          // FIXME: figure out which is the server other_roles
+          this.processCancellation('{{ endpoint.role }}', 'server disconnected');
+          return;
+        case Cancellation.Receive.CLIENT_DISCONNECT:
+          // Other client disconnected
+          // FIXME: load cancellation screen
+        case Cancellation.Receive.LOGICAL_ERROR:
+          // Logical error by some role
+          // FIXME: load cancellation screen
+          const { role, reason: description } = JSON.parse(reason);
+          this.processCancellation(role, description);
+          return;
+        default:
+          // Unknown error code (?)
+          // FIXME: handle?
+      }
+    };
   }
 
   private onReceiveInit(message: MessageEvent) {
-    this.state.ws.removeEventListener('message', this.onReceiveInit);
-    this.state.ws.addEventListener('message', this.onReceiveMessage);
+    this.state.ws.onmessage = this.onReceiveMessage;
 
     {% if endpoint.efsm.is_send_state(endpoint.efsm.initial_state) -%}
     this.advance(SendState.S{{ endpoint.efsm.initial_state }});
@@ -102,6 +143,10 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
       });
     } else if (isTerminalState(state)) {
       const View = this.props.states[state];
+
+      // FIXME: move into componentDidMount?
+      this.terminate();
+
       this.setState({
         elem: <View />
       });
@@ -111,18 +156,25 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
   private buildSendElement<T>(role: Roles, label: string, successor: State): SendComponentFactory<T> {
     return <K extends keyof DOMEvents> (eventLabel: K, handler: EventHandler<T, K>) => {
       const send = (payload: T) => this.sendMessage(role, label, payload, successor);
+      const cancel = (error?: any) => this.cancel(error);
 
       return class extends React.Component {
         render() {
           const children = React.Children.map(this.props.children, child => (
             React.cloneElement(child as React.ReactElement<any>, {
               [eventLabel as string]: (event: FunctionArguments<DOMEvents[K]>) => {
-                const result = handler(event);
-                if (result instanceof Promise) {
-                  result.then(send).catch(console.error);
-                } else {
-                  send(result);
+
+                try {
+                  const result = handler(event);
+                  if (result instanceof Promise) {
+                    result.then(send).catch(cancel);
+                  } else {
+                    send(result);
+                  }
+                } catch (error) {
+                  cancel(error);
                 }
+
               }
             })
           ));
@@ -133,7 +185,12 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
   }
 
   private sendMessage(role: Roles, label: string, payload: any, successor: State) {
-    this.state.ws.send(JSON.stringify({ role, label, payload }));
+    try {
+      this.state.ws.send(JSON.stringify({ role, label, payload }));
+    } catch (error) {
+      this.cancel(error);
+      return;
+    }
     this.advance(successor);
   }
 
@@ -141,11 +198,15 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
     const message = this.messageQueue[role].shift();
     if (message !== undefined) {
       // Message received already -- process.
-      const continuation = handle(message);
-      if (continuation instanceof Promise) {
-        continuation.then(this.advance).catch(console.error);
-      } else {
-        this.advance(continuation);
+      try {
+        const continuation = handle(message);
+        if (continuation instanceof Promise) {
+          continuation.then(this.advance).catch(this.cancel);
+        } else {
+          this.advance(continuation);
+        }
+      } catch (error) {
+        this.cancel(error);
       }
     } else {
       // No message received -- `queue' handler.
@@ -158,16 +219,47 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
     const handler = this.handlerQueue[message.role].shift();
     if (handler !== undefined) {
       // Handler registered -- process.
-      const continuation = handler(data);
-      if (continuation instanceof Promise) {
-        continuation.then(this.advance).catch(console.error);
-      } else {
-        this.advance(continuation);
+      try {
+        const continuation = handler(data);
+        if (continuation instanceof Promise) {
+          continuation.then(this.advance).catch(this.cancel);
+        } else {
+          this.advance(continuation);
+        }
+      } catch (error) {
+        this.cancel(error);
       }
     } else {
       // No handler registered -- `queue' message.
       this.messageQueue[message.role].push(message);
     }
+  }
+
+  private terminate() {
+    this.state.ws.close(Cancellation.Emit.NORMAL);
+  }
+
+  private processCancellation(role: '{{ endpoint.role }}' | Roles, reason?: any) {
+    if (reason !== undefined) {
+      this.setState({
+        elem: this.props.cancellation(role, String(reason)),
+      });
+    } else {
+      this.setState({
+        elem: this.props.cancellation(role),
+      });
+    }
+  }
+
+  private cancel(error?: any) {
+    // Emit cancellation
+    this.state.ws.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify({
+      role: '{{ endpoint.role }}',
+      reason: error !== undefined ? String(error) : error,
+    }));
+
+    // Process cancellation
+    this.processCancellation('{{ endpoint.role }}', error);
   }
 
   render() {
