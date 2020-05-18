@@ -81,7 +81,7 @@ export class {{ endpoint.role }}
       this.roleToSocket[role] = socket;
 
       socketToRole.set(socket, role);
-      
+
       this.waiting.delete(role);
       
       socket.removeAllListeners();
@@ -266,14 +266,16 @@ class _{{ endpoint.role }} {
   }
 
   cancel(reason?: string) {
-    this.cancellation('{{ endpoint.role }}', reason);
+    try {
+      this.cancellation('{{ endpoint.role }}', reason);
+    } finally {
+      Object.values(this.roleToSocket)
+        .forEach(socket => {
+          socket.removeAllListeners();
+          socket.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify({ role: '{{ endpoint.role }}', reason }))
+        });
 
-    Object.values(this.roleToSocket)
-      .forEach(socket => {
-        socket.removeAllListeners();
-        socket.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify({ role: '{{ endpoint.role }}', reason }))
-      });
-
-    new {{ endpoint.role }}(this.wss, this.initialState, this.cancellation);
+      new {{ endpoint.role }}(this.wss, this.initialState, this.cancellation);
+    }
   }
 }
