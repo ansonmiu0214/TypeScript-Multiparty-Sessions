@@ -79,6 +79,9 @@ export class {{ endpoint.role }}
       }
 
       this.roleToSocket[role] = socket;
+
+      socketToRole.set(socket, role);
+      
       this.waiting.delete(role);
       
       socket.removeAllListeners();
