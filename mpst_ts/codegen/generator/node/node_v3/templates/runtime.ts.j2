@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 
-import { Roles, Implementation, MessageHandler } from './EFSM';
+import { Cancellation, Roles, Implementation, MessageHandler } from './EFSM';
 
 /**
  * Helper types
@@ -37,12 +37,15 @@ export class {{ endpoint.role }}
   private wss: WebSocket.Server
   private waiting: Set<Roles>
   private roleToSocket: Partial<RoleToSocket>
+  private cancellation: (role: '{{ endpoint.role }}' | Roles, reason?: string) => void
 
   constructor(wss: WebSocket.Server,
-              initialState: Implementation.S{{ endpoint.efsm.initial_state.id }})
+              initialState: Implementation.S{{ endpoint.efsm.initial_state.id }},
+              cancellation: (role: '{{ endpoint.role }}' | Roles, reason?: string) => void)
   {
     this.wss = wss;
-    this.waiting = new Set<Roles>([{% for role in endpoint.efsm.other_roles %}Roles.{{ role ~ (',' if not loop.last else '') }}{% endfor %}])
+    this.waiting = new Set<Roles>([{% for role in endpoint.efsm.other_roles %}Roles.{{ role ~ (',' if not loop.last else '') }}{% endfor %}]);
+    this.cancellation = cancellation;
 
     this.roleToSocket = {
       {% for role in endpoint.efsm.other_roles -%}
@@ -50,17 +53,36 @@ export class {{ endpoint.role }}
       {%- endfor %}
     };
 
-    const onSubsribe = (event: WebSocketMessage) => {
+    const socketToRole = new Map<WebSocket, Roles>();
+
+    const onClose = (event: WebSocket.CloseEvent) => {
+      const { target: socket } = event;
+      socket.removeAllListeners();
+
+      const role = socketToRole.get(socket);
+      if (role !== undefined) {
+        this.waiting.add(role);
+      }
+    }
+
+    const onSubscribe = (event: WebSocketMessage) => {
       const { data, target: socket } = event;
       const { connect: role } = JSON.parse(data) as JoinMessage;
       if (!this.waiting.has(role)) {
         // Role already occupied
+
+        socket.removeAllListeners();
+
+        socket.close(Cancellation.Emit.ROLE_OCCUPIED);
+
         return;
       }
 
       this.roleToSocket[role] = socket;
       this.waiting.delete(role);
-      socket.removeEventListener('message', onSubsribe);
+      
+      socket.removeAllListeners();
+
       if (this.waiting.size === 0) {
         this.wss.removeListener('connection', onConnection);
         for (const socket of Object.values(this.roleToSocket)) {
@@ -68,11 +90,16 @@ export class {{ endpoint.role }}
             connected: true
           }));
         }
-        new _{{ endpoint.role }}(this.wss, this.roleToSocket as RoleToSocket, initialState);
+
+        // Execute protocol
+        new _{{ endpoint.role }}(this.wss, this.roleToSocket as RoleToSocket, cancellation, initialState);
       }
     }
 
-    const onConnection = (ws: WebSocket) => ws.addEventListener('message', onSubsribe);
+    const onConnection = (ws: WebSocket) => {
+      ws.onmessage = onSubscribe;
+      ws.onclose = onClose;
+    };
     this.wss.addListener('connection', onConnection);
   }
 
@@ -82,27 +109,62 @@ class _{{ endpoint.role }} {
 
   private wss: WebSocket.Server
   private roleToSocket: RoleToSocket
+  private cancellation: (role: '{{ endpoint.role }}' | Roles, reason?: string) => void
   
   private initialState: Implementation.S{{ endpoint.efsm.initial_state.id }}
   private messageQueue: RoleToMessageQueue
   private handlerQueue: RoleToHandlerQueue
 
+  private activeRoles: Set<Roles>
+
   constructor(wss: WebSocket.Server,
               roleToSocket: RoleToSocket,
+              cancellation: (role: '{{ endpoint.role }}' | Roles, reason?: string) => void,
               initialState: Implementation.S{{ endpoint.efsm.initial_state.id }}) {
     this.wss = wss;
     this.roleToSocket = roleToSocket;
+    this.cancellation = cancellation;
     this.initialState = initialState;
+    this.activeRoles = new Set<Roles>([{% for role in endpoint.efsm.other_roles %}Roles.{{ role ~ (',' if not loop.last else '') }}{% endfor %}]);
 
     // Bind instance methods.
     this.next = this.next.bind(this);
     this.receive = this.receive.bind(this);
     this.registerMessageHandler = this.registerMessageHandler.bind(this);
     this.send = this.send.bind(this);
+    this.cancel = this.cancel.bind(this);
     
     // Bind socket message handler.
     Object.values(Roles).forEach(role => {
-      this.roleToSocket[role].addEventListener('message', this.receive(role));
+      const socket = this.roleToSocket[role];
+
+      socket.onmessage = this.receive(role);
+
+      socket.onclose = ({ code, reason }) => {
+        switch (code) {
+          case Cancellation.Receive.NORMAL:
+            // Normal cancellation
+
+            socket.removeAllListeners();
+
+            this.activeRoles.delete(role);
+            if (this.activeRoles.size === 0) {
+              new {{ endpoint.role }}(this.wss, initialState, this.cancellation);
+            }
+
+            return;
+          case Cancellation.Receive.CLIENT_BROWSER_CLOSED:
+            // Client closed their browser
+            this.propagateCancellation(role, 'browser disconnected');
+            return;
+          case Cancellation.Receive.LOGICAL_ERROR:
+            // Client has logical error
+          default:
+            // Unsupported code
+            this.propagateCancellation(role, reason);
+            return;
+        }
+      }
     })
     
     // Initialise queues for receiving.
@@ -125,16 +187,20 @@ class _{{ endpoint.role }} {
   // State machine methods
   // =====================
   next(implementation: Implementation.Type) {
-    switch (implementation.type) {
-      case 'Send': {
-        return implementation.performSend(this.next, this.send);
+    try {
+      switch (implementation.type) {
+        case 'Send': {
+          return implementation.performSend(this.next, this.cancel, this.send);
+        }
+        case 'Receive': {
+          return implementation.prepareReceive(this.next, this.cancel, this.registerMessageHandler);
+        }
+        case 'Terminal': {
+          return;
+        }
       }
-      case 'Receive': {
-        return implementation.prepareReceive(this.next, this.registerMessageHandler);
-      }
-      case 'Terminal': {
-        return this.terminate();
-      }
+    } catch (error) {
+      this.cancel(error);
     }
   }
 
@@ -142,38 +208,69 @@ class _{{ endpoint.role }} {
   // Channel methods
   // ===============
 
-    send(to: Roles, label: string, payload: any[], from: string = '{{ endpoint.role }}') {
-      this.roleToSocket[to].send(JSON.stringify({ role: from, label, payload }));
-    }
+  send(to: Roles, label: string, payload: any[], from: string = '{{ endpoint.role }}') {
+    this.roleToSocket[to].send(JSON.stringify({ role: from, label, payload }));
+  }
 
-    receive(from: Roles) {
-      return ({ data }: WebSocketMessage) => {
-        const { role, label, payload } = JSON.parse(data) as MPSTMessage;
-        if (role !== '{{ endpoint.role }}') {
-          // Route message
-          this.send(role, label, payload, from);
+  receive(from: Roles) {
+    return ({ data }: WebSocketMessage) => {
+      const { role, label, payload } = JSON.parse(data) as MPSTMessage;
+      if (role !== '{{ endpoint.role }}') {
+        // Route message
+        this.send(role, label, payload, from);
+      } else {
+        const handler = this.handlerQueue[from].shift();
+        if (handler !== undefined) {
+          handler(data);
         } else {
-          const handler = this.handlerQueue[from].shift();
-          if (handler !== undefined) {
-            handler(data);
-          } else {
-            this.messageQueue[from].push(data);
-          }
+          this.messageQueue[from].push(data);
         }
       }
     }
+  }
 
-    registerMessageHandler(from: Roles, messageHandler: MessageHandler) {
-      const message = this.messageQueue[from].shift();
-      if (message !== undefined) {
-        messageHandler(message);
-      } else {
-        this.handlerQueue[from].push(messageHandler);
-      }
+  registerMessageHandler(from: Roles, messageHandler: MessageHandler) {
+    const message = this.messageQueue[from].shift();
+    if (message !== undefined) {
+      messageHandler(message);
+    } else {
+      this.handlerQueue[from].push(messageHandler);
     }
+  }
 
-    terminate() {
-      Object.values(this.roleToSocket).forEach(socket => socket.close());
-      new {{ endpoint.role }}(this.wss, this.initialState);
-    }
+  // FIXME: remove method
+  // terminate() {
+  //   Object.values(this.roleToSocket).forEach(socket => socket.close());
+  //   new {{ endpoint.role }}(this.wss, this.initialState);
+  // }
+
+  /**
+    * Propagate explicit cancellation to other roles.
+    * 
+    * @param cancelledRole 
+    */
+  propagateCancellation(cancelledRole: Roles, reason?: string) {
+    this.cancellation(cancelledRole, reason);
+
+    Object.entries(this.roleToSocket)
+      .filter(([role, _]) => role !== cancelledRole)
+      .forEach(([_, socket]) => {
+        socket.removeAllListeners();
+        socket.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify({ role: cancelledRole, reason }))
+      });
+    
+    new {{ endpoint.role }}(this.wss, this.initialState, this.cancellation);
+  }
+
+  cancel(reason?: string) {
+    this.cancellation('{{ endpoint.role }}', reason);
+
+    Object.values(this.roleToSocket)
+      .forEach(socket => {
+        socket.removeAllListeners();
+        socket.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify({ role: '{{ endpoint.role }}', reason }))
+      });
+
+    new {{ endpoint.role }}(this.wss, this.initialState, this.cancellation);
+  }
 }

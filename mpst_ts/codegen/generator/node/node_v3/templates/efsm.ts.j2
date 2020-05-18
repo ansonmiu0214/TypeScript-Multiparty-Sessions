@@ -5,6 +5,23 @@ import { {{ type.external ~ ((' as ' ~ type.alias) if type.external != type.alia
 type MaybePromise<T> = T | Promise<T>;
 type FromJust<T> = T extends MaybePromise<infer R> ? R : unknown;
 
+// ============
+// Cancellation
+// ============
+export namespace Cancellation {
+  export enum Receive {
+    NORMAL = 1000,
+    CLIENT_BROWSER_CLOSED = 1001,
+    LOGICAL_ERROR = 4001,
+  };
+
+  export enum Emit {
+    CLIENT_BROWSER_CLOSED = 4000,
+    LOGICAL_ERROR = 4001,
+    ROLE_OCCUPIED = 4002,
+  };
+};
+
 // ==============
 // Protocol roles
 // ==============
@@ -87,6 +104,7 @@ export namespace Implementation {
     type: 'Send' = 'Send';
     abstract performSend(
       next: EfsmTransitionHandler,
+      cancel: (reason?: string) => void,
       sendMessage: (role: Roles, label: string, payload: any[]) => void
     ): void;
   }
@@ -95,6 +113,7 @@ export namespace Implementation {
     type: 'Receive' = 'Receive';
     abstract prepareReceive(
       next: EfsmTransitionHandler,
+      cancel: (reason?: string) => void,
       register: (from: Roles, messageHandler: MessageHandler) => void
     ): void;
   }
@@ -115,6 +134,7 @@ export namespace Implementation {
 
     performSend(
       next: EfsmTransitionHandler,
+      cancel: (reason?: string) => void,
       sendMessage: (role: Roles, label: string, payload: any[]) => void
     ) {
       const thunk = ([label, payload, successor]: FromJust<Handler.S{{ state }}>) => {
@@ -123,9 +143,13 @@ export namespace Implementation {
       }
       if (this.handler instanceof Promise) {
         // Asynchronous implementation -- wait for completion
-        this.handler.then(thunk).catch(console.error);
+        this.handler.then(thunk).catch(cancel);
       } else {
-        thunk(this.handler);
+        try {
+          thunk(this.handler);
+        } catch (error) {
+          cancel(error);
+        }
       }
     }
 
@@ -138,7 +162,8 @@ export namespace Implementation {
     }
 
     prepareReceive(
-      next: EfsmTransitionHandler, 
+      next: EfsmTransitionHandler,
+      cancel: (reason?: string) => void,
       register: (from: Roles, messageHandler: MessageHandler) => void
     ) {
       const messageHandler = (message: any) => {
@@ -146,18 +171,19 @@ export namespace Implementation {
         switch (parsedMessage.label) {
           {% for action in state.actions -%}
           case Labels.S{{ state }}.{{ action.label }}: {
-            const successor = this.handler[parsedMessage.label](...parsedMessage.payload);
-            if (successor instanceof Promise) {
-              successor.then(next).catch(console.error);
-            } else {
-              next(successor);
+            try {
+              const successor = this.handler[parsedMessage.label](...parsedMessage.payload);
+              if (successor instanceof Promise) {
+                successor.then(next).catch(cancel);
+              } else {
+                next(successor);
+              }
+            } catch (error) {
+              cancel(error);
             }
             return;
           }
           {% endfor %}
-          // default: {
-          //   throw new Error(`Unexpected receive: ${parsedMessage.label}`);
-          // }
         }
       }
 
