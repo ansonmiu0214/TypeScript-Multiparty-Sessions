@@ -104,7 +104,7 @@ export namespace Implementation {
     type: 'Send' = 'Send';
     abstract performSend(
       next: EfsmTransitionHandler,
-      cancel: (reason?: string) => void,
+      cancel: (reason?: any) => void,
       sendMessage: (role: Roles, label: string, payload: any[]) => void
     ): void;
   }
@@ -113,7 +113,7 @@ export namespace Implementation {
     type: 'Receive' = 'Receive';
     abstract prepareReceive(
       next: EfsmTransitionHandler,
-      cancel: (reason?: string) => void,
+      cancel: (reason?: any) => void,
       register: (from: Roles, messageHandler: MessageHandler) => void
     ): void;
   }
@@ -134,7 +134,7 @@ export namespace Implementation {
 
     performSend(
       next: EfsmTransitionHandler,
-      cancel: (reason?: string) => void,
+      cancel: (reason?: any) => void,
       sendMessage: (role: Roles, label: string, payload: any[]) => void
     ) {
       const thunk = ([label, payload, successor]: FromJust<Handler.S{{ state }}>) => {
@@ -163,7 +163,7 @@ export namespace Implementation {
 
     prepareReceive(
       next: EfsmTransitionHandler,
-      cancel: (reason?: string) => void,
+      cancel: (reason?: any) => void,
       register: (from: Roles, messageHandler: MessageHandler) => void
     ) {
       const messageHandler = (message: any) => {
