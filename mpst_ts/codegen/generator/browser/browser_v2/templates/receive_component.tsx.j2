@@ -37,7 +37,8 @@ export default abstract class S{{ state.id }}<
 >
 {
 
-  componentDidMount() {
+  constructor(props: _P & P) {
+    super(props);
     this.props.register(Roles.{{ state.role }}, this.handle.bind(this));
   }
 
