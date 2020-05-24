@@ -183,6 +183,11 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
 
   private buildSendElement<T>(role: Roles, label: string, successor: State): SendComponentFactory<T> {
     return <K extends keyof DOMEvents> (eventLabel: K, handler: EventHandler<T, K>) => {
+
+      // Boolean flag since send(...) can be async;
+      // must not be triggered twice.
+      let used = false;
+
       const send = (payload: T) => this.sendMessage(role, label, payload, successor);
       const cancel = (error?: any) => this.cancel(error);
 
@@ -191,6 +196,12 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
           const children = React.Children.map(this.props.children, child => (
             React.cloneElement(child as React.ReactElement<any>, {
               [eventLabel as string]: (event: FunctionArguments<DOMEvents[K]>) => {
+
+                if (used) {
+                  return;
+                }
+
+                used = true;
 
                 try {
                   const result = handler(event);
