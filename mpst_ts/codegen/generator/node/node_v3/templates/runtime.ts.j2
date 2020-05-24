@@ -145,7 +145,7 @@ class _{{ endpoint.role }} {
         this.activeRoles.delete(role);
 
         switch (code) {
-          case Cancellation.Receive.NORMAL:
+          case Cancellation.Receive.NORMAL: {
             // Normal cancellation
 
             socket.removeAllListeners();
@@ -155,16 +155,22 @@ class _{{ endpoint.role }} {
             }
 
             return;
-          case Cancellation.Receive.CLIENT_BROWSER_CLOSED:
+          }
+          case Cancellation.Receive.CLIENT_BROWSER_CLOSED: {
             // Client closed their browser
             this.propagateCancellation(role, 'browser disconnected');
             return;
-          case Cancellation.Receive.LOGICAL_ERROR:
+          }
+          case Cancellation.Receive.LOGICAL_ERROR: {
             // Client has logical error
-          default:
+            this.propagateCancellation(role, reason);
+            return;
+          }
+          default: {
             // Unsupported code
             this.propagateCancellation(role, reason);
             return;
+          }
         }
       }
 
@@ -206,7 +212,6 @@ class _{{ endpoint.role }} {
         }
       }
     } catch (error) {
-      // FIXME: error has type `any`
       this.cancel(error);
     }
   }
@@ -243,9 +248,6 @@ class _{{ endpoint.role }} {
   }
 
   registerMessageHandler(from: Roles, messageHandler: MessageHandler) {
-
-    // FIXME: check if exception thrown here is caught at parent
-
     const message = this.messageQueue[from].shift();
     if (message !== undefined) {
       messageHandler(message);
@@ -260,6 +262,11 @@ class _{{ endpoint.role }} {
     * @param cancelledRole 
     */
   propagateCancellation(cancelledRole: Roles, reason?: any) {
+
+    // Deactivate all roles:
+    // a send could be scheduled later, so that needs to be invalidated.
+    this.activeRoles.clear();
+
     try {
       this.cancellation(cancelledRole, reason);
     } finally {
@@ -278,6 +285,11 @@ class _{{ endpoint.role }} {
   }
 
   cancel(reason?: any) {
+
+    // Deactivate all roles:
+    // a send could be scheduled later, so that needs to be invalidated.
+    this.activeRoles.clear();
+
     try {
       this.cancellation('{{ endpoint.role }}', reason);
     } finally {
