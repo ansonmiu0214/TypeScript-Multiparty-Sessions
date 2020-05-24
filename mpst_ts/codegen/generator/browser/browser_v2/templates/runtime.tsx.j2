@@ -13,6 +13,9 @@ import {
 import S{{ state.id }} from './S{{ state.id }}';
 {%- endfor %}
 
+// ==============
+// Component type
+// ==============
 type P = {
   endpoint: string,
   states: {
@@ -33,11 +36,21 @@ type S = {
 // FIXME: relocate
 type RoleToMessageQueue = { [Role in Roles]: any[] };
 type RoleToHandlerQueue = { [Role in Roles]: ReceiveHandler[] };
+
+// ==================
+// Message interfaces
+// FIXME: relocate
+// ==================
+
 interface MPSTMessage {
   role: Roles
   label: string
   payload: any[]
-}
+};
+
+interface JoinMessage {
+  connect: 'Client'
+};
 
 export default class {{ endpoint.role }} extends React.Component<P, S> {
 
@@ -89,12 +102,15 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
 
     // Handle error
     ws.onerror = (event) => {
-      console.log(event);
       this.setState({ elem: this.props.connectFailed });
     }
 
     ws.onclose = this.onCloseInit;
   }
+
+  // ===============
+  // Session joining
+  // ===============
 
   private onReceiveInit(message: MessageEvent) {
     const { ws } = this.state;
@@ -131,36 +147,9 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
     }
   }
 
-  private onClose({ code, reason }: CloseEvent) {
-    switch (code) {
-      case Cancellation.Receive.SERVER_DISCONNECT: {
-        // Server role disconnected
-        // FIXME: figure out which is the server other_roles
-        this.processCancellation('{{ endpoint.role }}', 'server disconnected');
-        return;
-      }
-      case Cancellation.Receive.CLIENT_DISCONNECT: {
-        // Other client disconnected
-        // FIXME: load cancellation screen
-        const { role, reason: description } = JSON.parse(reason);
-        this.processCancellation(role, description);
-        return;
-      }
-      case Cancellation.Receive.LOGICAL_ERROR: {
-        // Logical error by some role
-        // FIXME: load cancellation screen
-        const { role, reason: description } = JSON.parse(reason);
-        this.processCancellation(role, description);
-        return;
-      }
-      default: {
-        // Unsupported error code
-        // FIXME: figure out which is the server other_roles
-        this.processCancellation('{{ endpoint.role }}', reason);
-        return;
-      }
-    }
-  }
+  // ===============
+  // EFSM operations
+  // ===============
 
   private advance(state: State) {
     if (isSendState(state)) {
@@ -223,11 +212,6 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
     }
   }
 
-  private sendMessage(role: Roles, label: string, payload: any, successor: State) {
-    this.state.ws.send(JSON.stringify({ role, label, payload }));
-    this.advance(successor);
-  }
-
   private registerReceiveHandler(role: Roles, handle: ReceiveHandler) {
     const message = this.messageQueue[role].shift();
     if (message !== undefined) {
@@ -246,6 +230,15 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
       // No message received -- `queue' handler.
       this.handlerQueue[role].push(handle);
     }
+  }
+
+  // ===============
+  // Channel methods
+  // ===============
+
+  private sendMessage(role: Roles, label: string, payload: any, successor: State) {
+    this.state.ws.send(JSON.stringify({ role, label, payload }));
+    this.advance(successor);
   }
 
   private onReceiveMessage({ data }: MessageEvent) {
@@ -268,25 +261,51 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
       this.messageQueue[message.role].push(message);
     }
   }
-
   private terminate() {
     this.state.ws.close(Cancellation.Emit.NORMAL);
   }
 
-  private processCancellation(role: '{{ endpoint.role }}' | Roles, reason?: any) {
+  // ============
+  // Cancellation
+  // ============
 
-    // FIXME: the 'reason' parameter should be of type any
-    // so the developer can customise their handler behaviour.
-
-    if (reason !== undefined) {
-      this.setState({
-        elem: this.props.cancellation(role, String(reason)),
-      });
-    } else {
-      this.setState({
-        elem: this.props.cancellation(role),
-      });
+  private onClose({ code, reason }: CloseEvent) {
+    switch (code) {
+      case Cancellation.Receive.NORMAL: {
+        // Normal, clean cancellation
+        return;
+      }
+      case Cancellation.Receive.SERVER_DISCONNECT: {
+        // Server role disconnected
+        // FIXME: figure out which is the server other_roles
+        this.processCancellation('{{ endpoint.role }}', 'server disconnected');
+        return;
+      }
+      case Cancellation.Receive.CLIENT_DISCONNECT: {
+        // Other client disconnected
+        const { role, reason: description } = JSON.parse(reason);
+        this.processCancellation(role, description);
+        return;
+      }
+      case Cancellation.Receive.LOGICAL_ERROR: {
+        // Logical error by some role
+        const { role, reason: description } = JSON.parse(reason);
+        this.processCancellation(role, description);
+        return;
+      }
+      default: {
+        // Unsupported error code
+        // FIXME: figure out which is the server other_roles
+        this.processCancellation('{{ endpoint.role }}', reason);
+        return;
+      }
     }
+  }
+
+  private processCancellation(role: '{{ endpoint.role }}' | Roles, reason?: any) {
+    this.setState({
+      elem: this.props.cancellation(role, reason !== undefined ? String(reason) : reason),
+    });
   }
 
   private cancel(error?: any) {
@@ -299,6 +318,10 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
     // Process cancellation
     this.processCancellation('{{ endpoint.role }}', error);
   }
+
+  // ============
+  // UI rendering
+  // ============
 
   render() {
     return this.state.elem;
