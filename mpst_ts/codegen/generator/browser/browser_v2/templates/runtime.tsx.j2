@@ -224,12 +224,8 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
   }
 
   private sendMessage(role: Roles, label: string, payload: any, successor: State) {
-    try {
-      this.state.ws.send(JSON.stringify({ role, label, payload }));
-      this.advance(successor);
-    } catch (error) {
-      this.cancel(error);
-    }
+    this.state.ws.send(JSON.stringify({ role, label, payload }));
+    this.advance(successor);
   }
 
   private registerReceiveHandler(role: Roles, handle: ReceiveHandler) {
