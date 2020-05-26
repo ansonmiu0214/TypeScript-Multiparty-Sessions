@@ -39,4 +39,14 @@ class NodeStrategy(CodeGenerationStrategy,
                       self.template_generator.render(path='runtime.ts.j2',
                                                      payload={'endpoint': endpoint})))
 
+        # Generate types
+        files.append((os.path.join(self.output_dir, protocol, 'types.ts'),
+                      self.template_generator.render(path='types.ts.j2',
+                                                     payload={})))
+
+        # Generate cancellation
+        files.append((os.path.join(self.output_dir, protocol, 'Cancellation.ts'),
+                      self.template_generator.render(path='cancellation.ts.j2',
+                                                     payload={})))
+
         return files

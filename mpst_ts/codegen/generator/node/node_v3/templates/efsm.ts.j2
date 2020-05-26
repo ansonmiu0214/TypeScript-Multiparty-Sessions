@@ -2,34 +2,33 @@
 import { {{ type.external ~ ((' as ' ~ type.alias) if type.external != type.alias else '') }} } from "{{ type.path }}";
 {% endfor %}
 
-type MaybePromise<T> = T | Promise<T>;
-type FromJust<T> = T extends MaybePromise<infer R> ? R : unknown;
-
-// ============
-// Cancellation
-// ============
-export namespace Cancellation {
-  export enum Receive {
-    NORMAL = 1000,
-    CLIENT_BROWSER_CLOSED = 1001,
-    LOGICAL_ERROR = 4001,
-  };
-
-  export enum Emit {
-    CLIENT_BROWSER_CLOSED = 4000,
-    LOGICAL_ERROR = 4001,
-    ROLE_OCCUPIED = 4002,
-  };
-};
+import {
+  FromPromise,
+  MaybePromise,
+} from "./types";
 
 // ==============
 // Protocol roles
 // ==============
 
-export enum Roles {
-  {% for role in endpoint.efsm.other_roles -%}
-  {{ role }} = "{{ role }}",
-  {%- endfor %}
+export namespace Roles {
+
+  type Self = "{{ endpoint.role }}";
+
+  // Constant value for value comparisons
+  export const Self: Self = "{{ endpoint.role }}";
+
+  export enum Peers {
+    {% for role in endpoint.efsm.other_roles -%}
+    {{ role }} = "{{ role }}",
+    {%- endfor %}
+  };
+
+  export type All = Self | Peers;
+
+  export type PeersToMapped<Value> = {
+    [Role in Peers]: Value
+  };
 };
 
 // ==============
@@ -58,7 +57,7 @@ export namespace Labels {
 // =======
 // Message
 // =======
-namespace Message {
+export namespace Message {
 {% for state in endpoint.efsm.nonterminal_states %}
   {% for action in state.actions -%}
   export type S{{ state ~ action.label }} = {
@@ -69,6 +68,24 @@ namespace Message {
   export type S{{ state }} = {% for action in state.actions -%}
   | S{{ state ~ action.label }}{% endfor %};
 {% endfor %}
+
+  export interface ConnectInvite {
+    connect: Roles.Peers
+  };
+
+  export const ConnectConfirm = {
+    connected: true
+  };
+
+  export interface Channel {
+    role: Roles.All
+    label: string
+    payload: any[]
+  };
+
+  export const toChannel = (role: Roles.All, label: string, payload: any[]) => (
+    { role, label, payload }
+  );
 };
 
 // ================
@@ -89,9 +106,6 @@ export namespace Handler {
     {% endfor %}
   }
   {% endfor %}
-  {% if endpoint.efsm.has_terminal_state() -%}
-  export type S{{ endpoint.efsm.terminal_state }} = 'Terminate';
-  {% endif -%}
 };
 
 // =================================
@@ -100,33 +114,33 @@ export namespace Handler {
 // =================================
 
 export namespace Implementation {
-  abstract class Send {
+  abstract class ISend {
     type: 'Send' = 'Send';
     abstract performSend(
       next: EfsmTransitionHandler,
       cancel: (reason?: any) => void,
-      sendMessage: (role: Roles, label: string, payload: any[]) => void
+      sendMessage: (role: Roles.Peers, label: string, payload: any[]) => void
     ): void;
   }
 
-  abstract class Receive {
+  abstract class IReceive {
     type: 'Receive' = 'Receive';
     abstract prepareReceive(
       next: EfsmTransitionHandler,
       cancel: (reason?: any) => void,
-      register: (from: Roles, messageHandler: MessageHandler) => void
+      register: (from: Roles.Peers, messageHandler: MessageHandler) => void
     ): void;
   }
 
-  abstract class Terminal {
+  abstract class ITerminal {
     type: 'Terminal' = 'Terminal';
   }
 
-  export type Type = Send | Receive | Terminal;
+  export type Type = ISend | IReceive | ITerminal;
 
   {% for state in endpoint.efsm.states -%}
   {% if endpoint.efsm.is_send_state(state) -%}
-  export class S{{ state }} extends Send {
+  export class S{{ state }} extends ISend {
 
     constructor(private handler: Handler.S{{ state }}) {
       super();
@@ -135,10 +149,10 @@ export namespace Implementation {
     performSend(
       next: EfsmTransitionHandler,
       cancel: (reason?: any) => void,
-      sendMessage: (role: Roles, label: string, payload: any[]) => void
+      sendMessage: (role: Roles.Peers, label: string, payload: any[]) => void
     ) {
-      const thunk = ([label, payload, successor]: FromJust<Handler.S{{ state }}>) => {
-        sendMessage(Roles.{{ state.role }}, label, payload);
+      const thunk = ([label, payload, successor]: FromPromise<Handler.S{{ state }}>) => {
+        sendMessage(Roles.Peers.{{ state.role }}, label, payload);
         return next(successor);
       }
       if (this.handler instanceof Promise) {
@@ -155,7 +169,7 @@ export namespace Implementation {
 
   }
   {% elif endpoint.efsm.is_receive_state(state) -%}
-  export class S{{ state }} extends Receive {
+  export class S{{ state }} extends IReceive {
 
     constructor(private handler: Handler.S{{ state}}) {
       super();
@@ -164,7 +178,7 @@ export namespace Implementation {
     prepareReceive(
       next: EfsmTransitionHandler,
       cancel: (reason?: any) => void,
-      register: (from: Roles, messageHandler: MessageHandler) => void
+      register: (from: Roles.Peers, messageHandler: MessageHandler) => void
     ) {
       const messageHandler = (message: any) => {
         const parsedMessage = JSON.parse(message) as Message.S{{ state.id }};
@@ -187,20 +201,24 @@ export namespace Implementation {
         }
       }
 
-      register(Roles.{{ state.role }}, messageHandler);
+      register(Roles.Peers.{{ state.role }}, messageHandler);
     }
 
   }
   {% else -%}
-  export class S{{ state }} extends Terminal {
-
-    constructor(private handler: Handler.S{{ state }}) {
-      super();
-    }
-
+  export class S{{ state }} extends ITerminal {
   }
   {% endif -%}
   {%- endfor %}
+
+  // Type aliases for annotation
+  // Const aliases for constructor
+  export type Initial = S{{ endpoint.efsm.initial_state }};
+  export const Initial = S{{ endpoint.efsm.initial_state }};
+  {% if endpoint.efsm.has_terminal_state -%}
+  export type Terminal = S{{ endpoint.efsm.terminal_state }};
+  export const Terminal = S{{ endpoint.efsm.terminal_state }};
+  {% endif -%}
 }
 
 // =============
