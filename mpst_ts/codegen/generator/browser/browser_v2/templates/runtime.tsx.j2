@@ -84,6 +84,7 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
     this.onReceiveMessage = this.onReceiveMessage.bind(this);
     this.buildSendElement = this.buildSendElement.bind(this);
     this.registerReceiveHandler = this.registerReceiveHandler.bind(this);
+    this.advance = this.advance.bind(this);
     this.cancel = this.cancel.bind(this);
     this.terminate = this.terminate.bind(this);
   }
@@ -178,31 +179,28 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
 
       return class extends React.Component {
         render() {
-          const children = React.Children.map(this.props.children, child => (
-            React.cloneElement(child as React.ReactElement<any>, {
-              [eventLabel as string]: (event: FunctionArguments<DOMEvents[K]>) => {
-
-                if (used) {
-                  return;
-                }
-
-                used = true;
-
-                try {
-                  const result = handler(event);
-                  if (result instanceof Promise) {
-                    result.then(send).catch(cancel);
-                  } else {
-                    send(result);
-                  }
-                } catch (error) {
-                  cancel(error);
-                }
-
+          const props = {
+            [eventLabel as string]: (event: FunctionArguments<DOMEvents[K]>) => {
+              if (used) {
+                return;
               }
-            })
-          ));
-          return children;
+
+              used = true;
+
+              try {
+                const result = handler(event);
+                if (result instanceof Promise) {
+                  result.then(send).catch(cancel);
+                } else {
+                  send(result);
+                }
+              } catch (error) {
+                cancel(error);
+              }
+            }
+          };
+
+          return <div {...props}>{this.props.children}</div>;
         }
       }
     }
