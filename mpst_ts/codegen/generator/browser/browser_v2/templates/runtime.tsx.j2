@@ -3,15 +3,26 @@ import React from 'react';
 
 import * as Cancellation from './Cancellation';
 import * as Roles from './Roles';
+import * as Message from './Message';
 import {
-  State, SendState, ReceiveState, TerminalState,
-  isSendState, isReceiveState, isTerminalState,
+  State,
+  {{ 'SendState' if endpoint.efsm.is_send_state(endpoint.efsm.initial_state) else 'ReceiveState' if endpoint.efsm.is_receive_state(endpoint.efsm.initial_state) else 'TerminalState' }},
+  isSendState,
+  isReceiveState,
+  isTerminalState,
 } from './EFSM';
+
 import { 
-  Constructor, ReceiveHandler, 
+  ReceiveHandler, 
   SendComponentFactory, 
-  DOMEvents, FunctionArguments, EventHandler
 } from './Session';
+
+import {
+  Constructor,
+  DOMEvents,
+  EventHandler,
+  FunctionArguments,
+} from './Types';
 {% for state in endpoint.efsm.states %}
 import S{{ state.id }} from './S{{ state.id }}';
 {%- endfor %}
@@ -37,23 +48,8 @@ type S = {
 }
 
 // FIXME: relocate
-type RoleToMessageQueue = { [Role in Roles.Peers]: any[] };
-type RoleToHandlerQueue = { [Role in Roles.Peers]: ReceiveHandler[] };
-
-// ==================
-// Message interfaces
-// FIXME: relocate
-// ==================
-
-interface MPSTMessage {
-  role: Roles.Peers
-  label: string
-  payload: any[]
-};
-
-interface JoinMessage {
-  connect: 'Client'
-};
+type RoleToMessageQueue = Roles.PeersToMapped<any[]>;
+type RoleToHandlerQueue = Roles.PeersToMapped<ReceiveHandler[]>;
 
 export default class {{ endpoint.role }} extends React.Component<P, S> {
 
@@ -98,9 +94,7 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
 
     // Send connection message
     ws.onopen = () => {
-      ws.send(JSON.stringify({
-          connect: 'Client'
-      }));
+      ws.send(JSON.stringify(Message.ConnectRequest));
     };
 
     // Handle error
@@ -143,7 +137,6 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
       }
       default: {
         // Unsupported code
-        // FIXME: figure out which is server
         this.processCancellation(Roles.Server, reason);
         return;
       }
@@ -240,12 +233,12 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
   // ===============
 
   private sendMessage(role: Roles.Peers, label: string, payload: any, successor: State) {
-    this.state.ws.send(JSON.stringify({ role, label, payload }));
+    this.state.ws.send(JSON.stringify(Message.toChannel(role, label, payload)));
     this.advance(successor);
   }
 
   private onReceiveMessage({ data }: MessageEvent) {
-    const message = JSON.parse(data) as MPSTMessage;
+    const message = JSON.parse(data) as Message.Channel;
     const handler = this.handlerQueue[message.role].shift();
     if (handler !== undefined) {
       // Handler registered -- process.
@@ -280,13 +273,12 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
       }
       case Cancellation.Receive.SERVER_DISCONNECT: {
         // Server role disconnected
-        // FIXME: figure out which is the server other_roles
         this.processCancellation(Roles.Server, 'server disconnected');
         return;
       }
       case Cancellation.Receive.CLIENT_DISCONNECT: {
         // Other client disconnected
-        const { role, reason: description } = JSON.parse(reason);
+        const { role, reason: description } = JSON.parse(reason) as Cancellation.Message;
         this.processCancellation(role, description);
         return;
       }
@@ -298,25 +290,23 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
       }
       default: {
         // Unsupported error code
-        // FIXME: figure out which is the server other_roles
         this.processCancellation(Roles.Server, reason);
         return;
       }
     }
   }
 
-  private processCancellation(role: Roles.Self | Roles.Peers, reason?: any) {
+  private processCancellation(role: Roles.All, reason?: any) {
     this.setState({
       elem: this.props.cancellation(role, reason !== undefined ? String(reason) : reason),
     });
   }
 
   private cancel(error?: any) {
+    const message = Cancellation.toChannel(Roles.Self, error);
+
     // Emit cancellation
-    this.state.ws.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify({
-      role: Roles.Self,
-      reason: error !== undefined ? String(error) : error,
-    }));
+    this.state.ws.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify(message));
 
     // Process cancellation
     this.processCancellation(Roles.Self, error);

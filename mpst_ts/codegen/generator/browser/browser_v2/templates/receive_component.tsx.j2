@@ -1,8 +1,20 @@
 import React from 'react';
 
 import * as Roles from './Roles';
-import { State, ReceiveState, SendState, TerminalState, } from './EFSM';
-import { MaybePromise, ReceiveHandler } from './Session';
+import {
+  State,
+  ReceiveState,
+  SendState,
+  TerminalState,
+} from './EFSM';
+
+import {
+  MaybePromise,
+} from './Types';
+
+import {
+  ReceiveHandler
+} from './Session';
 
 {% for type in endpoint.types -%}
 import { {{ type.external ~ ((' as ' ~ type.alias) if type.external != type.alias else '') }} } from "{{ type.path }}";

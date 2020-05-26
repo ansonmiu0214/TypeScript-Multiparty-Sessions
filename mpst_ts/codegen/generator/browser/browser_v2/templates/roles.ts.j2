@@ -9,6 +9,10 @@ export enum Peers {
 export type All = Self | Peers;
 export type Self = "{{ endpoint.role }}";
 
+export type PeersToMapped<Value> = {
+  [Role in Peers]: Value
+};
+
 // Aliases
 export const Self: Self = "{{ endpoint.role }}";
 export const Server: Peers = Peers.{{ endpoint.server }};

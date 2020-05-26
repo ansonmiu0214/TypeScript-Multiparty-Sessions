@@ -33,46 +33,58 @@ class BrowserStrategy(CodeGenerationStrategy,
         protocol = endpoint.protocol
         role = endpoint.role
 
+        as_path = lambda filename: os.path.join(self.output_dir, protocol, role, filename)
+
         # Generate Session
-        files.append((os.path.join(self.output_dir, protocol, role, 'Session.ts'),
+        files.append((as_path('Session.ts'),
                      self.template_generator.render(path='session.ts.j2',
                                                     payload={})))
 
+        # Generate Messages interface
+        files.append((as_path('Message.ts'),
+                     self.template_generator.render(path='message.ts.j2',
+                                                    payload={})))
+
+        # Generate utility types
+        files.append((as_path('Types.ts'),
+                     self.template_generator.render(path='types.ts.j2',
+                                                    payload={})))
+
         # Generate roles
-        files.append((os.path.join(self.output_dir, protocol, role, 'Roles.ts'),
+        files.append((as_path('Roles.ts'),
                      self.template_generator.render(path='roles.ts.j2',
                                                     payload={'endpoint': endpoint})))
 
         # Generate cancellation enums
-        files.append((os.path.join(self.output_dir, protocol, role, 'Cancellation.ts'),
+        files.append((as_path('Cancellation.ts'),
                      self.template_generator.render(path='cancellation.ts.j2',
                                                     payload={})))
 
         # Generate EFSM
-        files.append((os.path.join(self.output_dir, protocol, role, 'EFSM.ts'),
+        files.append((as_path('EFSM.ts'),
                      self.template_generator.render(path='efsm.ts.j2',
                                                     payload={'endpoint': endpoint})))
 
         # Generate runtime
-        files.append((os.path.join(self.output_dir, protocol, role, f'{role}.tsx'),
+        files.append((as_path(f'{role}.tsx'),
                       self.template_generator.render(path='runtime.tsx.j2',
-                                                    payload={'endpoint': endpoint})))
+                                                     payload={'endpoint': endpoint})))
 
         # Generate states
         for state in endpoint.efsm.send_states:
-            files.append((os.path.join(self.output_dir, protocol, role, f'S{state.id}.tsx'),
+            files.append((as_path(f'S{state.id}.tsx'),
                           self.template_generator.render(path='send_component.tsx.j2',
-                                                    payload={'endpoint': endpoint,
-                                                             'state': state})))
+                                                         payload={'endpoint': endpoint,
+                                                                  'state': state})))
 
         for state in endpoint.efsm.receive_states:
-            files.append((os.path.join(self.output_dir, protocol, role, f'S{state.id}.tsx'),
+            files.append((as_path(f'S{state.id}.tsx'),
                           self.template_generator.render(path='receive_component.tsx.j2',
-                                                    payload={'endpoint': endpoint,
-                                                             'state': state})))
+                                                         payload={'endpoint': endpoint,
+                                                                  'state': state})))
 
         if endpoint.efsm.has_terminal_state():
-            files.append((os.path.join(self.output_dir, protocol, role, f'S{endpoint.efsm.terminal_state}.tsx'),
+            files.append((as_path(f'S{endpoint.efsm.terminal_state}.tsx'),
                           self.template_generator.render(path='terminal_component.tsx.j2',
                                                          payload={'state': endpoint.efsm.terminal_state})))
 
