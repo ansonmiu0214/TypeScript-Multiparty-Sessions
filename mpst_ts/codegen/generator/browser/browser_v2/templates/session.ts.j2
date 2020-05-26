@@ -2,17 +2,6 @@ import React from 'react';
 import * as Roles from './Roles';
 import { State, ReceiveState, SendState, TerminalState,  } from './EFSM';
 
-export function isReceiveState(state: State): state is ReceiveState {
-  return (Object.values(ReceiveState) as Array<State>).includes(state)
-}
-
-export function isSendState(state: State): state is SendState {
-  return (Object.values(SendState) as Array<State>).includes(state)
-}
-
-export function isTerminalState(state: State): state is TerminalState {
-  return (Object.values(TerminalState) as Array<State>).includes(state)
-}
 
 type FunctionPropertyNames<T> = {
   [K in keyof T]: T[K] extends Function | undefined ? K : never;

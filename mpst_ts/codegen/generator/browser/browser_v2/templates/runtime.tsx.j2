@@ -3,10 +3,12 @@ import React from 'react';
 
 import * as Cancellation from './Cancellation';
 import * as Roles from './Roles';
-import { State, SendState, ReceiveState, TerminalState, } from './EFSM';
+import {
+  State, SendState, ReceiveState, TerminalState,
+  isSendState, isReceiveState, isTerminalState,
+} from './EFSM';
 import { 
   Constructor, ReceiveHandler, 
-  isSendState, isReceiveState, isTerminalState,
   SendComponentFactory, 
   DOMEvents, FunctionArguments, EventHandler
 } from './Session';

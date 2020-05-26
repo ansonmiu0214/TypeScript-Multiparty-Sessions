@@ -35,22 +35,22 @@ class BrowserStrategy(CodeGenerationStrategy,
 
         # Generate Session
         files.append((os.path.join(self.output_dir, protocol, role, 'Session.ts'),
-                     self.template_generator.render(path='Session.ts',
+                     self.template_generator.render(path='session.ts.j2',
                                                     payload={})))
 
         # Generate roles
         files.append((os.path.join(self.output_dir, protocol, role, 'Roles.ts'),
-                     self.template_generator.render(path='Roles.ts.j2',
+                     self.template_generator.render(path='roles.ts.j2',
                                                     payload={'endpoint': endpoint})))
 
         # Generate cancellation enums
         files.append((os.path.join(self.output_dir, protocol, role, 'Cancellation.ts'),
-                     self.template_generator.render(path='Cancellation.ts',
+                     self.template_generator.render(path='cancellation.ts.j2',
                                                     payload={})))
 
         # Generate EFSM
         files.append((os.path.join(self.output_dir, protocol, role, 'EFSM.ts'),
-                     self.template_generator.render(path='EFSM.ts.j2',
+                     self.template_generator.render(path='efsm.ts.j2',
                                                     payload={'endpoint': endpoint})))
 
         # Generate runtime
