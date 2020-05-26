@@ -69,7 +69,7 @@ export namespace Message {
   | S{{ state ~ action.label }}{% endfor %};
 {% endfor %}
 
-  export interface ConnectInvite {
+  export interface ConnectRequest {
     connect: Roles.Peers
   };
 

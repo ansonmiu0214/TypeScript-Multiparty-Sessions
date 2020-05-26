@@ -57,7 +57,7 @@ export class {{ endpoint.role }}
     // Handle connection invitation message from participant.
     const onSubscribe = (event: WebSocketMessage) => {
       const { data, target: socket } = event;
-      const { connect: role } = JSON.parse(data) as Message.ConnectInvite;
+      const { connect: role } = JSON.parse(data) as Message.ConnectRequest;
 
       const roleAlreadyOccupied = !waiting.has(role);
       if (roleAlreadyOccupied) {
