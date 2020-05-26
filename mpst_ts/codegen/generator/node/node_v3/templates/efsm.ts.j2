@@ -108,33 +108,38 @@ export namespace Handler {
   {% endfor %}
 };
 
+// ===========
+//
+// ===========
+
+abstract class ISend {
+  type: 'Send' = 'Send';
+  abstract performSend(
+    next: EfsmTransitionHandler,
+    cancel: (reason?: any) => void,
+    sendMessage: (role: Roles.Peers, label: string, payload: any[]) => void
+  ): void;
+}
+
+abstract class IReceive {
+  type: 'Receive' = 'Receive';
+  abstract prepareReceive(
+    next: EfsmTransitionHandler,
+    cancel: (reason?: any) => void,
+    register: (from: Roles.Peers, messageHandler: MessageHandler) => void
+  ): void;
+}
+
+abstract class ITerminal {
+  type: 'Terminal' = 'Terminal';
+}
+
 // =================================
 // "Implementation"
 // := wrapper around message handler
 // =================================
 
 export namespace Implementation {
-  abstract class ISend {
-    type: 'Send' = 'Send';
-    abstract performSend(
-      next: EfsmTransitionHandler,
-      cancel: (reason?: any) => void,
-      sendMessage: (role: Roles.Peers, label: string, payload: any[]) => void
-    ): void;
-  }
-
-  abstract class IReceive {
-    type: 'Receive' = 'Receive';
-    abstract prepareReceive(
-      next: EfsmTransitionHandler,
-      cancel: (reason?: any) => void,
-      register: (from: Roles.Peers, messageHandler: MessageHandler) => void
-    ): void;
-  }
-
-  abstract class ITerminal {
-    type: 'Terminal' = 'Terminal';
-  }
 
   export type Type = ISend | IReceive | ITerminal;
 
@@ -171,7 +176,7 @@ export namespace Implementation {
   {% elif endpoint.efsm.is_receive_state(state) -%}
   export class S{{ state }} extends IReceive {
 
-    constructor(private handler: Handler.S{{ state}}) {
+    constructor(private handler: Handler.S{{ state }}) {
       super();
     }
 

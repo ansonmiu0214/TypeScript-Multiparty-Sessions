@@ -30,73 +30,64 @@ interface WebSocketMessage {
 export class {{ endpoint.role }}
 {
 
-  private wss: WebSocket.Server
-  private waiting: Set<Roles.Peers>
-  private roleToSocket: Partial<RoleToSocket>
-  private cancellation: (role: Roles.All, reason?: any) => void
-
   constructor(wss: WebSocket.Server,
               initialState: Implementation.S{{ endpoint.efsm.initial_state.id }},
               cancellation: (role: Roles.All, reason?: any) => void)
   {
-    this.wss = wss;
-    this.waiting = new Set<Roles.Peers>([{% for role in endpoint.efsm.other_roles %}Roles.Peers.{{ role ~ (',' if not loop.last else '') }}{% endfor %}]);
-    this.cancellation = cancellation;
 
-    this.roleToSocket = {
+    // Keep track of participants that have yet to join.
+    const waiting: Set<Roles.Peers> = new Set([{% for role in endpoint.efsm.other_roles %}Roles.Peers.{{ role ~ (',' if not loop.last else '') }}{% endfor %}]);
+
+    // Keep track of mapping between role and WebSocket.
+    const roleToSocket: Partial<RoleToSocket> = {
       {% for role in endpoint.efsm.other_roles -%}
       [Roles.Peers.{{ role }}]: undefined,
       {%- endfor %}
     };
-
     const socketToRole = new Map<WebSocket, Roles.Peers>();
 
-    // Handle event of socket closing when waiting for
-    // other participants.
-    const onClose = (event: WebSocket.CloseEvent) => {
-      const { target: socket } = event;
+    // Handle explicit cancellation during the join phase.
+    const onClose = ({ target: socket }: WebSocket.CloseEvent) => {
       socket.removeAllListeners();
 
-      const role = socketToRole.get(socket);
-      if (role !== undefined) {
-        // Wait for this role again
-        this.waiting.add(role);
-      }
+      // Wait for the role again - guaranteed to occur in map by construction.
+      waiting.add(socketToRole.get(socket) as Roles.Peers);
     }
 
+    // Handle connection invitation message from participant.
     const onSubscribe = (event: WebSocketMessage) => {
       const { data, target: socket } = event;
       const { connect: role } = JSON.parse(data) as Message.ConnectInvite;
-      if (!this.waiting.has(role)) {
-        // Role already occupied
 
+      const roleAlreadyOccupied = !waiting.has(role);
+      if (roleAlreadyOccupied) {
+        // Remove listeners, as all events are irrelevant now.
         socket.removeAllListeners();
 
+        // Inform participant of unsuccessful join and cancel.
         socket.close(Cancellation.Emit.ROLE_OCCUPIED);
-
         return;
       }
 
-      this.roleToSocket[role] = socket;
-
+      // Update role-WebSocket mapping.
+      roleToSocket[role] = socket;
       socketToRole.set(socket, role);
+      waiting.delete(role);
 
-      this.waiting.delete(role);
-
-      if (this.waiting.size === 0) {
-        // Execute protocol
-        new Session(this.wss, this.roleToSocket as RoleToSocket, cancellation, initialState);
+      // Execute protocol when all participants have joined.
+      if (waiting.size === 0) {
+        new Session(wss, roleToSocket as RoleToSocket, cancellation, initialState);
       }
     }
 
-    const onConnection = (ws: WebSocket) => {
+    // Remove previous connection listeners.
+    wss.removeAllListeners();
+
+    // Bind event listeners for every new connection.
+    wss.addListener('connection', (ws: WebSocket) => {
       ws.onmessage = onSubscribe;
       ws.onclose = onClose;
-    };
-
-    // Remove previous connection listeners
-    this.wss.removeAllListeners();
-    this.wss.addListener('connection', onConnection);
+    });
   }
 
 }
@@ -125,73 +116,43 @@ class Session {
     this.roleToSocket = roleToSocket;
     this.cancellation = cancellation;
     this.initialState = initialState;
+
+    // Keep track of active participants in the session.
     this.activeRoles = new Set([{% for role in endpoint.efsm.other_roles %}Roles.Peers.{{ role ~ (',' if not loop.last else '') }}{% endfor %}]);
 
-    // Bind instance methods.
+    // Bind instance methods that are passed as callbacks to EFSM implementations.
     this.next = this.next.bind(this);
+    this.send = this.send.bind(this);
     this.receive = this.receive.bind(this);
     this.registerMessageHandler = this.registerMessageHandler.bind(this);
-    this.send = this.send.bind(this);
+    this.close = this.close.bind(this);
     this.cancel = this.cancel.bind(this);
     
-    // Bind socket message handler.
     Object.values(Roles.Peers).forEach(role => {
       const socket = this.roleToSocket[role];
 
+      // Bind handlers for message receive and socket close.
       socket.onmessage = this.receive(role);
-
-      socket.onclose = ({ code, reason }) => {
-
-        this.activeRoles.delete(role);
-
-        switch (code) {
-          case Cancellation.Receive.NORMAL: {
-            // Normal cancellation
-
-            socket.removeAllListeners();
-            
-            if (this.activeRoles.size === 0) {
-              new {{ endpoint.role }}(this.wss, initialState, this.cancellation);
-            }
-
-            return;
-          }
-          case Cancellation.Receive.CLIENT_BROWSER_CLOSED: {
-            // Client closed their browser
-            this.propagateCancellation(role, 'browser disconnected');
-            return;
-          }
-          case Cancellation.Receive.LOGICAL_ERROR: {
-            // Client has logical error
-            this.propagateCancellation(role, reason);
-            return;
-          }
-          default: {
-            // Unsupported code
-            this.propagateCancellation(role, reason);
-            return;
-          }
-        }
-      }
-
+      socket.onclose = this.close(role);
     });
     
-    Object.values(this.roleToSocket).forEach(socket => {
-      socket.send(JSON.stringify(Message.ConnectConfirm));
-    });
-
-
     // Initialise queues for receiving.
     this.messageQueue = {
       {% for role in endpoint.efsm.other_roles -%}
       [Roles.Peers.{{ role }}]: [],
       {%- endfor %}
     };
+
     this.handlerQueue = {
       {% for role in endpoint.efsm.other_roles -%}
       [Roles.Peers.{{ role }}]: [],
       {%- endfor %}
     };
+
+    // Notify all roles for confirming the connection.
+    Object.values(this.roleToSocket).forEach(socket => {
+      socket.send(JSON.stringify(Message.ConnectConfirm));
+    });
     
     // Initialise state machine.
     this.next(initialState);
@@ -200,14 +161,15 @@ class Session {
   // =====================
   // State machine methods
   // =====================
-  next(implementation: Implementation.Type) {
+
+  next(state: Implementation.Type) {
     try {
-      switch (implementation.type) {
+      switch (state.type) {
         case 'Send': {
-          return implementation.performSend(this.next, this.cancel, this.send);
+          return state.performSend(this.next, this.cancel, this.send);
         }
         case 'Receive': {
-          return implementation.prepareReceive(this.next, this.cancel, this.registerMessageHandler);
+          return state.prepareReceive(this.next, this.cancel, this.registerMessageHandler);
         }
         case 'Terminal': {
           return;
@@ -218,18 +180,28 @@ class Session {
     }
   }
 
+  restart() {
+    new {{ endpoint.role }}(this.wss, this.initialState, this.cancellation);
+  }
+
   // ===============
   // Channel methods
   // ===============
 
   send(to: Roles.Peers, label: string, payload: any[], from: Roles.All = Roles.Self) {
-    this.roleToSocket[to].send(JSON.stringify(Message.toChannel(from, label, payload)), (error) => {
+    const message = Message.toChannel(from, label, payload);
+    const onError = (error?: Error) => {
       if (error !== undefined) {
+        
+        // Only flag an error if the recipient is meant to be active,
+        // and the message cannot be sent.
         if (this.activeRoles.has(to)) {
           throw new Error(`Cannot send to role: ${to}`);
         }
+
       }
-    });
+    };
+    this.roleToSocket[to].send(JSON.stringify(message), onError);
   }
 
   receive(from: Roles.Peers) {
@@ -258,6 +230,44 @@ class Session {
     }
   }
 
+  // ============
+  // Cancellation
+  // ============
+
+  close(role: Roles.Peers) {
+    return ({ target: socket, code, reason }: WebSocket.CloseEvent) => {
+      this.activeRoles.delete(role);
+      switch (code) {
+        case Cancellation.Receive.NORMAL: {
+          // Unsubscribe from socket events.
+          socket.removeAllListeners();
+          
+          // Restart the protocol when all roles have reached terminal states.
+          if (this.activeRoles.size === 0) {
+            this.restart();
+          }
+
+          return;
+        }
+        case Cancellation.Receive.CLIENT_BROWSER_CLOSED: {
+          // Client closed their browser
+          this.propagateCancellation(role, 'browser disconnected');
+          return;
+        }
+        case Cancellation.Receive.LOGICAL_ERROR: {
+          // Client has logical error
+          this.propagateCancellation(role, reason);
+          return;
+        }
+        default: {
+          // Unsupported code
+          this.propagateCancellation(role, reason);
+          return;
+        }
+      }
+    }
+  }
+
   /**
     * Propagate explicit cancellation to other roles.
     * 
@@ -265,40 +275,54 @@ class Session {
     */
   propagateCancellation(cancelledRole: Roles.Peers, reason?: any) {
 
-    // Deactivate all roles:
-    // a send could be scheduled later, so that needs to be invalidated.
+    // Deactivate all roles as the session is cancelled.
     this.activeRoles.clear();
 
     try {
+
+      // Execute user-defined cancellation handler.
       this.cancellation(cancelledRole, reason);
+
     } finally {
+
+      const message = Cancellation.toChannel(cancelledRole, reason);
+
+      // Emit cancellation to other roles.
       Object.entries(this.roleToSocket)
         .filter(([role, _]) => role !== cancelledRole)
         .forEach(([_, socket]) => {
           socket.removeAllListeners();
-          socket.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify(Cancellation.toChannel(cancelledRole, reason)));
+          socket.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify(message));
         });
       
-      new {{ endpoint.role }}(this.wss, this.initialState, this.cancellation);
+      this.restart();
     }
+
   }
 
   cancel(reason?: any) {
 
-    // Deactivate all roles:
-    // a send could be scheduled later, so that needs to be invalidated.
+    // Deactivate all roles as the session is cancelled.
     this.activeRoles.clear();
 
     try {
+
+      // Execute user-defined cancellation handler.
       this.cancellation(Roles.Self, reason);
+
     } finally {
+
+      const message = Cancellation.toChannel(Roles.Self, reason);
+
+      // Emit cancellation to other roles.
       Object.values(this.roleToSocket)
         .forEach(socket => {
           socket.removeAllListeners();
-          socket.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify(Cancellation.toChannel(Roles.Self, reason)));
+          socket.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify(message));
         });
 
-      new {{ endpoint.role }}(this.wss, this.initialState, this.cancellation);
+      this.restart();
     }
   }
+
 }
