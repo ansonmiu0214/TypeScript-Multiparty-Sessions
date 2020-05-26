@@ -141,7 +141,7 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
       default: {
         // Unsupported code
         // FIXME: figure out which is server
-        this.processCancellation('{{ endpoint.role }}', reason);
+        this.processCancellation(Roles.{{ endpoint.server }}, reason);
         return;
       }
     }
@@ -278,7 +278,7 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
       case Cancellation.Receive.SERVER_DISCONNECT: {
         // Server role disconnected
         // FIXME: figure out which is the server other_roles
-        this.processCancellation('{{ endpoint.role }}', 'server disconnected');
+        this.processCancellation(Roles.{{ endpoint.server }}, 'server disconnected');
         return;
       }
       case Cancellation.Receive.CLIENT_DISCONNECT: {
@@ -296,7 +296,7 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
       default: {
         // Unsupported error code
         // FIXME: figure out which is the server other_roles
-        this.processCancellation('{{ endpoint.role }}', reason);
+        this.processCancellation(Roles.{{ endpoint.server }}, reason);
         return;
       }
     }

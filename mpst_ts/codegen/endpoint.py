@@ -8,6 +8,7 @@ from ..utils.type_declaration import DataType
 class Endpoint:
     protocol: str
     role: str
+    server: str
     efsm: EFSM
     types: typing.Iterable[DataType]
 
