@@ -1,28 +1,18 @@
 // EFSM.ts
 
-// =====
-// Roles
-// =====
-
-export enum Roles {
-  {% for role in endpoint.efsm.other_roles -%}
-  {{ role }} = "{{ role }}",
-  {%- endfor %}
-};
-
 // ======
 // States
 // ======
 
 export enum SendState {
   {% for state in endpoint.efsm.send_states -%}
-  S{{ state.id }} = 'S{{ state.id }}',
+  S{{ state }} = 'S{{ state }}',
   {%- endfor %}
 };
 
 export enum ReceiveState {
   {% for state in endpoint.efsm.receive_states -%}
-  S{{ state.id }} = 'S{{ state.id }}',
+  S{{ state }} = 'S{{ state }}',
   {%- endfor %}
 };
 

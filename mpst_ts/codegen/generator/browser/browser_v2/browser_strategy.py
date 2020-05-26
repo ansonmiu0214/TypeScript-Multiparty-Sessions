@@ -38,6 +38,11 @@ class BrowserStrategy(CodeGenerationStrategy,
                      self.template_generator.render(path='Session.ts',
                                                     payload={})))
 
+        # Generate roles
+        files.append((os.path.join(self.output_dir, protocol, role, 'Roles.ts'),
+                     self.template_generator.render(path='Roles.ts.j2',
+                                                    payload={'endpoint': endpoint})))
+
         # Generate cancellation enums
         files.append((os.path.join(self.output_dir, protocol, role, 'Cancellation.ts'),
                      self.template_generator.render(path='Cancellation.ts',

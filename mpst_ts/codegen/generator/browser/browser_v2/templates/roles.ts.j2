@@ -1,0 +1,14 @@
+// Roles.ts
+
+export enum Peers {
+  {% for role in endpoint.efsm.other_roles -%}
+  {{ role }} = "{{ role }}",
+  {%- endfor %}
+};
+
+export type All = Self | Peers;
+export type Self = "{{ endpoint.role }}";
+
+// Aliases
+export const Self: Self = "{{ endpoint.role }}";
+export const Server: Peers = Peers.{{ endpoint.server }};

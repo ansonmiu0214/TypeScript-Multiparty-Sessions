@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { State, ReceiveState, SendState, TerminalState, Roles } from './EFSM';
+import * as Roles from './Roles';
+import { State, ReceiveState, SendState, TerminalState, } from './EFSM';
 import { MaybePromise, ReceiveHandler } from './Session';
 
 {% for type in endpoint.types -%}
@@ -8,7 +9,7 @@ import { {{ type.external ~ ((' as ' ~ type.alias) if type.external != type.alia
 {% endfor %}
 
 type P = {
-  register: (role: Roles, handle: ReceiveHandler) => void
+  register: (role: Roles.Peers, handle: ReceiveHandler) => void
 }
 
 enum Labels {
@@ -39,7 +40,7 @@ export default abstract class S{{ state.id }}<
 
   constructor(props: _P & P) {
     super(props);
-    this.props.register(Roles.{{ state.role }}, this.handle.bind(this));
+    this.props.register(Roles.Peers.{{ state.role }}, this.handle.bind(this));
   }
 
   handle(message: any): MaybePromise<State> {
