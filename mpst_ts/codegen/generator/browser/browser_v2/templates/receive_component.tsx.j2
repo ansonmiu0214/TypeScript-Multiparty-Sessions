@@ -50,8 +50,7 @@ export default abstract class S{{ state.id }}<
 >
 {
 
-  constructor(props: _P & P) {
-    super(props);
+  componentDidMount() {
     this.props.register(Roles.Peers.{{ state.role }}, this.handle.bind(this));
   }
 
@@ -87,5 +86,4 @@ export default abstract class S{{ state.id }}<
   {% for action in state.actions -%}
   abstract {{ action.label }}({%- for payload in action.payloads -%}{{ 'payload' ~ loop.index ~ ': ' ~ payload ~ ', ' }}{%- endfor -%}): MaybePromise<void>;
   {%- endfor %}
-
 }

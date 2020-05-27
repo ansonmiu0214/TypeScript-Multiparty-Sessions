@@ -37,31 +37,57 @@ type P = {
     S{{ state.id }}: Constructor<S{{ state.id }}>,
     {% endfor %}
   },
-  waiting: JSX.Element,
-  connectFailed: JSX.Element,
-  cancellation: (role: Roles.All, reason?: any) => JSX.Element,
+  waiting: React.ReactNode,
+  connectFailed: React.ReactNode,
+  cancellation: (role: Roles.All, reason?: any) => React.ReactNode,
 }
 
 type S = {
-  ws: WebSocket,
-  elem: JSX.Element
+  elem: React.ReactNode
 }
 
 // FIXME: relocate
 type RoleToMessageQueue = Roles.PeersToMapped<any[]>;
 type RoleToHandlerQueue = Roles.PeersToMapped<ReceiveHandler[]>;
 
-export default class {{ endpoint.role }} extends React.Component<P, S> {
+export default class Session extends React.Component<P, {
+  ws?: WebSocket
+}> {
+
+  constructor(props: P) {
+    super(props);
+    this.state = {
+      ws: undefined
+    };
+  }
+
+  componentDidMount() {
+    // Set up WebSocket
+    this.setState({
+      ws: new WebSocket(this.props.endpoint),
+    });
+  }
+
+  render() {
+    const { ws } = this.state;
+    return ws === undefined 
+      ? this.props.waiting 
+      : <{{ endpoint.role }} ws={ws} {...this.props} />;
+  }
+
+}
+
+type PropTypeWithWS = P & { ws: WebSocket };
+
+class {{ endpoint.role }} extends React.Component<PropTypeWithWS, S> {
 
   private messageQueue: RoleToMessageQueue
   private handlerQueue: RoleToHandlerQueue
 
-  constructor(props: P) {
+  constructor(props: PropTypeWithWS) {
     super(props);
 
-    // Set up WebSocket
     this.state = {
-      ws: new WebSocket(props.endpoint),
       elem: props.waiting,
     };
 
@@ -90,7 +116,7 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
   }
 
   componentDidMount() {
-    const { ws } = this.state;
+    const { ws } = this.props;
     ws.onmessage = this.onReceiveInit;
 
     // Send connection message
@@ -111,7 +137,7 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
   // ===============
 
   private onReceiveInit(message: MessageEvent) {
-    const { ws } = this.state;
+    const { ws } = this.props;
     ws.onmessage = this.onReceiveMessage;
     ws.onclose = this.onClose;
 
@@ -231,7 +257,7 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
   // ===============
 
   private sendMessage(role: Roles.Peers, label: string, payload: any, successor: State) {
-    this.state.ws.send(JSON.stringify(Message.toChannel(role, label, payload)));
+    this.props.ws.send(JSON.stringify(Message.toChannel(role, label, payload)));
     this.advance(successor);
   }
 
@@ -256,7 +282,7 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
     }
   }
   private terminate() {
-    this.state.ws.close(Cancellation.Emit.NORMAL);
+    this.props.ws.close(Cancellation.Emit.NORMAL);
   }
 
   // ============
@@ -304,7 +330,7 @@ export default class {{ endpoint.role }} extends React.Component<P, S> {
     const message = Cancellation.toChannel(Roles.Self, error);
 
     // Emit cancellation
-    this.state.ws.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify(message));
+    this.props.ws.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify(message));
 
     // Process cancellation
     this.processCancellation(Roles.Self, error);

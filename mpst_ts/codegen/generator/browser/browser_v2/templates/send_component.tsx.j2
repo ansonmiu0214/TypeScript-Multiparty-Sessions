@@ -42,7 +42,7 @@ export default abstract class S{{ state.id }}<
     {% elif endpoint.efsm.is_receive_state(action.succ) -%}
     this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>(Roles.Peers.{{ state.role }}, '{{ action.label }}' , ReceiveState.S{{ action.succ }});
     {% else -%}
-    this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>(Roles.Roles.{{ state.role }}, '{{ action.label }}' , TerminalState.S{{ action.succ }});
+    this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>(Roles.Peers.{{ state.role }}, '{{ action.label }}' , TerminalState.S{{ action.succ }});
     {% endif -%}
     {% endfor %}
   }
