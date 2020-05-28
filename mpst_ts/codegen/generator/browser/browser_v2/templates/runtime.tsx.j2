@@ -27,10 +27,14 @@ import {
 import S{{ state.id }} from './S{{ state.id }}';
 {%- endfor %}
 
+type RoleToMessageQueue = Roles.PeersToMapped<any[]>;
+type RoleToHandlerQueue = Roles.PeersToMapped<ReceiveHandler[]>;
+
 // ==============
 // Component type
 // ==============
-type P = {
+
+type Props = {
   endpoint: string,
   states: {
     {% for state in endpoint.efsm.states -%}
@@ -40,21 +44,19 @@ type P = {
   waiting: React.ReactNode,
   connectFailed: React.ReactNode,
   cancellation: (role: Roles.All, reason?: any) => React.ReactNode,
-}
+};
 
-type S = {
+type Transport = {
+  ws: WebSocket
+};
+
+type ComponentState = {
   elem: React.ReactNode
-}
+};
 
-// FIXME: relocate
-type RoleToMessageQueue = Roles.PeersToMapped<any[]>;
-type RoleToHandlerQueue = Roles.PeersToMapped<ReceiveHandler[]>;
+export default class Session extends React.Component<Props, Partial<Transport>> {
 
-export default class Session extends React.Component<P, {
-  ws?: WebSocket
-}> {
-
-  constructor(props: P) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       ws: undefined
@@ -62,7 +64,7 @@ export default class Session extends React.Component<P, {
   }
 
   componentDidMount() {
-    // Set up WebSocket
+    // Set up WebSocket connection
     this.setState({
       ws: new WebSocket(this.props.endpoint),
     });
@@ -77,14 +79,12 @@ export default class Session extends React.Component<P, {
 
 }
 
-type PropTypeWithWS = P & { ws: WebSocket };
-
-class {{ endpoint.role }} extends React.Component<PropTypeWithWS, S> {
+class {{ endpoint.role }} extends React.Component<Props & Transport, ComponentState> {
 
   private messageQueue: RoleToMessageQueue
   private handlerQueue: RoleToHandlerQueue
 
-  constructor(props: PropTypeWithWS) {
+  constructor(props: Props & Transport) {
     super(props);
 
     this.state = {

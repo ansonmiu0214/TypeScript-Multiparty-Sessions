@@ -20,9 +20,9 @@ import {
 import { {{ type.external ~ ((' as ' ~ type.alias) if type.external != type.alias else '') }} } from "{{ type.path }}";
 {% endfor %}
 
-type P = {
-  register: (role: Roles.Peers, handle: ReceiveHandler) => void
-}
+// ==================
+// Message structures
+// ==================
 
 enum Labels {
   {% for label in state.labels -%}
@@ -39,15 +39,15 @@ type {{ action.label }}Message = {
 
 type Message = {% for label in state.labels -%}{{ '| ' ~ label ~ 'Message' }}{%- endfor %}
 
-export default abstract class S{{ state.id }}<
-  _P = {},
-  _S = {},
-  _SS = any
-> extends React.Component<
-  _P & P,
-  _S,
-  _SS
->
+// ===============
+// Component types
+// ===============
+
+type Props = {
+  register: (role: Roles.Peers, handle: ReceiveHandler) => void
+};
+
+export default abstract class S{{ state }}<ComponentState = {}> extends React.Component<Props, ComponentState>
 {
 
   componentDidMount() {

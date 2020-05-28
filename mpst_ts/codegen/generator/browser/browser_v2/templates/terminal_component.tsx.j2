@@ -1,21 +1,16 @@
 import React from "react";
 
-type P = {
+// ===============
+// Component types
+// ===============
+
+type Props = {
   terminate: () => void,
-}
+};
 
-export default abstract class S{{ state }}<
-  _P = {},
-  _S = {},
-  _SS = any
-> extends React.Component<
-  _P & P,
-  _S,
-  _SS
-> {
+export default abstract class S{{ state }}<ComponentState = {}> extends React.Component<Props, ComponentState> {
 
-  constructor(props: _P & P) {
-    super(props);
+  componentDidMount() {
     this.props.terminate();
   }
 

@@ -17,32 +17,35 @@ import {
 import { {{ type.external ~ ((' as ' ~ type.alias) if type.external != type.alias else '') }} } from "{{ type.path }}";
 {% endfor %}
 
-type P = {
+// ===============
+// Component types
+// ===============
+
+type Props = {
   factory: SendComponentFactoryFactory
 }
 
-export default abstract class S{{ state.id }}<
-  _P = {},
-  _S = {},
-  _SS = any
-> extends React.Component<
-  P & _P,
-  _S,
-  _SS
-> {
+export default abstract class S{{ state }}<ComponentState = {}> extends React.Component<Props, ComponentState>
+{
 
   {% for action in state.actions -%}
   protected {{ action.label }}: SendComponentFactory<[{{ action.payloads|join(', ') }}]>;
   {% endfor %}
-  constructor(props: P & _P) {
+  constructor(props: Props) {
     super(props);
     {% for action in state.actions -%}
     {% if endpoint.efsm.is_send_state(action.succ) -%}
-    this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>(Roles.Peers.{{ state.role }}, '{{ action.label }}' , SendState.S{{ action.succ }});
+    this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>(
+      Roles.Peers.{{ state.role }}, '{{ action.label }}' , SendState.S{{ action.succ }}
+    );
     {% elif endpoint.efsm.is_receive_state(action.succ) -%}
-    this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>(Roles.Peers.{{ state.role }}, '{{ action.label }}' , ReceiveState.S{{ action.succ }});
+    this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>(
+      Roles.Peers.{{ state.role }}, '{{ action.label }}' , ReceiveState.S{{ action.succ }}
+    );
     {% else -%}
-    this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>(Roles.Peers.{{ state.role }}, '{{ action.label }}' , TerminalState.S{{ action.succ }});
+    this.{{ action.label }} = props.factory<[{{ action.payloads|join(', ') }}]>(
+      Roles.Peers.{{ state.role }}, '{{ action.label }}' , TerminalState.S{{ action.succ }}
+    );
     {% endif -%}
     {% endfor %}
   }
