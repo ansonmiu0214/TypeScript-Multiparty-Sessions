@@ -1,0 +1,118 @@
+
+> server@1.0.0 devStart /Users/Anson/Computing_4/Individual_Project/TypeScript-Multiparty-Sessions/benchmarks/mpst/server
+> ts-node app.ts
+
+Listening on port 8080...
+[HMR] Waiting for update signal from WDS...
+Download the React DevTools for a better development experience: https://fb.me/react-devtools
+Loaded page
+./src/App.tsx
+  Line 2:8:    'logo' is defined but never used            @typescript-eslint/no-unused-vars
+  Line 14:10:  'count' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  Line 14:17:  '_' is assigned a value but never used      @typescript-eslint/no-unused-vars
+./src/PingPong/Client/S7.tsx
+  Line 6:5:  'ReceiveState' is defined but never used  @typescript-eslint/no-unused-vars
+./src/PingPong/Client/S5.tsx
+  Line 7:5:  'SendState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 8:5:  'TerminalState' is defined but never used  @typescript-eslint/no-unused-vars
+benchmark: 14.725ms 1
+benchmark: 20.278ms 2
+benchmark: 23.538ms 3
+benchmark: 26.834ms 4
+benchmark: 30.097ms 5
+benchmark: 33.180ms 6
+benchmark: 35.941ms 7
+benchmark: 39.108ms 8
+benchmark: 41.879ms 9
+benchmark: 44.663ms 10
+benchmark: 47.853ms 11
+benchmark: 50.644ms 12
+benchmark: 53.388ms 13
+benchmark: 56.047ms 14
+benchmark: 58.737ms 15
+benchmark: 62.330ms 16
+benchmark: 65.475ms 17
+benchmark: 68.282ms 18
+benchmark: 70.814ms 19
+benchmark: 73.299ms 20
+benchmark: 75.768ms 21
+benchmark: 78.457ms 22
+benchmark: 81.438ms 23
+benchmark: 83.986ms 24
+benchmark: 86.543ms 25
+benchmark: 89.132ms 26
+benchmark: 91.736ms 27
+benchmark: 94.708ms 28
+benchmark: 97.890ms 29
+benchmark: 100.525ms 30
+benchmark: 103.344ms 31
+benchmark: 105.680ms 32
+benchmark: 109.867ms 33
+benchmark: 113.259ms 34
+benchmark: 115.770ms 35
+benchmark: 118.068ms 36
+benchmark: 120.435ms 37
+benchmark: 122.828ms 38
+benchmark: 125.223ms 39
+benchmark: 128.004ms 40
+benchmark: 130.827ms 41
+benchmark: 133.459ms 42
+benchmark: 135.788ms 43
+benchmark: 138.752ms 44
+benchmark: 141.369ms 45
+benchmark: 144.225ms 46
+benchmark: 146.966ms 47
+benchmark: 149.656ms 48
+benchmark: 151.951ms 49
+benchmark: 154.201ms 50
+benchmark: 156.403ms 51
+benchmark: 159.270ms 52
+benchmark: 161.857ms 53
+benchmark: 164.159ms 54
+benchmark: 170.307ms 55
+benchmark: 172.714ms 56
+benchmark: 175.082ms 57
+benchmark: 178.541ms 58
+benchmark: 181.598ms 59
+benchmark: 184.136ms 60
+benchmark: 186.426ms 61
+benchmark: 188.727ms 62
+benchmark: 190.905ms 63
+benchmark: 193.237ms 64
+benchmark: 196.368ms 65
+benchmark: 198.851ms 66
+benchmark: 202.271ms 67
+benchmark: 204.783ms 68
+benchmark: 207.508ms 69
+benchmark: 210.457ms 70
+benchmark: 213.189ms 71
+benchmark: 216.108ms 72
+benchmark: 218.503ms 73
+benchmark: 223.801ms 74
+benchmark: 226.683ms 75
+benchmark: 230.568ms 76
+benchmark: 233.954ms 77
+benchmark: 236.700ms 78
+benchmark: 239.628ms 79
+benchmark: 242.171ms 80
+benchmark: 245.051ms 81
+benchmark: 248.462ms 82
+benchmark: 251.649ms 83
+benchmark: 253.953ms 84
+benchmark: 256.109ms 85
+benchmark: 258.582ms 86
+benchmark: 262.031ms 87
+benchmark: 266.277ms 88
+benchmark: 269.475ms 89
+benchmark: 272.764ms 90
+benchmark: 278.646ms 91
+benchmark: 285.021ms 92
+benchmark: 288.210ms 93
+benchmark: 293.221ms 94
+benchmark: 296.735ms 95
+benchmark: 299.533ms 96
+benchmark: 301.817ms 97
+benchmark: 304.314ms 98
+benchmark: 306.455ms 99
+benchmark: 308.873ms 100
+benchmark: 316.653ms
