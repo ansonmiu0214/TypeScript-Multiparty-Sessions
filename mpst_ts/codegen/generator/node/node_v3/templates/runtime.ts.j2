@@ -1,5 +1,7 @@
 import WebSocket from 'ws';
 
+import * as Cancellation from './Cancellation';
+
 import {
   Implementation,
   Message,
@@ -7,7 +9,9 @@ import {
   Roles,
 } from './EFSM';
 
-import * as Cancellation from './Cancellation';
+import {
+  MaybePromise,
+} from './types';
 
 // ===============
 // WebSocket Types
@@ -31,8 +35,8 @@ export class {{ endpoint.role }}
 {
 
   constructor(wss: WebSocket.Server,
-              initialState: Implementation.S{{ endpoint.efsm.initial_state.id }},
-              cancellation: (role: Roles.All, reason?: any) => void)
+              initialState: Implementation.S{{ endpoint.efsm.initial_state }},
+              cancellation: (role: Roles.All, reason?: any) => MaybePromise<void>)
   {
 
     // Keep track of participants that have yet to join.
@@ -98,22 +102,21 @@ export class {{ endpoint.role }}
 
 class Session {
 
-  private wss: WebSocket.Server
+  private wss: WebSocket.Server;
   private roleToSocket: RoleToSocket
 
-  // FIXME: this can be asynchronous! Handle accordingly
-  private cancellation: (role: Roles.All, reason?: any) => void
+  private cancellation: (role: Roles.All, reason?: any) => MaybePromise<void>;
   
-  private initialState: Implementation.S{{ endpoint.efsm.initial_state.id }}
-  private messageQueue: RoleToMessageQueue
-  private handlerQueue: RoleToHandlerQueue
+  private initialState: Implementation.S{{ endpoint.efsm.initial_state }};
+  private messageQueue: RoleToMessageQueue;
+  private handlerQueue: RoleToHandlerQueue;
 
-  private activeRoles: Set<Roles.Peers>
+  private activeRoles: Set<Roles.Peers>;
 
   constructor(wss: WebSocket.Server,
               roleToSocket: RoleToSocket,
-              cancellation: (role: Roles.All, reason?: any) => void,
-              initialState: Implementation.S{{ endpoint.efsm.initial_state.id }}) {
+              cancellation: (role: Roles.All, reason?: any) => MaybePromise<void>,
+              initialState: Implementation.S{{ endpoint.efsm.initial_state }}) {
     this.wss = wss;
     this.roleToSocket = roleToSocket;
     this.cancellation = cancellation;
@@ -129,6 +132,7 @@ class Session {
     this.registerMessageHandler = this.registerMessageHandler.bind(this);
     this.close = this.close.bind(this);
     this.cancel = this.cancel.bind(this);
+    this.restart = this.restart.bind(this);
     
     Object.values(Roles.Peers).forEach(role => {
       const socket = this.roleToSocket[role];
@@ -280,23 +284,26 @@ class Session {
     // Deactivate all roles as the session is cancelled.
     this.activeRoles.clear();
 
+    // Emit cancellation to other roles.
+    const message = Cancellation.toChannel(cancelledRole, reason);
+    Object.entries(this.roleToSocket)
+      .filter(([role, _]) => role !== cancelledRole)
+      .forEach(([_, socket]) => {
+        socket.removeAllListeners();
+        socket.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify(message));
+      });
+
     try {
 
       // Execute user-defined cancellation handler.
-      this.cancellation(cancelledRole, reason);
+      const doCancel = this.cancellation(cancelledRole, reason);
+      if (doCancel instanceof Promise) {
+        doCancel.then(this.restart).catch(this.restart);
+      } else {
+        this.restart();
+      }
 
-    } finally {
-
-      const message = Cancellation.toChannel(cancelledRole, reason);
-
-      // Emit cancellation to other roles.
-      Object.entries(this.roleToSocket)
-        .filter(([role, _]) => role !== cancelledRole)
-        .forEach(([_, socket]) => {
-          socket.removeAllListeners();
-          socket.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify(message));
-        });
-      
+    } catch {
       this.restart();
     }
 
@@ -307,24 +314,26 @@ class Session {
     // Deactivate all roles as the session is cancelled.
     this.activeRoles.clear();
 
+    // Emit cancellation to other roles.
+    const message = Cancellation.toChannel(Roles.Self, reason);
+    Object.values(this.roleToSocket)
+      .forEach(socket => {
+        socket.removeAllListeners();
+        socket.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify(message));
+      });
+
     try {
-
       // Execute user-defined cancellation handler.
-      this.cancellation(Roles.Self, reason);
-
-    } finally {
-
-      const message = Cancellation.toChannel(Roles.Self, reason);
-
-      // Emit cancellation to other roles.
-      Object.values(this.roleToSocket)
-        .forEach(socket => {
-          socket.removeAllListeners();
-          socket.close(Cancellation.Emit.LOGICAL_ERROR, JSON.stringify(message));
-        });
-
+      const doCancel = this.cancellation(Roles.Self, reason);
+      if (doCancel instanceof Promise) {
+        doCancel.then(this.restart).catch(this.restart);
+      } else {
+        this.restart();
+      }
+    } catch {
       this.restart();
     }
+
   }
 
 }
