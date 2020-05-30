@@ -35,11 +35,13 @@ export default class Client extends React.Component<Props, State> {
     ws.onmessage = ({ data }) => {
       const { label, payload } = JSON.parse(data);
       if (label === 'PONG') {
-        this.state.button?.current?.click()
-        this.context.setCount(payload[0] as number);
+        this.context.setCount(payload[0] as number, () => {
+          this.state.button?.current?.click()
+        });
       } else if (label === 'BYE') {
-        this.context.setCount(payload[0] as number);
-        ws.close();
+        this.context.setCount(payload[0] as number, () => {
+          ws.close();
+        });
       } else {
         throw new Error(`Unrecognised label: ${label}`);
       }
@@ -60,17 +62,12 @@ export default class Client extends React.Component<Props, State> {
 
   render() {
     return (
-      <div style={{ display: 'flex'}}>
-        <div style={{ flex: 1 }}>
-          <button
-            ref={this.state.button}
-            onClick={this.click.bind(this)}
-            >Ping</button>  
-        </div>
-        <div style={{ flex: 1 }}>
-          Pongs received: {this.context.count}
-        </div>
-      </div>
+      <button
+        ref={this.state.button}
+        onClick={this.click.bind(this)}
+        >
+        Ping
+      </button>
     );
   }
 }

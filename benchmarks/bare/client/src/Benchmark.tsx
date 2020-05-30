@@ -2,7 +2,7 @@ import React from 'react';
 
 type ContextProps = {
   count: number,
-  setCount: (count: number) => void,
+  setCount: (count: number, cb?: () => void) => void,
 }
 
 const Context = React.createContext<ContextProps>({
@@ -21,7 +21,7 @@ export class Benchmark extends React.Component<{}, State> {
     count: 0,
   }
 
-  setCount = (count: number) => this.setState({ count });
+  setCount = (count: number, cb?: () => void) => this.setState({ count }, cb);
 
   render() {
     return (
