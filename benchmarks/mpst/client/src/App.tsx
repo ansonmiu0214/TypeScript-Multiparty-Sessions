@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 
 import Client from './PingPong/Client/Client';
@@ -9,10 +8,6 @@ import Terminal from './components/Terminal';
 import Receive from './components/Receive';
 
 function App() {
-
-  const context = React.useContext(BenchmarkContext);
-  const [count, _] = React.useState(context.count);
-
   return (
     <div className="App">
       <Benchmark>
