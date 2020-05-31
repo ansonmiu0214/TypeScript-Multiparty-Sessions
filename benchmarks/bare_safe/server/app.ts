@@ -48,4 +48,5 @@ server.listen(PORT, () => {
   new Browser().visit('http://localhost:3000', () => {
     console.log('Loaded page');
   });
+  
 });

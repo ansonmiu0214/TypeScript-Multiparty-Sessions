@@ -24,7 +24,7 @@ const logic: Implementation.Initial = new Implementation.Initial({
       return new Implementation.S16([Labels.S16.PONG, [count], logic]);
     }
   }
-})
+});
 
 new Svr(wss, logic, (role, reason) => {
   console.error(`${role} cancelled because of ${reason}`);
