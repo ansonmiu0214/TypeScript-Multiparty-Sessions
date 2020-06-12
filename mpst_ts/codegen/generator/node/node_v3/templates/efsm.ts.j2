@@ -60,7 +60,7 @@ export namespace Labels {
 export namespace Message {
 {% for state in endpoint.efsm.nonterminal_states %}
   {% for action in state.actions -%}
-  export type S{{ state ~ action.label }} = {
+  export interface S{{ state ~ action.label }} {
     label: Labels.S{{ state }}.{{ action.label }},
     payload: [{{ action.payloads|join(', ') }}],
   };
@@ -100,7 +100,7 @@ export namespace Handler {
     {%- endfor %}>;
   {% endfor %}
   {% for state in endpoint.efsm.receive_states -%}
-  export type S{{ state }} = {
+  export interface S{{ state }} {
     {% for action in state.actions -%}
     [Labels.S{{ state }}.{{ action.label }}]: (...payload: Message.S{{ state ~ action.label }}['payload']) => MaybePromise<Implementation.S{{ action.succ }}>,
     {% endfor %}
@@ -117,7 +117,7 @@ abstract class ISend {
   abstract performSend(
     next: EfsmTransitionHandler,
     cancel: (reason?: any) => void,
-    sendMessage: (role: Roles.Peers, label: string, payload: any[]) => void
+    send: (role: Roles.Peers, label: string, payload: any[]) => void
   ): void;
 }
 
@@ -154,10 +154,10 @@ export namespace Implementation {
     performSend(
       next: EfsmTransitionHandler,
       cancel: (reason?: any) => void,
-      sendMessage: (role: Roles.Peers, label: string, payload: any[]) => void
+      send: (role: Roles.Peers, label: string, payload: any[]) => void
     ) {
       const thunk = ([label, payload, successor]: FromPromise<Handler.S{{ state }}>) => {
-        sendMessage(Roles.Peers.{{ state.role }}, label, payload);
+        send(Roles.Peers.{{ state.role }}, label, payload);
         return next(successor);
       }
       if (this.handler instanceof Promise) {

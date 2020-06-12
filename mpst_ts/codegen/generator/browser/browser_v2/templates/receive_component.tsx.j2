@@ -31,7 +31,7 @@ enum Labels {
 }
 
 {% for action in state.actions -%}
-type {{ action.label }}Message = {
+interface {{ action.label }}Message {
   label: Labels.{{ action.label }},
   payload: [{{ action.payloads|join(', ') }}],
 };

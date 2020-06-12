@@ -103,7 +103,7 @@ export class {{ endpoint.role }}
 class Session {
 
   private wss: WebSocket.Server;
-  private roleToSocket: RoleToSocket
+  private roleToSocket: RoleToSocket;
 
   private cancellation: (role: Roles.All, reason?: any) => MaybePromise<void>;
   
