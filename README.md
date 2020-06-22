@@ -1,7 +1,9 @@
-# TypeScript-Multiparty-Sessions
-
 # SessionTS
 A session type API code generation toolchain for modern web programming.
+
+## Related Repositories
+* Performance benchmarks - [SessionTS-Benchmarks](https://github.com/ansonmiu0214/SessionTS-Benchmarks)
+* Examples - [SessionTS-Examples](https://github.com/ansonmiu0214/SessionTS-Examples)
 
 ## Getting Started
 We provide a development environment on _Docker_, which handles Python package dependencies and the [_Scribble toolchain_](https://github.com/scribble/scribble-java/).
@@ -46,4 +48,3 @@ Performs the following steps for each example Scribble protocol:
 ```bash
 python3.7 -m mpst_ts.tests.system
 ```
- 
