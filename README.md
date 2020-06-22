@@ -1,5 +1,7 @@
 # TypeScript-Multiparty-Sessions
-A toolchain for generating multiparty session type encodings in TypeScript.
+
+# SessionTS
+A session type API code generation toolchain for modern web programming.
 
 ## Getting Started
 We provide a development environment on _Docker_, which handles Python package dependencies and the [_Scribble toolchain_](https://github.com/scribble/scribble-java/).
@@ -24,13 +26,18 @@ exit
 ```
 
 ## Usage
+
+For server side endpoints
 ```bash
-python3.7 -m mpst_ts <filename> <protocol> <role> {node,browser}
+python3.7 -m mpst_ts <filename> <protocol> <role> node
+```
+
+For browser-side endpoints
+```bash
+python3.7 -m mpst_ts <filename> <protocol> <role> browser -s <server_role>
 ```
 
 ## Tests
-
-### System Tests
 
 Performs the following steps for each example Scribble protocol:
 1. Generate TypeScript code into the sandbox environment;
