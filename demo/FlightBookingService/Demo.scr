@@ -2,8 +2,8 @@ module Demo;
 
 type <typescript> "Credential" from "./Payment" as Cred;
 type <typescript> "boolean" from "" as boolean;
-type <typescript> "string" from "" as string;
 type <typescript> "number" from "" as number;
+type <typescript> "string" from "" as string;
 
 global protocol FlightBooking(role Traveller, role Server) {
     Destination(string) from Traveller to Server;
