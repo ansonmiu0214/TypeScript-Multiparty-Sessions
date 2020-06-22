@@ -1,17 +1,21 @@
 module NoughtsAndCrosses;
-type <typescript> "Coordinate" from "./Types" as Point;	// Position on board
+
+type <typescript> "Coordinate" from "./Types" as Point;
+type <typescript> "number" from "" as number;
+type <typescript> "string" from "" as string;
+type <typescript> "boolean" from "" as boolean;
 
 global protocol Game(role Svr, role P1, role P2) {
-  Pos(Point) from P1 to Svr;
-  choice at Svr {
-    Lose(Point) from Svr to P2;
-    Win(Point) from Svr to P1;
-  } or {
-    Draw(Point) from Svr to P2;
-    Draw(Point) from Svr to P1;
-  } or {
-    Update(Point) from Svr to P2;
-    Update(Point) from Svr to P1;
-    do Game(Svr, P2, P1);
-  }
+	Pos(Point) from P1 to Svr;
+	choice at Svr {
+		Lose(Point)   from Svr to P2;
+		Win(Point)    from Svr to P1;
+	} or {
+		Draw(Point)   from Svr to P2;
+		Draw(Point)   from Svr to P1;
+	} or {
+		Update(Point) from Svr to P2;
+		Update(Point) from Svr to P1;
+		do Game(Svr, P2, P1);
+	}
 }

@@ -1,0 +1,18 @@
+module Demo;
+
+type <typescript> "Credential" from "./Payment" as Cred;
+
+global protocol FlightBooking(role Traveller, role Server) {
+    Destination(string) from Traveller to Server;
+    choice at Server {
+        Available(number) from Server to Traveller;
+        choice at Traveller {
+            Confirm(Cred) from Traveller to Server;
+        } or {
+            Reject() from Traveller to Server;
+        }
+    } or {
+        Full() from Server to Traveller;
+        do FlightBooking(Traveller, Server);
+    }
+}

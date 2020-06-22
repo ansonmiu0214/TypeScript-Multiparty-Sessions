@@ -1,6 +1,8 @@
 module BinarySimple;
 
 type <typescript> "string" from "" as string;
+type <typescript> "number" from "" as number;
+type <typescript> "boolean" from "" as boolean;
 
 global protocol HelloWorldBinary(role Alice, role Bob) {
   Hello(string) from Alice to Bob;

@@ -1,4 +1,7 @@
 module BinaryNoPayload;
+type <typescript> "boolean" from "" as boolean;
+type <typescript> "string" from "" as string;
+type <typescript> "number" from "" as number;
 
 global protocol Hello(role Alice, role Bob) {
   Hello() from Alice to Bob;
