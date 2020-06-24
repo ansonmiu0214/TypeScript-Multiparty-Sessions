@@ -9,6 +9,8 @@ import mpst_ts.scribble as scribble
 import mpst_ts.utils as utils
 
 def get_argument_parser() -> ArgumentParser:
+    """Prepare command line argument parser."""
+
     parser = ArgumentParser()
 
     supported_targets = generator.utils.CodeGenerationStrategy.target_to_strategy.keys()
@@ -26,21 +28,24 @@ def get_argument_parser() -> ArgumentParser:
     return parser
 
 def main(args: typing.List[str]) -> int: 
+    """Main code generation function. Returns success code."""
+
     parser = get_argument_parser()
     parsed_args = parser.parse_args(args)
 
     # Ad-hoc server flag validation -- must be provided if target is browser
-    # FIXME: use subparsers for this?
     if parsed_args.target == 'browser' and parsed_args.server is None:
         print('Error: target==browser, so the following arguments are required: server', file=sys.stderr)
         return 1
 
+    # Process type declarations from Scribble protocol
     try:
         custom_types = utils.type_declaration.process(parsed_args.filename)
     except (OSError, ValueError) as err:
         print(err, file=sys.stderr)
         return 1
 
+    # Get EFSM from Scribble
     return_code, output = scribble.get_graph(parsed_args.filename, parsed_args.protocol, parsed_args.role)
     if return_code:
         print(output, file=sys.stderr)
@@ -48,7 +53,6 @@ def main(args: typing.List[str]) -> int:
 
     efsm = codegen.parse.from_data(output)
     # Ad-hoc server flag validation -- must be provided if target is browser
-    # FIXME: use subparsers for this?
     if parsed_args.target == 'browser' and parsed_args.server not in efsm.other_roles:
         print(f'Error: target==browser, but server "{parsed_args.server}" not found in: {efsm.other_roles}', file=sys.stderr)
         return 1

@@ -5,6 +5,7 @@ from typing import List, Mapping, Optional, Set
 
 @dataclass
 class Action(ABC):
+    """Base class for EFSM transitions."""
     role: str
     label: str
     succ_id: str
@@ -51,6 +52,7 @@ class ReceiveAction(Action, delimiter='?'):
         efsm.add_action_to_receive_state(state_id, self)
 
 class State(ABC):
+    """Base class for EFSM state."""
     
     def __init__(self, state_id):
         super().__init__()
@@ -68,7 +70,6 @@ class State(ABC):
 
 class TerminalState(State):
     pass
-
 
 class NonTerminalState(State, ABC):
     _actions: Mapping[str, Action]
@@ -106,7 +107,6 @@ class ReceiveState(NonTerminalState):
     pass
 
 class EfsmBuilder:
-
     _role: Set[str]
     _send_states: Mapping[str, SendState]
     _receive_states: Mapping[str, ReceiveState]

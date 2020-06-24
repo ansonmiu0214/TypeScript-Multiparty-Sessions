@@ -1,0 +1,139 @@
+
+
+/*
+class _{{ efsm.metadata.role }}
+{
+
+  private wss: WebSocket.Server
+  private roleToSocket: RoleToSocket
+  private state: any
+  private initialState: S{{ efsm.initial_state }}
+  private handlerQueue: any[]
+  private messageQueue: any[]
+
+  constructor(wss: WebSocket.Server,
+              roleToSocket: RoleToSocket,
+              initialState: S{{ efsm.initial_state }})
+  {
+    this.wss = wss;
+    this.roleToSocket = roleToSocket;
+
+    // Bind message handler.
+    Object.values(this.roleToSocket).forEach(socket => {
+      socket.addEventListener('message', this.receive.bind(this));
+    });
+
+    // Initialise queues for receiving.
+    this.handlerQueue = []
+    this.messageQueue = []
+
+    // Initialise state machine.
+    this.state = {{ efsm.initial_state }};
+    this.initialState = initialState;
+    this.execute({{ efsm.initial_state }}, initialState);
+
+  }
+
+  private execute(stateId: any,
+                  stateImpl: any): void
+  {
+    this.state = stateId;
+    switch (this.state)
+    {
+      {% for state_id, state in efsm.send_states.items() -%}
+      case {{ state_id }}:
+      {
+        const _stateImpl: S{{ state_id }} = stateImpl;
+        this.send(Roles.{{ state.role }}, _stateImpl[0], []);
+
+        switch (_stateImpl[0])
+        {
+          {% for label, action in state.actions.items() -%}
+          case Labels.S{{ state_id }}.{{ label }}:
+          {
+            return this.execute({{ action.succ }}, _stateImpl[1]);
+          }
+          {%- endfor %}
+        }
+      }
+      {% endfor -%}
+
+      {% for state_id, state in efsm.receive_states.items() -%}
+      case {{ state_id }}:
+      {
+        const _stateImpl: S{{ state_id }} = stateImpl;
+
+        const handler: any = (message: any) => {
+          const label: Labels.S{{ state_id }} = message.label;
+          const payload: any[] = message.payload;
+
+          const succ: any = _stateImpl[label]();
+          switch (label)
+          {
+            {% for label, action in state.actions.items() -%}
+            case Labels.S{{ state_id }}.{{ label }}:
+            {
+              return this.execute({{ action.succ }}, succ);
+            }
+            {%- endfor %}
+          }
+        }
+
+        if (this.messageQueue.length > 0)
+        {
+          handler(this.messageQueue.shift());
+        }
+        else
+        {
+          this.handlerQueue.push(handler);
+        }
+        break;
+      }
+      {% endfor -%}
+
+      {% if efsm.has_terminal_state() -%}
+      case {{ efsm.terminal_state }}:
+      {
+        this.end();
+        break;
+      }
+      {%- endif %}
+    }
+  }
+
+  private send(role: Roles,
+               label: any,
+               payload: any[])
+  {
+    const message = JSON.stringify({ label, payload });
+    this.roleToSocket[role].send(message);
+  }
+
+  private receive(message: WebSocketMessage)
+  {
+    const parsedMessage = JSON.parse(message.data);
+
+    if (this.handlerQueue.length > 0)
+    {
+      // Pop handler off queue to process message.
+      this.handlerQueue.shift()(parsedMessage);
+    }
+    else
+    {
+      // Push parsed message onto message queue
+      // for next receive.
+      this.messageQueue.push(parsedMessage)
+    }
+  }
+
+  private end()
+  {
+    Object.values(this.roleToSocket).forEach(socket => {
+      socket.close();
+    });
+
+    new {{ efsm.metadata.role }}(this.wss, this.initialState);
+  }
+
+}
+*/

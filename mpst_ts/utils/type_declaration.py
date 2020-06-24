@@ -33,12 +33,13 @@ class DataType:
 
 def process(filepath: str) -> typing.Iterable[DataType]:
     """
-
+    Process type declarations from Scribble file.
     """
 
     with open(filepath, 'r') as file_:
         lines = list(file_)
     
+    # Parse type declarations
     type_decls = [(line_num, DataType.from_regex(line.strip()))
                   for line_num, line in enumerate(lines)
                   if line.startswith('type')]
@@ -55,7 +56,8 @@ def process(filepath: str) -> typing.Iterable[DataType]:
         # No existing type declarations:
         # just insert after module line
         line_to_insert = 1
-        
+    
+    # Add missing type declarations
     updated_lines = lines[:line_to_insert] + [primitive.to_scribble() for primitive in to_add] + lines[line_to_insert:]
 
     with open(filepath, 'w') as file_:

@@ -5,6 +5,8 @@ import typing
 DEFAULT_SCRIBBLE_ROOT = './scribble-java'
 
 def get_graph(filename: str, protocol: str, role: str) -> typing.Tuple[int, str]:
+    """Obtain EFSM from Scribble Java. Returns exit code and command line output."""
+
     command = build_scribble_command(filename=filename, protocol=protocol, role=role)
     completion = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return_code = completion.returncode

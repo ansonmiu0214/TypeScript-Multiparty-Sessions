@@ -6,6 +6,7 @@ from ..utils.type_declaration import DataType
 
 @dataclass
 class Endpoint:
+    """Intermediate representation: EFSM + metadata"""
     protocol: str
     role: str
     server: str
