@@ -82,12 +82,14 @@ export default class SelectDestination extends S6<{
               value={this.state.destination}
               onChange={ev => this.setState({ destination: ev.target.value })}
               />
-            <Other>
-              <Button 
-                disabled={this.state.destination.trim().length === 0}
-                color='primary'
-                >Enquire</Button>
-            </Other>
+            <div>
+              <Other>
+                <Button 
+                  disabled={this.state.destination.trim().length === 0}
+                  color='primary'
+                  >Enquire</Button>
+              </Other>
+            </div>
           </div>
 
         </Grid>

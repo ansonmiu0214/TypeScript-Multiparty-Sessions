@@ -56,16 +56,20 @@ export default class ConfirmChoice extends S9<Cred> {
           label="Credit Card Number"
           />
 
-          <Confirm>
-            <Button color='primary'>Confirm</Button>
-          </Confirm>
+          <div>
+            <Confirm>
+              <Button color='primary'>Confirm</Button>
+            </Confirm>
+          </div>
         </Grid>
         <Grid item style={{ textAlign: 'center' }}>
           <Typography variant='h4'>Reject</Typography>
 
-          <Reject>
-            <Button color='secondary'>Reject</Button>
-          </Reject>
+          <div>
+            <Reject>
+              <Button color='secondary'>Reject</Button>
+            </Reject>
+          </div>
         </Grid>
       </Grid>
 

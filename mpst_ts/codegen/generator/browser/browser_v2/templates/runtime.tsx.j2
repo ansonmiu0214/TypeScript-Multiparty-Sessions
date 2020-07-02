@@ -226,7 +226,9 @@ class {{ endpoint.role }} extends React.Component<Props & Transport, ComponentSt
             }
           };
 
-          return <div {...props}>{this.props.children}</div>;
+          return React.Children.map(this.props.children, child => (
+              React.cloneElement(child as React.ReactElement, props)
+          ));
         }
       }
     }
