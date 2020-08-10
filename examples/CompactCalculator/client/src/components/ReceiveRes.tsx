@@ -1,6 +1,6 @@
 import React from 'react';
 
-import S64 from '../CompactCalculator/Client/S64';
+import S64 from '../CompactCalculator/Client/S109';
 import HigherOrderCalculator from './HigherOrderCalculator';
 import { LogicContext } from '../Logic';
 

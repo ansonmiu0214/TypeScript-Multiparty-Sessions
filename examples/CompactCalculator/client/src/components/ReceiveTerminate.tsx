@@ -1,6 +1,6 @@
 import React from 'react';
 
-import S66 from '../CompactCalculator/Client/S66';
+import S66 from '../CompactCalculator/Client/S112';
 
 export default class ReceiveTerminate extends S66 {
     render() {

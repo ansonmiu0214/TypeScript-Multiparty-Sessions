@@ -24,12 +24,12 @@ function App() {
                     endpoint='ws://localhost:8080'
                     waiting={<p>Waiting...</p>}
                     states={{
-                        S61: SelectOperation,
-                        S62: TerminalState,
-                        S63: ReceiveRes,
-                        S64: ReceiveRes,
-                        S65: ReceiveRes,
-                        S66: ReceiveTerminate,
+                        S107: SelectOperation,
+                        S108: TerminalState,
+                        S109: ReceiveRes,
+                        S110: ReceiveRes,
+                        S111: ReceiveRes,
+                        S112: ReceiveTerminate,
                     }}
                     connectFailed={<div>Connection failed</div>}
                     cancellation={(role, reason) => (

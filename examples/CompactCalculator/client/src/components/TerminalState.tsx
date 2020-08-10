@@ -1,5 +1,5 @@
 import React from 'react';
-import S62 from "../CompactCalculator/Client/S62";
+import S62 from "../CompactCalculator/Client/S108";
 
 export default class TerminalState extends S62 {
     

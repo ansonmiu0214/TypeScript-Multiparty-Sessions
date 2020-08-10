@@ -24,45 +24,47 @@ import {
     FunctionArguments,
 } from './Types';
 
-import S61 from './S61';
-import S63 from './S63';
-import S64 from './S64';
-import S65 from './S65';
-import S66 from './S66';
-import S62 from './S62';
+import S107 from './S107';
+import S109 from './S109';
+import S110 from './S110';
+import S111 from './S111';
+import S112 from './S112';
+import S108 from './S108';
+
+type RoleToMessageQueue = Roles.PeersToMapped<any[]>;
+type RoleToHandlerQueue = Roles.PeersToMapped<ReceiveHandler[]>;
 
 // ==============
 // Component type
 // ==============
-type P = {
+
+type Props = {
     endpoint: string,
     states: {
-        S61: Constructor<S61>,
-        S63: Constructor<S63>,
-        S64: Constructor<S64>,
-        S65: Constructor<S65>,
-        S66: Constructor<S66>,
-        S62: Constructor<S62>,
+        S107: Constructor<S107>,
+        S109: Constructor<S109>,
+        S110: Constructor<S110>,
+        S111: Constructor<S111>,
+        S112: Constructor<S112>,
+        S108: Constructor<S108>,
 
     },
-    waiting: JSX.Element,
-    connectFailed: JSX.Element,
-    cancellation: (role: Roles.All, reason?: any) => JSX.Element,
-}
+    waiting: React.ReactNode,
+    connectFailed: React.ReactNode,
+    cancellation: (role: Roles.All, reason?: any) => React.ReactNode,
+};
 
-type S = {
-    elem: JSX.Element
-}
+type Transport = {
+    ws: WebSocket
+};
 
-// FIXME: relocate
-type RoleToMessageQueue = Roles.PeersToMapped<any[]>;
-type RoleToHandlerQueue = Roles.PeersToMapped<ReceiveHandler[]>;
+type ComponentState = {
+    elem: React.ReactNode
+};
 
-export default class Session extends React.Component<P, {
-    ws?: WebSocket
-}> {
+export default class Session extends React.Component<Props, Partial<Transport>> {
 
-    constructor(props: P) {
+    constructor(props: Props) {
         super(props);
         this.state = {
             ws: undefined
@@ -70,7 +72,7 @@ export default class Session extends React.Component<P, {
     }
 
     componentDidMount() {
-        // Set up WebSocket
+        // Set up WebSocket connection
         this.setState({
             ws: new WebSocket(this.props.endpoint),
         });
@@ -85,14 +87,12 @@ export default class Session extends React.Component<P, {
 
 }
 
-type PropTypeWithWS = P & { ws: WebSocket };
-
-class Client extends React.Component<PropTypeWithWS, S> {
+class Client extends React.Component<Props & Transport, ComponentState> {
 
     private messageQueue: RoleToMessageQueue
     private handlerQueue: RoleToHandlerQueue
 
-    constructor(props: PropTypeWithWS) {
+    constructor(props: Props & Transport) {
         super(props);
 
         this.state = {
@@ -145,7 +145,7 @@ class Client extends React.Component<PropTypeWithWS, S> {
         ws.onmessage = this.onReceiveMessage;
         ws.onclose = this.onClose;
 
-        this.advance(SendState.S61);
+        this.advance(SendState.S107);
 
     }
 
@@ -225,7 +225,9 @@ class Client extends React.Component<PropTypeWithWS, S> {
                         }
                     };
 
-                    return <div {...props}>{this.props.children}</div>;
+                    return React.Children.map(this.props.children, child => (
+                        React.cloneElement(child as React.ReactElement, props)
+                    ));
                 }
             }
         }

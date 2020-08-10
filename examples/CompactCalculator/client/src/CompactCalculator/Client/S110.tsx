@@ -18,15 +18,15 @@ import {
 
 
 
-type P = {
-    register: (role: Roles.Peers, handle: ReceiveHandler) => void
-}
+// ==================
+// Message structures
+// ==================
 
 enum Labels {
     Res = 'Res',
 }
 
-type ResMessage = {
+interface ResMessage {
     label: Labels.Res,
     payload: [number],
 };
@@ -34,19 +34,18 @@ type ResMessage = {
 
 type Message = | ResMessage
 
-export default abstract class S63<
-    _P = {},
-    _S = {},
-    _SS = any
-    > extends React.Component<
-    _P & P,
-    _S,
-    _SS
-    >
+// ===============
+// Component types
+// ===============
+
+type Props = {
+    register: (role: Roles.Peers, handle: ReceiveHandler) => void
+};
+
+export default abstract class S110<ComponentState = {}> extends React.Component<Props, ComponentState>
 {
 
-    constructor(props: _P & P) {
-        super(props);
+    componentDidMount() {
         this.props.register(Roles.Peers.Svr, this.handle.bind(this));
     }
 
@@ -54,7 +53,7 @@ export default abstract class S63<
         const parsedMessage = JSON.parse(message) as Message;
         switch (parsedMessage.label) {
             case Labels.Res: {
-                const thunk = () => SendState.S61;
+                const thunk = () => SendState.S107;
 
                 const continuation = this.Res(...parsedMessage.payload);
                 if (continuation instanceof Promise) {
@@ -71,5 +70,4 @@ export default abstract class S63<
     }
 
     abstract Res(payload1: number, ): MaybePromise<void>;
-
 }
