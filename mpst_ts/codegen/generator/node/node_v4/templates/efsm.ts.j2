@@ -38,23 +38,12 @@ export namespace Role
   };
 };
 
-export namespace Label
-{
-  {% for state in endpoint.efsm.nonterminal_states -%}
-  export enum S{{ state }} {
-    {% for label in state.labels -%}
-    {{ label }} = "{{ label }}",
-    {%- endfor %}
-  };
-  {% endfor %}
-};
-
 export namespace Message
 {
   {% for state in endpoint.efsm.nonterminal_states %}
   {% for action in state.actions -%}
   export interface S{{ state ~ '_' ~ action.label }} {
-    label: Label.S{{ state }}.{{ action.label }},
+    label: "{{ action.label }}",
     payload: [{{ action.payloads|join(', ') }}],
   };
   {% endfor %}
@@ -79,14 +68,14 @@ export namespace Handler
   export type S{{ state }} =
     MaybePromise<
     {% for action in state.actions -%}
-      | [Label.S{{ state }}.{{ action.label }}, Message.S{{ state ~ '_' ~ action.label }}['payload'], State.S{{ action.succ }}]
+      | ["{{ action.label }}", Message.S{{ state ~ '_' ~ action.label }}['payload'], State.S{{ action.succ }}]
     {% endfor %}
     >;
   {% endfor %}
   {% for state in endpoint.efsm.receive_states -%}
   export interface S{{ state }} {
     {% for action in state.actions -%}
-    [Label.S{{ state }}.{{ action.label }}]: (Next: typeof Factory.S{{ action.succ }}, ...payload: Message.S{{ state ~ '_' ~ action.label }}['payload']) => MaybePromise<State.S{{ action.succ }}>,
+    "{{ action.label }}": (Next: typeof Factory.S{{ action.succ }}, ...payload: Message.S{{ state ~ '_' ~ action.label }}['payload']) => MaybePromise<State.S{{ action.succ }}>,
     {% endfor %}
   };
   {% endfor %}
@@ -114,7 +103,7 @@ export namespace State
   {% for state in endpoint.efsm.send_states -%}
   export class S{{ state }} implements ISend {
     readonly type: 'Send' = 'Send';
-    constructor(private handler: Handler.S{{ state }}) {}
+    constructor(public handler: Handler.S{{ state }}) {}
 
     performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
       const thunk = ([label, payload, successor]: FromPromise<Handler.S{{ state }}>) => {
@@ -138,14 +127,14 @@ export namespace State
   {% for state in endpoint.efsm.receive_states -%}
   export class S{{ state }} implements IReceive {
     readonly type: 'Receive' = 'Receive';
-    constructor(private handler: Handler.S{{ state }}) {}
+    constructor(public handler: Handler.S{{ state }}) {}
 
     prepareReceive(next: StateTransitionHandler, cancel: Cancellation, register: ReceiveStateHandler) {
       const onReceive = (message: any) => {
         const parsed = JSON.parse(message) as Message.S{{ state }};
         switch (parsed.label) {
           {% for action in state.actions -%}
-          case Label.S{{ state }}.{{ action.label }}: {
+          case "{{ action.label }}": {
             try {
               const successor = this.handler[parsed.label](Factory.S{{ action.succ }}, ...parsed.payload);
               if (successor instanceof Promise) {
@@ -198,10 +187,10 @@ export namespace Factory
     if (typeof args[1] === 'function') {
       const [payload, generateSuccessor] = args;
       const successor = generateSuccessor(S{{ action.succ }});
-      return new State.S{{ state }}([Label.S{{ state }}.{{ action.label }}, payload, successor]);
+      return new State.S{{ state }}(["{{ action.label }}", payload, successor]);
     } else {
       const [payload, successor] = args;
-      return new State.S{{ state }}([Label.S{{ state }}.{{ action.label }}, payload, successor]);
+      return new State.S{{ state }}(["{{ action.label }}", payload, successor]);
     }
   }
   {% endfor %}
