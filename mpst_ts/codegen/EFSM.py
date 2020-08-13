@@ -41,6 +41,15 @@ class Action(ABC):
     def add_to_efsm(self, state_id: str, efsm: 'EfsmBuilder'):
         pass
 
+    def __eq__(self: 'Action', other):
+        if not isinstance(other, self.__class__):
+            return False
+        
+        return self.label == other.label and \
+            self.role == other.role and \
+            self.succ_id == other.succ_id and \
+            self.payloads == other.payloads
+
 class SendAction(Action, delimiter='!'):
 
     def add_to_efsm(self, state_id: str, efsm: 'EfsmBuilder'):
@@ -100,6 +109,16 @@ class NonTerminalState(State, ABC):
     def __getitem__(self, label):
         return self._actions[label]
 
+    def __eq__(self: 'NonTerminalState', other):
+        if not isinstance(other, self.__class__):
+            return False
+        
+        my_actions = list(self._actions.items())
+        other_actions = list(other._actions.items())
+
+        return self.role == other.role and \
+            sorted(my_actions) == sorted(other_actions)
+
 class SendState(NonTerminalState):
     pass
 
@@ -112,6 +131,7 @@ class EfsmBuilder:
     _receive_states: Mapping[str, ReceiveState]
     _initial_state_id: str
     _terminal_state_candidates: Set[str]
+    _state_id_lookup: Mapping[str, str]
 
     def __init__(self, nodes: List[str]):
         self._roles = set()
@@ -119,6 +139,7 @@ class EfsmBuilder:
         self._receive_states = {}
         self._initial_state_id = str(min(int(node) for node in nodes))
         self._terminal_state_candidates = set(nodes)
+        self._state_id_lookup = {node: node for node in nodes}
 
     def add_action_to_send_state(self, state_id: str, action: SendAction):
         send_state = self._send_states.get(state_id, SendState(state_id))
@@ -136,17 +157,70 @@ class EfsmBuilder:
         self._roles.add(action.role)
         self._terminal_state_candidates.discard(state_id)
 
+    def _prune_overlaping_states(self):
+
+        should_prune_again = False
+
+        skip_set = set()
+        for curr_id, curr_state in sorted(self._send_states.items()):
+            if curr_id in skip_set:
+                continue
+
+            same_states = [other_id for other_id, other_state in self._send_states.items()
+                           if other_id != curr_id and other_state == curr_state]
+            if same_states:
+                should_prune_again = True
+                print(f'{curr_id} equal to {", ".join(same_states)}')
+                for other_id in same_states:
+                    self._state_id_lookup[other_id] = curr_id
+                    skip_set.add(other_id)
+                    del self._send_states[other_id]
+        
+        skip_set = set()
+
+        for curr_id, curr_state in sorted(self._receive_states.items()):
+            if curr_id in skip_set:
+                continue
+
+            same_states = [other_id for other_id, other_state in self._receive_states.items()
+                           if other_id != curr_id and other_state == curr_state]
+            if same_states:
+                should_prune_again = True
+                print(f'{curr_id} equal to {", ".join(same_states)}')
+                for other_id in same_states:
+                    self._state_id_lookup[other_id] = curr_id
+                    skip_set.add(other_id)
+                    del self._receive_states[other_id]
+
+        if should_prune_again:
+            # Deep updates of successor state IDs in actions
+            for state in [*self._send_states.values(), *self._receive_states.values()]:
+                for action in state.actions:
+                    action.succ_id = self._state_id_lookup[action.succ_id]
+
+            self._prune_overlaping_states()
+
     def build(self) -> 'EFSM':
+        # Prune overlapping states
+        self._prune_overlaping_states()
+
+        initial_state_id = self._state_id_lookup[self._initial_state_id]
+
         if len(self._terminal_state_candidates) > 1:
             raise Exception(f'Too many candidates for terminal state: {self._terminal_state_candidates}')
 
-        terminal_state_id = next(iter(self._terminal_state_candidates)) if self._terminal_state_candidates else None
+        if self._terminal_state_candidates:
+            terminal_state_id = self._state_id_lookup[next(iter(self._terminal_state_candidates))]
+        else:
+            terminal_state_id = None
+
         return EFSM(
             self._roles,
             self._send_states,
             self._receive_states,
-            self._initial_state_id,
-            terminal_state_id
+            initial_state_id,
+            terminal_state_id,
+            self._state_id_lookup
         )
 
 @dataclass
@@ -156,6 +230,7 @@ class EFSM:
     _receive_states: Mapping[str, ReceiveState]
     _initial_state_id: str
     _terminal_state_id: Optional[str]
+    _state_id_lookup: Mapping[str, str]
 
     _states: Mapping[str, State] = field(init=False)
 
