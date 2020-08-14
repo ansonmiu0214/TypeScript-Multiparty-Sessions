@@ -47,6 +47,13 @@ type Props = {
   register: (role: Roles.Peers, handle: ReceiveHandler) => void
 };
 
+/**
+ * __Receives from {{ state.role }}.__ Possible messages:
+ *
+ {% for action in state.actions -%}
+ * * __{{ action.label }}__({{ action.payloads|join(', ') }})
+ {% endfor -%}
+ */
 export default abstract class S{{ state }}<ComponentState = {}> extends React.Component<Props, ComponentState>
 {
 
