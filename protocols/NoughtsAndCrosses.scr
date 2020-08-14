@@ -1,6 +1,6 @@
 module NoughtsAndCrosses;
 
-type <typescript> "Coordinate" from "./GameTypes" as Point;
+type <typescript> "Coordinate" from "../../GameTypes" as Point;
 type <typescript> "number" from "" as number;
 type <typescript> "string" from "" as string;
 type <typescript> "boolean" from "" as boolean;
