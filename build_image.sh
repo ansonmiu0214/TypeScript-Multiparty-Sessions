@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PACKAGES="curl git default-jdk maven python3-pip python3.7 unzip"
+PACKAGES="curl git default-jdk maven python3-pip python3.7 unzip graphviz"
 
 # Get latest packages
 echo "Getting latest packages..."
