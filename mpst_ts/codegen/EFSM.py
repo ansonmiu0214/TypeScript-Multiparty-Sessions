@@ -170,7 +170,7 @@ class EfsmBuilder:
                            if other_id != curr_id and other_state == curr_state]
             if same_states:
                 should_prune_again = True
-                print(f'{curr_id} equal to {", ".join(same_states)}')
+                # print(f'{curr_id} equal to {", ".join(same_states)}')
                 for other_id in same_states:
                     self._state_id_lookup[other_id] = curr_id
                     skip_set.add(other_id)
@@ -186,7 +186,7 @@ class EfsmBuilder:
                            if other_id != curr_id and other_state == curr_state]
             if same_states:
                 should_prune_again = True
-                print(f'{curr_id} equal to {", ".join(same_states)}')
+                # print(f'{curr_id} equal to {", ".join(same_states)}')
                 for other_id in same_states:
                     self._state_id_lookup[other_id] = curr_id
                     skip_set.add(other_id)

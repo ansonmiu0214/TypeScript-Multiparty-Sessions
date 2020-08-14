@@ -69,7 +69,6 @@ class BrowserStrategy(CodeGenerationStrategy,
         files.append((as_path(f'{role}.tsx'),
                       self.template_generator.render(path='runtime.tsx.j2',
                                                      payload={'endpoint': endpoint})))
-
         # Generate states
         for state in endpoint.efsm.send_states:
             files.append((as_path(f'S{state.id}.tsx'),
@@ -87,5 +86,10 @@ class BrowserStrategy(CodeGenerationStrategy,
             files.append((as_path(f'S{endpoint.efsm.terminal_state}.tsx'),
                           self.template_generator.render(path='terminal_component.tsx.j2',
                                                          payload={'state': endpoint.efsm.terminal_state})))
+
+        # Generate organised exports
+        files.append((as_path('index.ts'),
+                      self.template_generator.render(path='index.role.ts.j2',
+                                                     payload={'endpoint': endpoint})))
 
         return files

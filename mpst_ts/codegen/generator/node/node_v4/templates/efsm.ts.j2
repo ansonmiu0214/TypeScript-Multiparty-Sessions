@@ -206,8 +206,8 @@ export namespace Factory
   {% for state in endpoint.efsm.receive_states -%}
   export function S{{ state }}(handler: Handler.S{{ state }}) {
     return new State.S{{ state }}(handler);
-  }
-  {%- endfor %}
+  };
+  {% endfor %}
 
   export const Initial = S{{ endpoint.efsm.initial_state }};
 
