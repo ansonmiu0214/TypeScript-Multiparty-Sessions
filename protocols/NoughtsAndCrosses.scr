@@ -1,11 +1,9 @@
 module NoughtsAndCrosses;
 
-type <typescript> "Coordinate" from "./GameTypes" as Point;
-type <typescript> "number" from "" as number;
-type <typescript> "string" from "" as string;
-type <typescript> "boolean" from "" as boolean;
+type <typescript> "Coordinate" from "../../GameTypes" as Point;
 
 global protocol Game(role Svr, role P1, role P2) {
+
 	Pos(Point) from P1 to Svr;
 	choice at Svr {
 		Lose(Point)   from Svr to P2;
@@ -18,4 +16,5 @@ global protocol Game(role Svr, role P1, role P2) {
 		Update(Point) from Svr to P1;
 		do Game(Svr, P2, P1);
 	}
+	
 }

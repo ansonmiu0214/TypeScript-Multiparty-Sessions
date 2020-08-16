@@ -1,0 +1,21 @@
+module Calculator;
+
+global protocol Calculator(role Client, role Svr) {
+
+  choice at Client {
+    ADD(number, number)   from Client to Svr;
+    RES(number)           from Svr to Client;
+  } or {
+    MULT(number, number)  from Client to Svr;
+    RES(number)           from Svr to Client;
+    do Calculator(Client, Svr);
+  } or {
+    DOUBLE(number)        from Client to Svr;
+    RES(number)           from Svr to Client;
+    do Calculator(Client, Svr);
+  } or {
+    QUIT()                from Client to Svr;
+    TERMINATE()           from Svr to Client;
+  }
+
+}

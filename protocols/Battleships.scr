@@ -1,0 +1,38 @@
+module Battleships;
+
+type <typescript> "Config" from "../../Models" as Config;
+type <typescript> "Location" from "../../Models" as Location;
+type <typescript> "number" from "" as number;
+type <typescript> "string" from "" as string;
+type <typescript> "boolean" from "" as boolean;
+
+global protocol Battleships(role P1, role Svr, role P2) {
+
+  Init(Config) from P1 to Svr;
+  Init(Config) from P2 to Svr;
+
+  do Game(P1, Svr, P2);
+
+}
+
+aux global protocol Game(role Atk, role Svr, role Def) {
+
+  Attack(Location) from Atk to Svr;
+  choice at Svr {
+    Hit(Location) from Svr to Atk;
+    Hit(Location) from Svr to Def;
+    do Game(Def, Svr, Atk);
+  } or {
+    Miss(Location) from Svr to Atk;
+    Miss(Location) from Svr to Def;
+    do Game(Def, Svr, Atk);
+  } or {
+    Sunk(Location) from Svr to Atk;
+    Sunk(Location) from Svr to Def;
+    do Game(Def, Svr, Atk);
+  } or {
+    Winner(Location) from Svr to Atk;
+    Loser(Location) from Svr to Def;
+  }
+
+}

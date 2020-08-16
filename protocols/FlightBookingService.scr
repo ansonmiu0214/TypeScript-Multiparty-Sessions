@@ -1,4 +1,4 @@
-module Demo;
+module FlightBookingService;
 
 type <typescript> "Credential" from "./Payment" as Cred;
 

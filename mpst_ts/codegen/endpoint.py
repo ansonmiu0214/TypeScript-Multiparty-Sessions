@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import typing
 
-from .efsm import EFSM
+from .EFSM import EFSM
 from ..utils.type_declaration import DataType
 
 @dataclass
