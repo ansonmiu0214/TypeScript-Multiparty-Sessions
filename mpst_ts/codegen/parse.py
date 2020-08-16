@@ -1,7 +1,7 @@
 import pydot
 import re
 
-from .efsm import Action, EFSM, EfsmBuilder, ReceiveAction, SendAction
+from .EFSM import Action, EFSM, EfsmBuilder, ReceiveAction, SendAction
 
 def extract(token: str) -> str:
     """Extract label from transition."""

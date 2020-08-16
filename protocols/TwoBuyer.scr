@@ -1,10 +1,7 @@
-module ClientClient;
-type <typescript> "number" from "" as number;
-type <typescript> "boolean" from "" as boolean;
-type <typescript> "string" from "" as string;
+module TwoBuyer;
 
-global protocol TwoBuyer(role A, role B, role S) 
-{
+global protocol TwoBuyer(role A, role B, role S)  {
+
 	title(string)   from A to S;
 	quote(number)   from S to A;
 	quote(number)   from S to B;
@@ -16,4 +13,5 @@ global protocol TwoBuyer(role A, role B, role S)
 		reject()    from B to A;
 		cancel()    from A to S;
 	}
+
 }
