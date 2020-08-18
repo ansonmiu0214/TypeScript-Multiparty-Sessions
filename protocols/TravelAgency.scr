@@ -1,6 +1,9 @@
 module TravelAgency;
 
-type <typescript> "credentials" from "../../Models" as Cred;
+type <typescript> "Credentials" from "../../Models" as Cred;
+type <typescript> "string" from "" as string;
+type <typescript> "number" from "" as number;
+type <typescript> "boolean" from "" as boolean;
 
 global protocol TravelAgency(role A, role B, role S) {
   
