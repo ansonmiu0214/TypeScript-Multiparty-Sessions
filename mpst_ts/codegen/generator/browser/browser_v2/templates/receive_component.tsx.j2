@@ -92,5 +92,5 @@ export default abstract class S{{ state }}<ComponentState = {}> extends React.Co
 
   {% for action in state.actions -%}
   abstract {{ action.label }}({%- for payload in action.payloads -%}{{ 'payload' ~ loop.index ~ ': ' ~ payload ~ ', ' }}{%- endfor -%}): MaybePromise<void>;
-  {%- endfor %}
+  {% endfor %}
 }
