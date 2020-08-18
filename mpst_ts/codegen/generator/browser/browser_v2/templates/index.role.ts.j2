@@ -1,0 +1,11 @@
+// =====================
+// EFSM State Components
+// =====================
+{% for state in endpoint.efsm.states -%}
+export { default as S{{ state }} } from "./S{{ state }}";
+{% endfor %}
+
+// ===============
+// Session runtime
+// ===============
+export { default as {{ endpoint.role }} } from "./{{ endpoint.role }}";

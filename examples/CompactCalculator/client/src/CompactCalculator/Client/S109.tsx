@@ -1,19 +1,32 @@
 import React from 'react';
 
-import { State, ReceiveState, SendState, TerminalState } from './EFSM';
-import { MaybePromise, ReceiveHandler } from './Session';
+import * as Roles from './Roles';
+import {
+    State,
+    ReceiveState,
+    SendState,
+    TerminalState,
+} from './EFSM';
+
+import {
+    MaybePromise,
+} from './Types';
+
+import {
+    ReceiveHandler
+} from './Session';
 
 
 
-type P = {
-    register: (handle: ReceiveHandler) => void
-}
+// ==================
+// Message structures
+// ==================
 
 enum Labels {
     Res = 'Res',
 }
 
-type ResMessage = {
+interface ResMessage {
     label: Labels.Res,
     payload: [number],
 };
@@ -21,26 +34,26 @@ type ResMessage = {
 
 type Message = | ResMessage
 
-export default abstract class S64<
-    _P = {},
-    _S = {},
-    _SS = any
-    > extends React.Component<
-    _P & P,
-    _S,
-    _SS
-    >
+// ===============
+// Component types
+// ===============
+
+type Props = {
+    register: (role: Roles.Peers, handle: ReceiveHandler) => void
+};
+
+export default abstract class S109<ComponentState = {}> extends React.Component<Props, ComponentState>
 {
 
     componentDidMount() {
-        this.props.register(this.handle.bind(this));
+        this.props.register(Roles.Peers.Svr, this.handle.bind(this));
     }
 
     handle(message: any): MaybePromise<State> {
         const parsedMessage = JSON.parse(message) as Message;
         switch (parsedMessage.label) {
             case Labels.Res: {
-                const thunk = () => SendState.S61;
+                const thunk = () => SendState.S107;
 
                 const continuation = this.Res(...parsedMessage.payload);
                 if (continuation instanceof Promise) {
@@ -57,5 +70,4 @@ export default abstract class S64<
     }
 
     abstract Res(payload1: number, ): MaybePromise<void>;
-
 }

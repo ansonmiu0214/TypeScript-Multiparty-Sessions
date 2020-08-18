@@ -16,5 +16,4 @@ export type DOMEvents = FunctionProperties<React.DOMAttributes<any>>
 export type FunctionArguments<T> = T extends (...args: infer R) => infer _ ? R : never;
 
 export type Constructor<T> = new (...args: any[]) => T;
-export type FunctionConstructor<T> = (...args: any[]) => T;
 export type EventHandler<Payload, K extends keyof DOMEvents> = (event: FunctionArguments<DOMEvents[K]>) => MaybePromise<Payload>;

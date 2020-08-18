@@ -1,0 +1,218 @@
+{%- for type in endpoint.types -%}
+import { {{ type.external ~ ((' as ' ~ type.alias) if type.external != type.alias else '') }} } from "{{ type.path }}";
+{% endfor -%}
+
+import {
+  FromPromise,
+  MaybePromise,
+} from "./Utility";
+
+import {
+  Cancellation,
+} from "./Cancellation";
+
+import {
+  StateTransitionHandler,
+  SendStateHandler,
+  MessageHandler,
+  ReceiveStateHandler,
+} from "./Runtime";
+
+export namespace Role
+{
+  type Self = "{{ endpoint.role }}";
+
+  // Constant value for value comparisons
+  export const Self: Self = "{{ endpoint.role }}";
+
+  export enum Peers {
+    {% for role in endpoint.efsm.other_roles -%}
+    {{ role }} = "{{ role }}",
+    {%- endfor %}
+  };
+
+  export type All = Self | Peers;
+
+  export type PeersToMapped<Value> = {
+    [Role in Peers]: Value
+  };
+};
+
+export namespace Message
+{
+  {% for state in endpoint.efsm.nonterminal_states %}
+  {% for action in state.actions -%}
+  export interface S{{ state ~ '_' ~ action.label }} {
+    label: "{{ action.label }}",
+    payload: [{{ action.payloads|join(', ') }}],
+  };
+  {% endfor %}
+  export type S{{ state }} = {% for action in state.actions -%}
+  | S{{ state ~ '_' ~ action.label }}{% endfor %};
+  {% endfor %}
+
+  export interface Channel {
+    role: Role.All;
+    label: string;
+    payload: any[];
+  };
+
+  export const serialise = <T> (obj: T) => JSON.stringify(obj);
+  export const deserialise = <T> (message: any) => JSON.parse(message) as T;
+
+};
+
+export namespace Handler
+{
+  {% for state in endpoint.efsm.send_states -%}
+  export type S{{ state }} =
+    MaybePromise<
+    {% for action in state.actions -%}
+      | ["{{ action.label }}", Message.S{{ state ~ '_' ~ action.label }}['payload'], State.S{{ action.succ }}]
+    {% endfor %}
+    >;
+  {% endfor %}
+  {% for state in endpoint.efsm.receive_states -%}
+  export interface S{{ state }} {
+    {% for action in state.actions -%}
+    "{{ action.label }}": (Next: typeof Factory.S{{ action.succ }}, ...payload: Message.S{{ state ~ '_' ~ action.label }}['payload']) => MaybePromise<State.S{{ action.succ }}>,
+    {% endfor %}
+  };
+  {% endfor %}
+};
+
+export namespace State
+{
+
+  interface ISend {
+    readonly type: 'Send';
+    performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler): void;
+  };
+
+  interface IReceive {
+    readonly type: 'Receive';
+    prepareReceive(next: StateTransitionHandler, cancel: Cancellation, register: ReceiveStateHandler): void;
+  };
+
+  interface ITerminal {
+    readonly type: 'Terminal';
+  };
+
+  export type Type = ISend | IReceive | ITerminal;
+
+  {% for state in endpoint.efsm.send_states -%}
+  export class S{{ state }} implements ISend {
+    readonly type: 'Send' = 'Send';
+    constructor(public handler: Handler.S{{ state }}) {}
+
+    performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
+      const thunk = ([label, payload, successor]: FromPromise<Handler.S{{ state }}>) => {
+        send(Role.Peers.{{ state.role }}, label, payload);
+        return next(successor);
+      };
+
+      if (this.handler instanceof Promise) {
+        this.handler.then(thunk).catch(cancel);
+      } else {
+        try {
+          thunk(this.handler);
+        } catch (error) {
+          cancel(error);
+        }
+      }
+    }
+  };
+  {% endfor %}
+
+  {% for state in endpoint.efsm.receive_states -%}
+  export class S{{ state }} implements IReceive {
+    readonly type: 'Receive' = 'Receive';
+    constructor(public handler: Handler.S{{ state }}) {}
+
+    prepareReceive(next: StateTransitionHandler, cancel: Cancellation, register: ReceiveStateHandler) {
+      const onReceive = (message: any) => {
+        const parsed = JSON.parse(message) as Message.S{{ state }};
+        switch (parsed.label) {
+          {% for action in state.actions -%}
+          case "{{ action.label }}": {
+            try {
+              const successor = this.handler[parsed.label](Factory.S{{ action.succ }}, ...parsed.payload);
+              if (successor instanceof Promise) {
+                successor.then(next).catch(cancel);
+              } else {
+                next(successor);
+              }
+            } catch (error) {
+              cancel(error);
+            }
+            return;
+          }
+          {% endfor %}
+        }
+      };
+
+      register(Role.Peers.{{ state.role }}, onReceive);
+    }
+  };
+  {% endfor %}
+
+  {% if endpoint.efsm.has_terminal_state %}
+  export class S{{ endpoint.efsm.terminal_state }} implements ITerminal {
+    readonly type: 'Terminal' = 'Terminal';
+  };
+  {% endif %}
+
+};
+
+export namespace Factory
+{
+
+  {% for state in endpoint.efsm.send_states -%}
+  {% for action in state.actions -%}
+  {% set name = ('S' ~ state ~ '_' ~ action.label) %}
+  type {{ name }} =
+    | [Message.{{ name }}['payload'], (Next: typeof S{{ action.succ }}) => State.S{{ action.succ }}]
+    | [Message.{{ name }}['payload'], State.S{{ action.succ }}]
+    ;
+
+  function {{ name }}(
+    payload: Message.S{{ state }}_{{ action.label }}['payload'],
+    generateSuccessor: (Next: typeof S{{ action.succ }}) => State.S{{ action.succ }}
+  ): State.S{{ state }};
+  function {{ name }}(
+    payload: Message.S{{ state }}_{{ action.label }}['payload'],
+    succ: State.S{{ action.succ }}
+  ): State.S{{ state }};
+  function {{ name }}(...args: {{ name }}) {
+    if (typeof args[1] === 'function') {
+      const [payload, generateSuccessor] = args;
+      const successor = generateSuccessor(S{{ action.succ }});
+      return new State.S{{ state }}(["{{ action.label }}", payload, successor]);
+    } else {
+      const [payload, successor] = args;
+      return new State.S{{ state }}(["{{ action.label }}", payload, successor]);
+    }
+  }
+  {% endfor %}
+
+  export const S{{ state }} = {
+    {% for action in state.actions -%}
+    {%- set name = ('S' ~ state ~ '_' ~ action.label) -%}
+    {{ action.label }}: {{ name }},
+    {% endfor %}
+  };
+  {%- endfor %}
+
+  {% for state in endpoint.efsm.receive_states -%}
+  export function S{{ state }}(handler: Handler.S{{ state }}) {
+    return new State.S{{ state }}(handler);
+  };
+  {% endfor %}
+
+  export const Initial = S{{ endpoint.efsm.initial_state }};
+
+  {% if endpoint.efsm.has_terminal_state -%}
+  export const S{{ endpoint.efsm.terminal_state }} = () => new State.S{{ endpoint.efsm.terminal_state }}();
+  export const Terminal = S{{ endpoint.efsm.terminal_state }};
+  {% endif %}
+};

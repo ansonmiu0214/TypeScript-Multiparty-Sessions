@@ -1,6 +1,6 @@
 import React from 'react';
 
-import S61 from '../CompactCalculator/Client/S61'
+import S61 from '../CompactCalculator/Client/S107'
 import HigherOrderCalculator from './HigherOrderCalculator'
 
 import { LogicContext } from '../Logic';

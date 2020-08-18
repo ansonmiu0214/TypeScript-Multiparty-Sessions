@@ -1,3 +1,11 @@
+import {
+    Role,
+} from "./EFSM";
+
+import {
+    MaybePromise,
+} from "./Utility";
+
 export enum Receive {
     NORMAL = 1000,
     CLIENT_BROWSER_CLOSED = 1001,
@@ -14,3 +22,7 @@ export const toChannel = (role: string, reason?: any) => ({
     role,
     reason: reason instanceof Error ? reason.message : reason,
 });
+
+export type Cancellation = (reason?: any) => void;
+
+export type Handler<SessionID> = (sessionID: SessionID, role: Role.All, reason?: any) => MaybePromise<void>;
