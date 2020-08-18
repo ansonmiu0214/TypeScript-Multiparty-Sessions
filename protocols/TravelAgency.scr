@@ -1,6 +1,6 @@
 module TravelAgency;
 
-type <typescript> "credentials" as "" from "./Models";
+type <typescript> "credentials" from "../../Models" as Cred;
 
 global protocol TravelAgency(role A, role B, role S) {
   
@@ -10,7 +10,7 @@ global protocol TravelAgency(role A, role B, role S) {
     Quote(number) from A to B; // check quote with friend
     choice at B {
       OK(number) from B to A;
-      Confirm(credentials) from A to S;
+      Confirm(Cred) from A to S;
     } or {
       No() from B to A;
       Reject() from A to S;

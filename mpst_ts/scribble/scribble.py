@@ -17,3 +17,15 @@ def build_scribble_command(*, filename: str, protocol: str, role: str) -> str:
     scribble_root = os.environ.get('SCRIBBLE_ROOT', DEFAULT_SCRIBBLE_ROOT)
     scribble_sh = os.path.join(scribble_root, 'scribble-dist', 'target', 'scribblec.sh')
     return (scribble_sh, filename, '-fsm', protocol, role)
+
+def get_png(filename: str, protocol: str, role: str):
+    scribble_root = os.environ.get('SCRIBBLE_ROOT', DEFAULT_SCRIBBLE_ROOT)
+    scribble_sh = os.path.join(scribble_root, 'scribble-dist', 'target', 'scribblec.sh')
+
+    completion = subprocess.run(
+        (scribble_sh, filename, '-fsmpng', protocol, role, f'{protocol}_{role}.png'),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+
+    return completion
