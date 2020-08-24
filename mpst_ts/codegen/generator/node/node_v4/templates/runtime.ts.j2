@@ -57,11 +57,11 @@ export class {{ endpoint.role }}
               generateID: () => string = uuidv1)
   {
     // Keep track of participants that have yet to join.
-    const waiting: Set<Role.Peers> = new Set([{% for role in endpoint.efsm.other_roles %}Role.Peers.{{ role ~ (',' if not loop.last else '') }}{% endfor %}]);
+    const waiting: Set<Role.Peers> = new Set([{% for role in endpoint.other_roles %}Role.Peers.{{ role ~ (',' if not loop.last else '') }}{% endfor %}]);
 
     // Keep track of mapping between role and WebSocket.
     const roleToSocket: Partial<RoleToSocket> = {
-      {% for role in endpoint.efsm.other_roles -%}
+      {% for role in endpoint.other_roles -%}
       [Role.Peers.{{ role }}]: undefined,
       {%- endfor %}
     };
@@ -153,7 +153,7 @@ class Session {
     this.initialise = initialise;
 
     // Keep track of active participants in the session.
-    this.activeRoles = new Set([{% for role in endpoint.efsm.other_roles %}Role.Peers.{{ role ~ (',' if not loop.last else '') }}{% endfor %}]);
+    this.activeRoles = new Set([{% for role in endpoint.other_roles %}Role.Peers.{{ role ~ (',' if not loop.last else '') }}{% endfor %}]);
 
     // Bind `this` instances to callbacks
     this.next = this.next.bind(this);
@@ -172,13 +172,13 @@ class Session {
     
     // Initialise queues for receiving.
     this.messageQueue = {
-      {% for role in endpoint.efsm.other_roles -%}
+      {% for role in endpoint.other_roles -%}
       [Role.Peers.{{ role }}]: [],
       {%- endfor %}
     };
 
     this.handlerQueue = {
-      {% for role in endpoint.efsm.other_roles -%}
+      {% for role in endpoint.other_roles -%}
       [Role.Peers.{{ role }}]: [],
       {%- endfor %}
     };

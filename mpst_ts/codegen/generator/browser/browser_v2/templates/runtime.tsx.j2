@@ -93,12 +93,12 @@ class {{ endpoint.role }} extends React.Component<Props & Transport, ComponentSt
 
     // Set up message and handler queues
     this.messageQueue = {
-      {% for role in endpoint.efsm.other_roles -%}
+      {% for role in endpoint.other_roles -%}
       [Roles.Peers.{{ role }}]: [],
       {%- endfor %}
     };
     this.handlerQueue = {
-      {% for role in endpoint.efsm.other_roles -%}
+      {% for role in endpoint.other_roles -%}
       [Roles.Peers.{{ role }}]: [],
       {%- endfor %}
     };

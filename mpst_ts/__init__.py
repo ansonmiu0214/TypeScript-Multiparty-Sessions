@@ -52,14 +52,18 @@ def main(args: typing.List[str]) -> int:
         return return_code
 
     efsm = codegen.parse.from_data(output)
+
+    all_roles = utils.role_parser.process(parsed_args.filename, parsed_args.protocol)
+    other_roles = [role for role in all_roles if role != parsed_args.role]
     # Ad-hoc server flag validation -- must be provided if target is browser
     # FIXME: `other_roles` should include all other roles.
-    # if parsed_args.target == 'browser' and parsed_args.server not in efsm.other_roles:
-    #     print(f'Error: target==browser, but server "{parsed_args.server}" not found in: {efsm.other_roles}', file=sys.stderr)
-    #     return 1
+    if parsed_args.target == 'browser' and parsed_args.server not in other_roles:
+        print(f'Error: target==browser, but server "{parsed_args.server}" not found in: {other_roles}', file=sys.stderr)
+        return 1
 
     endpoint = codegen.Endpoint(protocol=parsed_args.protocol,
                                 role=parsed_args.role,
+                                other_roles=other_roles,
                                 server=parsed_args.server,
                                 efsm=efsm,
                                 types=custom_types)
