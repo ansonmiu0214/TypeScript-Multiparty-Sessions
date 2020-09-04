@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PACKAGES="curl git default-jdk maven python3-pip python3.7 unzip graphviz"
+PACKAGES="curl git default-jdk maven python3-pip unzip graphviz"
 
 # Get latest packages
 echo "Getting latest packages..."
@@ -20,7 +20,7 @@ npm i -g typescript typescript-formatter
 
 # Install Python dependencies
 echo "Installing Python packages..."
-python3.7 -m pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 rm requirements.txt
 
 # Build Scribble

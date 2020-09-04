@@ -8,6 +8,10 @@ A session type API code generation toolchain for modern web programming.
 ## Getting Started
 We provide a development environment on _Docker_, which handles Python package dependencies and the [_Scribble toolchain_](https://github.com/scribble/scribble-java/).
 
+### Prerequisites
+* Docker
+* Node.js
+
 ### Setup DevEnv
 ```bash
 # Make scripts executable
@@ -31,12 +35,12 @@ exit
 
 For server side endpoints
 ```bash
-python3.7 -m mpst_ts <filename> <protocol> <role> node
+./codegen.sh <filename> <protocol> <role> node
 ```
 
 For browser-side endpoints
 ```bash
-python3.7 -m mpst_ts <filename> <protocol> <role> browser -s <server_role>
+./codegen.sh -m mpst_ts <filename> <protocol> <role> browser -s <server_role>
 ```
 
 ## Tests
@@ -46,5 +50,5 @@ Performs the following steps for each example Scribble protocol:
 2. Compile using the TypeScript compiler.
 
 ```bash
-python3.7 -m mpst_ts.tests.system
+./test.sh
 ```
