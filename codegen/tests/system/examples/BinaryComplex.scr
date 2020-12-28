@@ -1,0 +1,43 @@
+module BinaryComplex;
+
+global protocol Calculator(role Client, role Svr) {
+
+    choice at Client {
+        Add(number, number) from Client to Svr;
+        Sum(number) from Svr to Client;
+        do Calculator(Svr, Client);
+    } or {
+        Mult(number, number) from Client to Svr;
+        Product(number) from Svr to Client;
+        do Calculator(Svr, Client);
+    } or {
+        Double(number) from Client to Svr;
+        Double(number) from Svr to Client;
+        do Calculator(Svr, Client);
+    } or {
+        Quit() from Client to Svr;
+        Terminate() from Svr to Client;
+    }
+
+}
+
+global protocol CompactCalculator(role Client, role Svr) {
+
+    choice at Client {
+        Add(number, number) from Client to Svr;
+        Res(number) from Svr to Client;
+        do CompactCalculator(Svr, Client);
+    } or {
+        Mult(number, number) from Client to Svr;
+        Res(number) from Svr to Client;
+        do CompactCalculator(Svr, Client);
+    } or {
+        Double(number) from Client to Svr;
+        Res(number) from Svr to Client;
+        do CompactCalculator(Svr, Client);
+    } or {
+        Quit() from Client to Svr;
+        Terminate() from Svr to Client;
+    }
+    
+}

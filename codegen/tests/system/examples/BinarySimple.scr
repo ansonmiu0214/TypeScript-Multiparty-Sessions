@@ -1,0 +1,20 @@
+module BinarySimple;
+
+global protocol Greeting(role Alice, role Bob) {
+
+    HELLO() from Alice to Bob;
+    HELLO() from Bob to Alice;
+
+}
+
+global protocol PingPong(role Client, role Svr) {
+    
+    PING(number) from Client to Svr;
+    choice at Svr {
+        PONG(number) from Svr to Client;
+        do PingPong(Client, Svr);
+    } or {
+        BYE(number) from Svr to Client; 
+    }
+    
+}

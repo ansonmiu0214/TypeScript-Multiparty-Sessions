@@ -1,0 +1,44 @@
+.Board {
+  margin: auto;
+}
+
+.grid-cell {
+  width: 100px;
+  height: 100px;
+  background-size: contain;
+  -o-background-size: contain;
+  -moz-background-size: contain;
+  -webkit-background-size: contain;
+}
+
+.vert {
+  border-left: 2px solid black;
+  border-right: 2px solid black;
+}
+
+.hori {
+  border-top: 2px solid black;
+  border-bottom: 2px solid black;
+}
+
+.P1 {
+  background-image: url('/images/circle.png');
+  background-color: rgba(0, 0, 255, 0.2);
+}
+
+.P2 {
+  background-image: url('/images/cross.png');
+  background-color: rgba(255, 0, 0, 0.2);
+}
+
+.empty-P1:hover {
+  background-image: url('/images/circle.png');
+  background-color: yellow;
+  cursor: pointer;
+}
+
+.empty-P2:hover {
+  background-image: url('/images/cross.png');
+  cursor: pointer;
+  background-color: yellow;
+}

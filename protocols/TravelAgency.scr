@@ -1,27 +1,24 @@
 module TravelAgency;
 
 type <typescript> "Credentials" from "../../Models" as Cred;
-type <typescript> "string" from "" as string;
-type <typescript> "number" from "" as number;
-type <typescript> "boolean" from "" as boolean;
 
 global protocol TravelAgency(role A, role B, role S) {
   
-  Suggest(string) from B to A;  // friend suggests place
-  Query(string) from A to S;
-  choice at S { Available(number) from S to A;
-    Quote(number) from A to B; // check quote with friend
-    choice at B {
-      OK(number) from B to A;
-      Confirm(Cred) from A to S;
+    Suggest(string) from B to A;  // friend suggests place
+    Query(string) from A to S;
+    choice at S { Available(number) from S to A;
+        Quote(number) from A to B; // check quote with friend
+        choice at B {
+            OK(number) from B to A;
+            Confirm(Cred) from A to S;
+        } or {
+            No() from B to A;
+            Reject() from A to S;
+        }
     } or {
-      No() from B to A;
-      Reject() from A to S;
+        Full() from S to A; 
+        Full() from A to B;
+        do TravelAgency(A, B, S);
     }
-  } or {
-    Full() from S to A; 
-    Full() from A to B;
-    do TravelAgency(A, B, S);
-  }
 
 }

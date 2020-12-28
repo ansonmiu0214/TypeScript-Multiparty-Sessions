@@ -1,17 +1,17 @@
 module TwoBuyer;
 
-global protocol TwoBuyer(role A, role B, role S)  {
+global protocol TwoBuyer(role BuyerA, role BuyerB, role Seller) {
 
-	title(string)   from A to S;
-	quote(number)   from S to A;
-	quote(number)   from S to B;
-	split(number)   from A to B;
-	choice at B {
-		accept()    from B to A;
-		buy()       from A to S;
+    title(string)   from BuyerA to Seller;
+	quote(number)   from Seller to BuyerA;
+	quote(number)   from Seller to BuyerB;
+	split(number)   from BuyerA to BuyerB;
+	choice at BuyerB {
+		accept()    from BuyerB to BuyerA;
+		buy()       from BuyerA to Seller;
 	} or {
-		reject()    from B to A;
-		cancel()    from A to S;
+		reject()    from BuyerB to BuyerA;
+		cancel()    from BuyerA to Seller;
 	}
 
 }

@@ -1,0 +1,25 @@
+version: '3.7'
+services:
+  dev:
+    image: 'stscript:latest'
+    hostname: stscript
+    volumes:
+      - ./case-studies:/home/stscript/case-studies
+      - ./codegen:/home/stscript/codegen
+      - ./perf-benchmarks:/home/stscript/perf-benchmarks
+      - ./protocols:/home/stscript/protocols
+      - ./web-sandbox:/home/stscript/web-sandbox
+    ports: 
+      - 127.0.0.1:3000:3000
+      - 127.0.0.1:5000:5000
+      - 127.0.0.1:8000:8000
+      - 127.0.0.1:8080:8080
+      - 127.0.0.1:8888:8888
+  
+volumes:
+  case-studies:  
+  codegen:
+  perf-benchmarks:
+  protocols:
+  web-sandbox:
+  

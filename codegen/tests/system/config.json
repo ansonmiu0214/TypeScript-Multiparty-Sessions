@@ -1,0 +1,55 @@
+{
+    "tests": [
+        {
+            "filename": "BinarySimple.scr",
+            "protocols": [
+                {
+                    "identifier": "Greeting",
+                    "server": "Bob",
+                    "clients": ["Alice"]
+                },
+                {
+                    "identifier": "PingPong",
+                    "server": "Svr",
+                    "clients": ["Client"]
+                }
+            ]
+        }
+        ,
+        {
+            "filename": "BinaryComplex.scr",
+            "protocols": [
+                {
+                    "identifier": "Calculator",
+                    "server": "Svr",
+                    "clients": ["Client"]
+                },
+                {
+                    "identifier": "CompactCalculator",
+                    "server": "Svr",
+                    "clients": ["Client"]
+                }
+            ]
+        },
+        {
+            "filename": "MultipartyCanonical.scr",
+            "protocols": [
+                {
+                    "identifier": "Ring",
+                    "server": "Carol",
+                    "clients": ["Alice", "Bob"]
+                }
+            ]
+        },
+        {
+            "filename": "MultipartyWithRouting.scr",
+            "protocols": [
+                {
+                    "identifier": "TwoBuyer",
+                    "server": "Seller",
+                    "clients": ["BuyerA", "BuyerB"]
+                }
+            ]
+        }
+    ]
+}
