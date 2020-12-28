@@ -1,0 +1,3 @@
+[submodule "scribble-java"]
+	path = scribble-java
+	url = git@github.com:scribble/scribble-java.git
