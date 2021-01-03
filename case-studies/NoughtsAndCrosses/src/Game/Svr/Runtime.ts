@@ -20,7 +20,6 @@ export type SendStateHandler = (role: Role.Peers, label: string, payload: any[])
 export type MessageHandler = (payload: any) => void;
 export type ReceiveStateHandler = (from: Role.Peers, messageHandler: MessageHandler) => void;
 
-
 // ===============
 // WebSocket Types
 // ===============
@@ -34,6 +33,8 @@ interface WebSocketMessage {
     type: string
     target: WebSocket
 };
+
+type ConnectionContext = [Set<Role.Peers>, Partial<RoleToSocket>, Map<WebSocket, Role.Peers>]
 
 // ================
 // Connection Phase
@@ -49,26 +50,40 @@ namespace Connect {
     };
 };
 
+// Factory function to create a new connection context to keep track
+// of pending connections before instantiating a session.
+const makeNewContext = (): ConnectionContext => {
+    // Keep track of participants that have yet to join.
+    const waiting: Set<Role.Peers> = new Set([Role.Peers.P1, Role.Peers.P2]);
+
+    // Keep track of mapping between role and WebSocket.
+    const roleToSocket: Partial<RoleToSocket> = {
+        [Role.Peers.P1]: undefined, [Role.Peers.P2]: undefined,
+    };
+    const socketToRole = new Map<WebSocket, Role.Peers>();
+
+    return [waiting, roleToSocket, socketToRole];
+};
+
 export class Svr {
     constructor(wss: WebSocket.Server,
         cancellation: Cancellation.Handler<string>,
         initialise: StateInitialiser<string>,
         generateID: () => string = uuidv1) {
-        // Keep track of participants that have yet to join.
-        const waiting: Set<Role.Peers> = new Set([Role.Peers.P1, Role.Peers.P2]);
 
-        // Keep track of mapping between role and WebSocket.
-        const roleToSocket: Partial<RoleToSocket> = {
-            [Role.Peers.P1]: undefined, [Role.Peers.P2]: undefined,
-        };
-        const socketToRole = new Map<WebSocket, Role.Peers>();
+        const connectionContexts: ConnectionContext[] = [];
 
         // Handle explicit cancellation during the join phase.
         const onClose = ({ target: socket }: WebSocket.CloseEvent) => {
             socket.removeAllListeners();
 
             // Wait for the role again - guaranteed to occur in map by construction.
-            waiting.add(socketToRole.get(socket) as Role.Peers);
+            for (const [waiting, roleToSocket, socketToRole] of connectionContexts) {
+                const role = socketToRole.get(socket);
+                if (role !== undefined) {
+                    waiting.add(role);
+                }
+            }
         }
 
         // Handle connection invitation message from participant.
@@ -76,43 +91,41 @@ export class Svr {
             const { data, target: socket } = event;
             const { connect: role } = Message.deserialise<Connect.Request>(data);
 
-            const roleAlreadyOccupied = !waiting.has(role);
-            if (roleAlreadyOccupied) {
-                // Remove listeners, as all events are irrelevant now.
-                socket.removeAllListeners();
+            for (const [waiting, roleToSocket, socketToRole] of connectionContexts) {
+                if (waiting.has(role)) {
+                    // Update role-WebSocket mapping.
+                    roleToSocket[role] = socket;
+                    socketToRole.set(socket, role);
+                    waiting.delete(role);
 
-                // Inform participant of unsuccessful join and cancel.
-                socket.close(Cancellation.Emit.ROLE_OCCUPIED);
-                return;
+                    if (waiting.size === 0) {
+                        connectionContexts.shift();
+                        
+                        // Execute protocol when all participants have joined.
+                        new Session(
+                            generateID(),
+                            wss,
+                            roleToSocket as RoleToSocket,
+                            cancellation,
+                            initialise
+                        );
+                    }
+                    return;
+                }
             }
+
+            // Role occupied in all existing connection contexts;
+            // Create new connection context.
+            const context = makeNewContext();
+            const [waiting, roleToSocket, socketToRole] = context;
 
             // Update role-WebSocket mapping.
             roleToSocket[role] = socket;
             socketToRole.set(socket, role);
             waiting.delete(role);
 
-            if (waiting.size === 0) {
-                // Execute protocol when all participants have joined.
-                new Session(
-                    generateID(),
-                    wss,
-                    roleToSocket as RoleToSocket,
-                    cancellation,
-                    initialise
-                );
-
-                // Listen for another session.
-                new Svr(
-                    wss,
-                    cancellation,
-                    initialise,
-                    generateID,
-                );
-            }
+            connectionContexts.push(context);
         }
-
-        // Remove previous connection listeners.
-        wss.removeAllListeners();
 
         // Bind event listeners for every new connection.
         wss.addListener('connection', (ws: WebSocket) => {
