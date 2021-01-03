@@ -11,7 +11,7 @@ python3.8 -m codegen protocols/Battleships.scr Battleships P2 browser -s Svr -o 
 
 echo "SUCCESS: generated APIs for Battleships"
 echo "Building Battleships application"
-cd case-studies/Battleship
+cd case-studies/Battleships
 npm run build
 
 echo "SUCCESS: built Battleships"

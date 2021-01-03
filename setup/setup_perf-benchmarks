@@ -1,0 +1,12 @@
+#!/usr/bin/bash
+
+echo "Setting up perf-benchmarks..."
+
+find ~/perf-benchmarks -name "*.sh" -exec chmod +x {} \;
+
+cd ~/perf-benchmarks/simple_pingpong
+npm i
+npm run build-all
+cd ../complex_pingpong
+npm i
+npm run build-all

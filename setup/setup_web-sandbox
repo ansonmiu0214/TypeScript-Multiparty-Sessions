@@ -1,0 +1,10 @@
+#!/usr/bin/bash
+
+echo "Setting up web-sandbox..."
+
+cd ~/web-sandbox
+cd node
+npm i
+cd ../browser
+npm i
+cd ../.

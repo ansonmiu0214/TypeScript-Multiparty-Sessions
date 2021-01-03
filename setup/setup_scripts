@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+
+echo "Setting up scripts..."
+
+chmod +x ~/scripts/*
