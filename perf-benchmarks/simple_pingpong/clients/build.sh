@@ -1,7 +1,8 @@
+#!/usr/bin/bash
+
 for dir in */; do
-    pushd .
     cd $dir
     npm i
     npm run build
-    popd
+    cd ..
 done

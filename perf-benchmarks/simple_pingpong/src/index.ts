@@ -3,12 +3,10 @@ import fs from 'fs/promises';
 
 import { Logs, Timer } from './fixtures';
 import bare from './bare';
-import bare_safe from './bare_safe';
 import mpst from './mpst';
 
 const executors = {
     bare,
-    bare_safe,
     mpst,
 };
 

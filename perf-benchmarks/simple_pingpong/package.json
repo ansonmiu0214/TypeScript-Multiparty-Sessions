@@ -1,18 +1,15 @@
 {
   "name": "simple_pingpong",
   "version": "1.0.0",
-  "description": "",
+  "description": "Implementation of simple_pingpong for performance micro-benchmark",
   "scripts": {
     "start-bare": "node build --variant bare",
-    "start-bare_safe": "node build --variant bare_safe",
     "start-mpst": "node build --variant mpst",
     "build": "tsc",
-    "build-all": "npm run build && ./clients/build.sh",
+    "build-all": "npm run build && cd clients && ./build.sh",
     "clear-bare": "find logs/bare -name *.log -exec rm {} \\;",
-    "clear-bare_safe": "find logs/bare_safe -name *.log -exec rm {} \\;",
     "clear-mpst": "find logs/mpst -name *.log -exec rm {} \\;",
-    "clear-all": "find logs -name *.log -exec rm {} \\;",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clear-all": "find logs -name *.log -exec rm {} \\;"
   },
   "keywords": [],
   "author": "",

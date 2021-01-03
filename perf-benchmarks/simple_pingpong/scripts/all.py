@@ -28,7 +28,7 @@ print()
 scriptDir = os.path.abspath(os.path.dirname(__file__))
 for numMessages in messages:
 
-    for variant in ('bare', 'bare_safe', 'mpst'):
+    for variant in ('bare', 'mpst'):
         command = [
             os.path.join(scriptDir, f'{variant}.sh'),
             '-m',
