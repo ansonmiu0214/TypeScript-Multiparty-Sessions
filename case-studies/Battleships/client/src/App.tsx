@@ -41,11 +41,11 @@ function App() {
         <P1
           endpoint={endpoint}
           states={{
-            S128: InitialiserP1,
-            S130: AttackBoardP1,
-            S131: WaitServerP1,
-            S132: WaitOppositionP1,
-            S129: EndGame,
+            S17: InitialiserP1,
+            S19: AttackBoardP1,
+            S20: WaitServerP1,
+            S21: WaitOppositionP1,
+            S18: EndGame,
           }}
           waiting={<p>Waiting for Player 2...</p>}
           cancellation={(role, reason) => {
@@ -59,11 +59,11 @@ function App() {
         <P2
           endpoint={endpoint}
           states={{
-            S220: InitialiserP2,
-            S222: WaitOppositionP2,
-            S223: AttackBoardP2,
-            S224: WaitServerP2,
-            S221: EndGame,
+            S109: InitialiserP2,
+            S111: WaitOppositionP2,
+            S112: AttackBoardP2,
+            S113: WaitServerP2,
+            S110: EndGame,
           }}
         waiting={<p>Waiting for Player 1...</p>}
         cancellation={(role, reason) => {

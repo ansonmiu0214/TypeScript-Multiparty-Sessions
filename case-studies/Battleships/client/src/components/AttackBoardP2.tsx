@@ -3,10 +3,10 @@ import React from "react";
 import GameBoard from "../GameManager/GameBoard";
 import { GamePlayers } from "../GameManager/GameState";
 
-import { S223 } from "../Battleships/P2/";
+import { S112 } from "../Battleships/P2/";
 import { Location } from "../Models";
 
-export default class AttackBoard extends S223 {
+export default class AttackBoard extends S112 {
 
   render() {
     const Attack = (location: Location) => this.Attack('onClick', (ev) => {

@@ -11,7 +11,7 @@ type Props = {
 /**
  * __Terminal state__.
  */
-export default abstract class S221<ComponentState = {}> extends React.Component<Props, ComponentState> {
+export default abstract class S110<ComponentState = {}> extends React.Component<Props, ComponentState> {
 
     componentDidMount() {
         this.props.terminate();

@@ -1,9 +1,9 @@
 import React from "react";
 
-import { S220 } from "../Battleships/P2";
+import { S109 } from "../Battleships/P2";
 import InitialiserBoard from "../GameManager/InitialiserBoard";
 
-export default class InitialiserP2 extends S220 {
+export default class InitialiserP2 extends S109 {
   
   render() {
     return (

@@ -13,7 +13,7 @@ const gameManager = (gameID: string) => {
     })
   });
 
-  const handleP1 = Session.S176({
+  const handleP1 = Session.S65({
     Attack: async (Next, location) => {
       const result = await DB.attack(gameID, GamePlayers.P1, location);
       console.log(`${gameID}: player 1 attacked (${location.x}, ${location.y})...${result}!`);
@@ -33,7 +33,7 @@ const gameManager = (gameID: string) => {
     }
   });
 
-  const handleP2 = Session.S179({
+  const handleP2 = Session.S68({
     Attack: async (Next, location) => {
       const result = await DB.attack(gameID, GamePlayers.P2, location)
       console.log(`${gameID}: player 2 attacked (${location.x}, ${location.y})...${result}!`);

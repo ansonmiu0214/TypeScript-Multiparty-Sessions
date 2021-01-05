@@ -28,17 +28,17 @@ type Props = {
 /**
  * __Sends to  Svr.__ Possible messages:
  *
- * * __Init__(Config)
+ * * __Attack__(Location)
  */
-export default abstract class S220<ComponentState = {}> extends React.Component<Props, ComponentState>
+export default abstract class S19<ComponentState = {}> extends React.Component<Props, ComponentState>
 {
 
-    protected Init: SendComponentFactory<[Config]>;
+    protected Attack: SendComponentFactory<[Location]>;
 
     constructor(props: Props) {
         super(props);
-        this.Init = props.factory<[Config]>(
-            Roles.Peers.Svr, 'Init', ReceiveState.S222
+        this.Attack = props.factory<[Location]>(
+            Roles.Peers.Svr, 'Attack', ReceiveState.S20
         );
 
     }

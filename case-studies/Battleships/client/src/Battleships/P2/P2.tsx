@@ -24,11 +24,11 @@ import {
     FunctionArguments,
 } from './Types';
 
-import S220 from './S220';
-import S223 from './S223';
-import S222 from './S222';
-import S224 from './S224';
-import S221 from './S221';
+import S112 from './S112';
+import S109 from './S109';
+import S113 from './S113';
+import S111 from './S111';
+import S110 from './S110';
 
 type RoleToMessageQueue = Roles.PeersToMapped<any[]>;
 type RoleToHandlerQueue = Roles.PeersToMapped<ReceiveHandler[]>;
@@ -40,11 +40,11 @@ type RoleToHandlerQueue = Roles.PeersToMapped<ReceiveHandler[]>;
 type Props = {
     endpoint: string,
     states: {
-        S220: Constructor<S220>,
-        S223: Constructor<S223>,
-        S222: Constructor<S222>,
-        S224: Constructor<S224>,
-        S221: Constructor<S221>,
+        S112: Constructor<S112>,
+        S109: Constructor<S109>,
+        S113: Constructor<S113>,
+        S111: Constructor<S111>,
+        S110: Constructor<S110>,
 
     },
     waiting: React.ReactNode,
@@ -99,10 +99,10 @@ class P2 extends React.Component<Props & Transport, ComponentState> {
 
         // Set up message and handler queues
         this.messageQueue = {
-            [Roles.Peers.Svr]: [],
+            [Roles.Peers.Svr]: [], [Roles.Peers.P1]: [],
         };
         this.handlerQueue = {
-            [Roles.Peers.Svr]: [],
+            [Roles.Peers.Svr]: [], [Roles.Peers.P1]: [],
         };
 
         // Bind functions
@@ -143,7 +143,7 @@ class P2 extends React.Component<Props & Transport, ComponentState> {
         ws.onmessage = this.onReceiveMessage;
         ws.onclose = this.onClose;
 
-        this.advance(SendState.S220);
+        this.advance(SendState.S109);
 
     }
 
@@ -172,21 +172,31 @@ class P2 extends React.Component<Props & Transport, ComponentState> {
     // ===============
 
     private advance(state: State) {
+
         if (isSendState(state)) {
             const View = this.props.states[state];
             this.setState({
                 elem: <View factory={this.buildSendElement} />
             });
-        } else if (isReceiveState(state)) {
+
+            return;
+        }
+        if (isReceiveState(state)) {
             const View = this.props.states[state];
             this.setState({
                 elem: <View register={this.registerReceiveHandler} />
             });
-        } else if (isTerminalState(state)) {
+
+            return;
+        }
+
+        if (isTerminalState(state)) {
             const View = this.props.states[state];
             this.setState({
                 elem: <View terminate={this.terminate} />
             });
+
+            return;
         }
     }
 

@@ -16,8 +16,8 @@ import {
     ReceiveHandler
 } from './Session';
 
-import { Location } from "../../Models";
 import { Config } from "../../Models";
+import { Location } from "../../Models";
 
 
 // ==================
@@ -25,9 +25,13 @@ import { Config } from "../../Models";
 // ==================
 
 enum Labels {
-    Hit = 'Hit', Miss = 'Miss', Sunk = 'Sunk', Loser = 'Loser',
+    Loser = 'Loser', Hit = 'Hit', Miss = 'Miss', Sunk = 'Sunk',
 }
 
+interface LoserMessage {
+    label: Labels.Loser,
+    payload: [Location],
+};
 interface HitMessage {
     label: Labels.Hit,
     payload: [Location],
@@ -40,13 +44,9 @@ interface SunkMessage {
     label: Labels.Sunk,
     payload: [Location],
 };
-interface LoserMessage {
-    label: Labels.Loser,
-    payload: [Location],
-};
 
 
-type Message = | HitMessage | MissMessage | SunkMessage | LoserMessage
+type Message = | LoserMessage | HitMessage | MissMessage | SunkMessage
 
 // ===============
 // Component types
@@ -59,12 +59,12 @@ type Props = {
 /**
  * __Receives from Svr.__ Possible messages:
  *
+ * * __Loser__(Location)
  * * __Hit__(Location)
  * * __Miss__(Location)
  * * __Sunk__(Location)
- * * __Loser__(Location)
  */
-export default abstract class S132<ComponentState = {}> extends React.Component<Props, ComponentState>
+export default abstract class S21<ComponentState = {}> extends React.Component<Props, ComponentState>
 {
 
     componentDidMount() {
@@ -74,8 +74,21 @@ export default abstract class S132<ComponentState = {}> extends React.Component<
     handle(message: any): MaybePromise<State> {
         const parsedMessage = JSON.parse(message) as Message;
         switch (parsedMessage.label) {
-            case Labels.Hit: {
-                const thunk = () => SendState.S130;
+            case Labels.Loser: {
+                const thunk = () => TerminalState.S18;
+
+                const continuation = this.Loser(...parsedMessage.payload);
+                if (continuation instanceof Promise) {
+                    return new Promise((resolve, reject) => {
+                        continuation.then(() => {
+                            resolve(thunk());
+                        }).catch(reject);
+                    })
+                } else {
+                    return thunk();
+                }
+            } case Labels.Hit: {
+                const thunk = () => SendState.S19;
 
                 const continuation = this.Hit(...parsedMessage.payload);
                 if (continuation instanceof Promise) {
@@ -88,7 +101,7 @@ export default abstract class S132<ComponentState = {}> extends React.Component<
                     return thunk();
                 }
             } case Labels.Miss: {
-                const thunk = () => SendState.S130;
+                const thunk = () => SendState.S19;
 
                 const continuation = this.Miss(...parsedMessage.payload);
                 if (continuation instanceof Promise) {
@@ -101,22 +114,9 @@ export default abstract class S132<ComponentState = {}> extends React.Component<
                     return thunk();
                 }
             } case Labels.Sunk: {
-                const thunk = () => SendState.S130;
+                const thunk = () => SendState.S19;
 
                 const continuation = this.Sunk(...parsedMessage.payload);
-                if (continuation instanceof Promise) {
-                    return new Promise((resolve, reject) => {
-                        continuation.then(() => {
-                            resolve(thunk());
-                        }).catch(reject);
-                    })
-                } else {
-                    return thunk();
-                }
-            } case Labels.Loser: {
-                const thunk = () => TerminalState.S129;
-
-                const continuation = this.Loser(...parsedMessage.payload);
                 if (continuation instanceof Promise) {
                     return new Promise((resolve, reject) => {
                         continuation.then(() => {
@@ -130,5 +130,9 @@ export default abstract class S132<ComponentState = {}> extends React.Component<
         }
     }
 
-    abstract Hit(payload1: Location, ): MaybePromise<void>; abstract Miss(payload1: Location, ): MaybePromise<void>; abstract Sunk(payload1: Location, ): MaybePromise<void>; abstract Loser(payload1: Location, ): MaybePromise<void>;
+    abstract Loser(payload1: Location,): MaybePromise<void>;
+    abstract Hit(payload1: Location,): MaybePromise<void>;
+    abstract Miss(payload1: Location,): MaybePromise<void>;
+    abstract Sunk(payload1: Location,): MaybePromise<void>;
+
 }

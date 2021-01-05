@@ -5,15 +5,15 @@
 // ======
 
 export enum SendState {
-    S128 = 'S128', S130 = 'S130',
+    S17 = 'S17', S19 = 'S19',
 };
 
 export enum ReceiveState {
-    S131 = 'S131', S132 = 'S132',
+    S21 = 'S21', S20 = 'S20',
 };
 
 export enum TerminalState {
-    S129 = 'S129',
+    S18 = 'S18',
 };
 
 export type State = ReceiveState | SendState | TerminalState;

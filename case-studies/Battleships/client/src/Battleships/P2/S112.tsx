@@ -13,8 +13,8 @@ import {
     SendComponentFactoryFactory
 } from './Session';
 
-import { Config } from "../../Models";
 import { Location } from "../../Models";
+import { Config } from "../../Models";
 
 
 // ===============
@@ -30,7 +30,7 @@ type Props = {
  *
  * * __Attack__(Location)
  */
-export default abstract class S223<ComponentState = {}> extends React.Component<Props, ComponentState>
+export default abstract class S112<ComponentState = {}> extends React.Component<Props, ComponentState>
 {
 
     protected Attack: SendComponentFactory<[Location]>;
@@ -38,7 +38,7 @@ export default abstract class S223<ComponentState = {}> extends React.Component<
     constructor(props: Props) {
         super(props);
         this.Attack = props.factory<[Location]>(
-            Roles.Peers.Svr, 'Attack', ReceiveState.S224
+            Roles.Peers.Svr, 'Attack', ReceiveState.S113
         );
 
     }

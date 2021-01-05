@@ -2,9 +2,9 @@ import React from "react";
 
 import GameBoard from "../GameManager/GameBoard";
 import { GamePlayers } from "../GameManager/GameState";
-import { S129 } from "../Battleships/P1";
+import { S18 } from "../Battleships/P1";
 
-export default class EndGame extends S129 {
+export default class EndGame extends S18 {
 
   render() {
 

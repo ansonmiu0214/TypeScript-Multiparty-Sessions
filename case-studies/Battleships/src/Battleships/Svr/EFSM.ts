@@ -35,127 +35,127 @@ export namespace Role {
 
 export namespace Message {
 
-    export interface S199_Loser {
+    export interface S67_Hit {
+        label: "Hit",
+        payload: [Location],
+    };
+
+    export type S67 = | S67_Hit;
+
+    export interface S81_Sunk {
+        label: "Sunk",
+        payload: [Location],
+    };
+
+    export type S81 = | S81_Sunk;
+
+    export interface S88_Loser {
         label: "Loser",
         payload: [Location],
     };
 
-    export type S199 = | S199_Loser;
+    export type S88 = | S88_Loser;
 
-    export interface S177_Hit {
-        label: "Hit",
-        payload: [Location],
-    };
-    export interface S177_Miss {
-        label: "Miss",
-        payload: [Location],
-    };
-    export interface S177_Sunk {
+    export interface S72_Sunk {
         label: "Sunk",
         payload: [Location],
     };
-    export interface S177_Winner {
+
+    export type S72 = | S72_Sunk;
+
+    export interface S66_Hit {
+        label: "Hit",
+        payload: [Location],
+    };
+    export interface S66_Miss {
+        label: "Miss",
+        payload: [Location],
+    };
+    export interface S66_Sunk {
+        label: "Sunk",
+        payload: [Location],
+    };
+    export interface S66_Winner {
         label: "Winner",
         payload: [Location],
     };
 
-    export type S177 = | S177_Hit | S177_Miss | S177_Sunk | S177_Winner;
+    export type S66 = | S66_Hit | S66_Miss | S66_Sunk | S66_Winner;
 
-    export interface S178_Hit {
+    export interface S69_Hit {
         label: "Hit",
         payload: [Location],
     };
-
-    export type S178 = | S178_Hit;
-
-    export interface S180_Hit {
-        label: "Hit",
-        payload: [Location],
-    };
-    export interface S180_Miss {
+    export interface S69_Miss {
         label: "Miss",
         payload: [Location],
     };
-    export interface S180_Sunk {
+    export interface S69_Sunk {
         label: "Sunk",
         payload: [Location],
     };
-    export interface S180_Winner {
+    export interface S69_Winner {
         label: "Winner",
         payload: [Location],
     };
 
-    export type S180 = | S180_Hit | S180_Miss | S180_Sunk | S180_Winner;
+    export type S69 = | S69_Hit | S69_Miss | S69_Sunk | S69_Winner;
 
-    export interface S181_Hit {
+    export interface S70_Hit {
         label: "Hit",
         payload: [Location],
     };
 
-    export type S181 = | S181_Hit;
+    export type S70 = | S70_Hit;
 
-    export interface S182_Miss {
+    export interface S71_Miss {
         label: "Miss",
         payload: [Location],
     };
 
-    export type S182 = | S182_Miss;
+    export type S71 = | S71_Miss;
 
-    export interface S183_Sunk {
-        label: "Sunk",
+    export interface S74_Miss {
+        label: "Miss",
         payload: [Location],
     };
 
-    export type S183 = | S183_Sunk;
+    export type S74 = | S74_Miss;
 
-    export interface S184_Loser {
+    export interface S73_Loser {
         label: "Loser",
         payload: [Location],
     };
 
-    export type S184 = | S184_Loser;
+    export type S73 = | S73_Loser;
 
-    export interface S185_Miss {
-        label: "Miss",
-        payload: [Location],
-    };
-
-    export type S185 = | S185_Miss;
-
-    export interface S192_Sunk {
-        label: "Sunk",
-        payload: [Location],
-    };
-
-    export type S192 = | S192_Sunk;
-
-    export interface S173_Init {
-        label: "Init",
-        payload: [Config],
-    };
-
-    export type S173 = | S173_Init;
-
-    export interface S175_Init {
-        label: "Init",
-        payload: [Config],
-    };
-
-    export type S175 = | S175_Init;
-
-    export interface S176_Attack {
+    export interface S65_Attack {
         label: "Attack",
         payload: [Location],
     };
 
-    export type S176 = | S176_Attack;
+    export type S65 = | S65_Attack;
 
-    export interface S179_Attack {
+    export interface S62_Init {
+        label: "Init",
+        payload: [Config],
+    };
+
+    export type S62 = | S62_Init;
+
+    export interface S64_Init {
+        label: "Init",
+        payload: [Config],
+    };
+
+    export type S64 = | S64_Init;
+
+    export interface S68_Attack {
         label: "Attack",
         payload: [Location],
     };
 
-    export type S179 = | S179_Attack;
+    export type S68 = | S68_Attack;
 
 
     export interface Channel {
@@ -170,77 +170,77 @@ export namespace Message {
 };
 
 export namespace Handler {
-    export type S199 =
+    export type S67 =
         MaybePromise<
-            | ["Loser", Message.S199_Loser['payload'], State.S174]
+            | ["Hit", Message.S67_Hit['payload'], State.S68]
 
         >;
-    export type S177 =
+    export type S81 =
         MaybePromise<
-            | ["Hit", Message.S177_Hit['payload'], State.S178]
-            | ["Miss", Message.S177_Miss['payload'], State.S185]
-            | ["Sunk", Message.S177_Sunk['payload'], State.S192]
-            | ["Winner", Message.S177_Winner['payload'], State.S199]
+            | ["Sunk", Message.S81_Sunk['payload'], State.S68]
 
         >;
-    export type S178 =
+    export type S88 =
         MaybePromise<
-            | ["Hit", Message.S178_Hit['payload'], State.S179]
+            | ["Loser", Message.S88_Loser['payload'], State.S63]
 
         >;
-    export type S180 =
+    export type S72 =
         MaybePromise<
-            | ["Hit", Message.S180_Hit['payload'], State.S181]
-            | ["Miss", Message.S180_Miss['payload'], State.S182]
-            | ["Sunk", Message.S180_Sunk['payload'], State.S183]
-            | ["Winner", Message.S180_Winner['payload'], State.S184]
+            | ["Sunk", Message.S72_Sunk['payload'], State.S65]
 
         >;
-    export type S181 =
+    export type S66 =
         MaybePromise<
-            | ["Hit", Message.S181_Hit['payload'], State.S176]
+            | ["Hit", Message.S66_Hit['payload'], State.S67]
+            | ["Miss", Message.S66_Miss['payload'], State.S74]
+            | ["Sunk", Message.S66_Sunk['payload'], State.S81]
+            | ["Winner", Message.S66_Winner['payload'], State.S88]
 
         >;
-    export type S182 =
+    export type S69 =
         MaybePromise<
-            | ["Miss", Message.S182_Miss['payload'], State.S176]
+            | ["Hit", Message.S69_Hit['payload'], State.S70]
+            | ["Miss", Message.S69_Miss['payload'], State.S71]
+            | ["Sunk", Message.S69_Sunk['payload'], State.S72]
+            | ["Winner", Message.S69_Winner['payload'], State.S73]
 
         >;
-    export type S183 =
+    export type S70 =
         MaybePromise<
-            | ["Sunk", Message.S183_Sunk['payload'], State.S176]
+            | ["Hit", Message.S70_Hit['payload'], State.S65]
 
         >;
-    export type S184 =
+    export type S71 =
         MaybePromise<
-            | ["Loser", Message.S184_Loser['payload'], State.S174]
+            | ["Miss", Message.S71_Miss['payload'], State.S65]
 
         >;
-    export type S185 =
+    export type S74 =
         MaybePromise<
-            | ["Miss", Message.S185_Miss['payload'], State.S179]
+            | ["Miss", Message.S74_Miss['payload'], State.S68]
 
         >;
-    export type S192 =
+    export type S73 =
         MaybePromise<
-            | ["Sunk", Message.S192_Sunk['payload'], State.S179]
+            | ["Loser", Message.S73_Loser['payload'], State.S63]
 
         >;
 
-    export interface S173 {
-        "Init": (Next: typeof Factory.S175, ...payload: Message.S173_Init['payload']) => MaybePromise<State.S175>,
+    export interface S65 {
+        "Attack": (Next: typeof Factory.S66, ...payload: Message.S65_Attack['payload']) => MaybePromise<State.S66>,
 
     };
-    export interface S175 {
-        "Init": (Next: typeof Factory.S176, ...payload: Message.S175_Init['payload']) => MaybePromise<State.S176>,
+    export interface S62 {
+        "Init": (Next: typeof Factory.S64, ...payload: Message.S62_Init['payload']) => MaybePromise<State.S64>,
 
     };
-    export interface S176 {
-        "Attack": (Next: typeof Factory.S177, ...payload: Message.S176_Attack['payload']) => MaybePromise<State.S177>,
+    export interface S64 {
+        "Init": (Next: typeof Factory.S65, ...payload: Message.S64_Init['payload']) => MaybePromise<State.S65>,
 
     };
-    export interface S179 {
-        "Attack": (Next: typeof Factory.S180, ...payload: Message.S179_Attack['payload']) => MaybePromise<State.S180>,
+    export interface S68 {
+        "Attack": (Next: typeof Factory.S69, ...payload: Message.S68_Attack['payload']) => MaybePromise<State.S69>,
 
     };
 
@@ -264,12 +264,12 @@ export namespace State {
 
     export type Type = ISend | IReceive | ITerminal;
 
-    export class S199 implements ISend {
+    export class S67 implements ISend {
         readonly type: 'Send' = 'Send';
-        constructor(public handler: Handler.S199) { }
+        constructor(public handler: Handler.S67) { }
 
         performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
-            const thunk = ([label, payload, successor]: FromPromise<Handler.S199>) => {
+            const thunk = ([label, payload, successor]: FromPromise<Handler.S67>) => {
                 send(Role.Peers.P2, label, payload);
                 return next(successor);
             };
@@ -285,33 +285,12 @@ export namespace State {
             }
         }
     };
-    export class S177 implements ISend {
+    export class S81 implements ISend {
         readonly type: 'Send' = 'Send';
-        constructor(public handler: Handler.S177) { }
+        constructor(public handler: Handler.S81) { }
 
         performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
-            const thunk = ([label, payload, successor]: FromPromise<Handler.S177>) => {
-                send(Role.Peers.P1, label, payload);
-                return next(successor);
-            };
-
-            if (this.handler instanceof Promise) {
-                this.handler.then(thunk).catch(cancel);
-            } else {
-                try {
-                    thunk(this.handler);
-                } catch (error) {
-                    cancel(error);
-                }
-            }
-        }
-    };
-    export class S178 implements ISend {
-        readonly type: 'Send' = 'Send';
-        constructor(public handler: Handler.S178) { }
-
-        performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
-            const thunk = ([label, payload, successor]: FromPromise<Handler.S178>) => {
+            const thunk = ([label, payload, successor]: FromPromise<Handler.S81>) => {
                 send(Role.Peers.P2, label, payload);
                 return next(successor);
             };
@@ -327,12 +306,12 @@ export namespace State {
             }
         }
     };
-    export class S180 implements ISend {
+    export class S88 implements ISend {
         readonly type: 'Send' = 'Send';
-        constructor(public handler: Handler.S180) { }
+        constructor(public handler: Handler.S88) { }
 
         performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
-            const thunk = ([label, payload, successor]: FromPromise<Handler.S180>) => {
+            const thunk = ([label, payload, successor]: FromPromise<Handler.S88>) => {
                 send(Role.Peers.P2, label, payload);
                 return next(successor);
             };
@@ -348,12 +327,12 @@ export namespace State {
             }
         }
     };
-    export class S181 implements ISend {
+    export class S72 implements ISend {
         readonly type: 'Send' = 'Send';
-        constructor(public handler: Handler.S181) { }
+        constructor(public handler: Handler.S72) { }
 
         performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
-            const thunk = ([label, payload, successor]: FromPromise<Handler.S181>) => {
+            const thunk = ([label, payload, successor]: FromPromise<Handler.S72>) => {
                 send(Role.Peers.P1, label, payload);
                 return next(successor);
             };
@@ -369,12 +348,12 @@ export namespace State {
             }
         }
     };
-    export class S182 implements ISend {
+    export class S66 implements ISend {
         readonly type: 'Send' = 'Send';
-        constructor(public handler: Handler.S182) { }
+        constructor(public handler: Handler.S66) { }
 
         performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
-            const thunk = ([label, payload, successor]: FromPromise<Handler.S182>) => {
+            const thunk = ([label, payload, successor]: FromPromise<Handler.S66>) => {
                 send(Role.Peers.P1, label, payload);
                 return next(successor);
             };
@@ -390,54 +369,12 @@ export namespace State {
             }
         }
     };
-    export class S183 implements ISend {
+    export class S69 implements ISend {
         readonly type: 'Send' = 'Send';
-        constructor(public handler: Handler.S183) { }
+        constructor(public handler: Handler.S69) { }
 
         performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
-            const thunk = ([label, payload, successor]: FromPromise<Handler.S183>) => {
-                send(Role.Peers.P1, label, payload);
-                return next(successor);
-            };
-
-            if (this.handler instanceof Promise) {
-                this.handler.then(thunk).catch(cancel);
-            } else {
-                try {
-                    thunk(this.handler);
-                } catch (error) {
-                    cancel(error);
-                }
-            }
-        }
-    };
-    export class S184 implements ISend {
-        readonly type: 'Send' = 'Send';
-        constructor(public handler: Handler.S184) { }
-
-        performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
-            const thunk = ([label, payload, successor]: FromPromise<Handler.S184>) => {
-                send(Role.Peers.P1, label, payload);
-                return next(successor);
-            };
-
-            if (this.handler instanceof Promise) {
-                this.handler.then(thunk).catch(cancel);
-            } else {
-                try {
-                    thunk(this.handler);
-                } catch (error) {
-                    cancel(error);
-                }
-            }
-        }
-    };
-    export class S185 implements ISend {
-        readonly type: 'Send' = 'Send';
-        constructor(public handler: Handler.S185) { }
-
-        performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
-            const thunk = ([label, payload, successor]: FromPromise<Handler.S185>) => {
+            const thunk = ([label, payload, successor]: FromPromise<Handler.S69>) => {
                 send(Role.Peers.P2, label, payload);
                 return next(successor);
             };
@@ -453,13 +390,76 @@ export namespace State {
             }
         }
     };
-    export class S192 implements ISend {
+    export class S70 implements ISend {
         readonly type: 'Send' = 'Send';
-        constructor(public handler: Handler.S192) { }
+        constructor(public handler: Handler.S70) { }
 
         performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
-            const thunk = ([label, payload, successor]: FromPromise<Handler.S192>) => {
+            const thunk = ([label, payload, successor]: FromPromise<Handler.S70>) => {
+                send(Role.Peers.P1, label, payload);
+                return next(successor);
+            };
+
+            if (this.handler instanceof Promise) {
+                this.handler.then(thunk).catch(cancel);
+            } else {
+                try {
+                    thunk(this.handler);
+                } catch (error) {
+                    cancel(error);
+                }
+            }
+        }
+    };
+    export class S71 implements ISend {
+        readonly type: 'Send' = 'Send';
+        constructor(public handler: Handler.S71) { }
+
+        performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
+            const thunk = ([label, payload, successor]: FromPromise<Handler.S71>) => {
+                send(Role.Peers.P1, label, payload);
+                return next(successor);
+            };
+
+            if (this.handler instanceof Promise) {
+                this.handler.then(thunk).catch(cancel);
+            } else {
+                try {
+                    thunk(this.handler);
+                } catch (error) {
+                    cancel(error);
+                }
+            }
+        }
+    };
+    export class S74 implements ISend {
+        readonly type: 'Send' = 'Send';
+        constructor(public handler: Handler.S74) { }
+
+        performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
+            const thunk = ([label, payload, successor]: FromPromise<Handler.S74>) => {
                 send(Role.Peers.P2, label, payload);
+                return next(successor);
+            };
+
+            if (this.handler instanceof Promise) {
+                this.handler.then(thunk).catch(cancel);
+            } else {
+                try {
+                    thunk(this.handler);
+                } catch (error) {
+                    cancel(error);
+                }
+            }
+        }
+    };
+    export class S73 implements ISend {
+        readonly type: 'Send' = 'Send';
+        constructor(public handler: Handler.S73) { }
+
+        performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
+            const thunk = ([label, payload, successor]: FromPromise<Handler.S73>) => {
+                send(Role.Peers.P1, label, payload);
                 return next(successor);
             };
 
@@ -476,17 +476,17 @@ export namespace State {
     };
 
 
-    export class S173 implements IReceive {
+    export class S65 implements IReceive {
         readonly type: 'Receive' = 'Receive';
-        constructor(public handler: Handler.S173) { }
+        constructor(public handler: Handler.S65) { }
 
         prepareReceive(next: StateTransitionHandler, cancel: Cancellation, register: ReceiveStateHandler) {
             const onReceive = (message: any) => {
-                const parsed = JSON.parse(message) as Message.S173;
+                const parsed = JSON.parse(message) as Message.S65;
                 switch (parsed.label) {
-                    case "Init": {
+                    case "Attack": {
                         try {
-                            const successor = this.handler[parsed.label](Factory.S175, ...parsed.payload);
+                            const successor = this.handler[parsed.label](Factory.S66, ...parsed.payload);
                             if (successor instanceof Promise) {
                                 successor.then(next).catch(cancel);
                             } else {
@@ -504,45 +504,17 @@ export namespace State {
             register(Role.Peers.P1, onReceive);
         }
     };
-    export class S175 implements IReceive {
+    export class S62 implements IReceive {
         readonly type: 'Receive' = 'Receive';
-        constructor(public handler: Handler.S175) { }
+        constructor(public handler: Handler.S62) { }
 
         prepareReceive(next: StateTransitionHandler, cancel: Cancellation, register: ReceiveStateHandler) {
             const onReceive = (message: any) => {
-                const parsed = JSON.parse(message) as Message.S175;
+                const parsed = JSON.parse(message) as Message.S62;
                 switch (parsed.label) {
                     case "Init": {
                         try {
-                            const successor = this.handler[parsed.label](Factory.S176, ...parsed.payload);
-                            if (successor instanceof Promise) {
-                                successor.then(next).catch(cancel);
-                            } else {
-                                next(successor);
-                            }
-                        } catch (error) {
-                            cancel(error);
-                        }
-                        return;
-                    }
-
-                }
-            };
-
-            register(Role.Peers.P2, onReceive);
-        }
-    };
-    export class S176 implements IReceive {
-        readonly type: 'Receive' = 'Receive';
-        constructor(public handler: Handler.S176) { }
-
-        prepareReceive(next: StateTransitionHandler, cancel: Cancellation, register: ReceiveStateHandler) {
-            const onReceive = (message: any) => {
-                const parsed = JSON.parse(message) as Message.S176;
-                switch (parsed.label) {
-                    case "Attack": {
-                        try {
-                            const successor = this.handler[parsed.label](Factory.S177, ...parsed.payload);
+                            const successor = this.handler[parsed.label](Factory.S64, ...parsed.payload);
                             if (successor instanceof Promise) {
                                 successor.then(next).catch(cancel);
                             } else {
@@ -560,17 +532,45 @@ export namespace State {
             register(Role.Peers.P1, onReceive);
         }
     };
-    export class S179 implements IReceive {
+    export class S64 implements IReceive {
         readonly type: 'Receive' = 'Receive';
-        constructor(public handler: Handler.S179) { }
+        constructor(public handler: Handler.S64) { }
 
         prepareReceive(next: StateTransitionHandler, cancel: Cancellation, register: ReceiveStateHandler) {
             const onReceive = (message: any) => {
-                const parsed = JSON.parse(message) as Message.S179;
+                const parsed = JSON.parse(message) as Message.S64;
+                switch (parsed.label) {
+                    case "Init": {
+                        try {
+                            const successor = this.handler[parsed.label](Factory.S65, ...parsed.payload);
+                            if (successor instanceof Promise) {
+                                successor.then(next).catch(cancel);
+                            } else {
+                                next(successor);
+                            }
+                        } catch (error) {
+                            cancel(error);
+                        }
+                        return;
+                    }
+
+                }
+            };
+
+            register(Role.Peers.P2, onReceive);
+        }
+    };
+    export class S68 implements IReceive {
+        readonly type: 'Receive' = 'Receive';
+        constructor(public handler: Handler.S68) { }
+
+        prepareReceive(next: StateTransitionHandler, cancel: Cancellation, register: ReceiveStateHandler) {
+            const onReceive = (message: any) => {
+                const parsed = JSON.parse(message) as Message.S68;
                 switch (parsed.label) {
                     case "Attack": {
                         try {
-                            const successor = this.handler[parsed.label](Factory.S180, ...parsed.payload);
+                            const successor = this.handler[parsed.label](Factory.S69, ...parsed.payload);
                             if (successor instanceof Promise) {
                                 successor.then(next).catch(cancel);
                             } else {
@@ -591,7 +591,7 @@ export namespace State {
 
 
 
-    export class S174 implements ITerminal {
+    export class S63 implements ITerminal {
         readonly type: 'Terminal' = 'Terminal';
     };
 
@@ -601,465 +601,464 @@ export namespace State {
 export namespace Factory {
 
 
-    type S199_Loser =
-        | [Message.S199_Loser['payload'], (Next: typeof S174) => State.S174]
-        | [Message.S199_Loser['payload'], State.S174]
+    type S67_Hit =
+        | [Message.S67_Hit['payload'], (Next: typeof S68) => State.S68]
+        | [Message.S67_Hit['payload'], State.S68]
         ;
 
-    function S199_Loser(
-        payload: Message.S199_Loser['payload'],
-        generateSuccessor: (Next: typeof S174) => State.S174
-    ): State.S199;
-    function S199_Loser(
-        payload: Message.S199_Loser['payload'],
-        succ: State.S174
-    ): State.S199;
-    function S199_Loser(...args: S199_Loser) {
+    function S67_Hit(
+        payload: Message.S67_Hit['payload'],
+        generateSuccessor: (Next: typeof S68) => State.S68
+    ): State.S67;
+    function S67_Hit(
+        payload: Message.S67_Hit['payload'],
+        succ: State.S68
+    ): State.S67;
+    function S67_Hit(...args: S67_Hit) {
         if (typeof args[1] === 'function') {
             const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S174);
-            return new State.S199(["Loser", payload, successor]);
+            const successor = generateSuccessor(S68);
+            return new State.S67(["Hit", payload, successor]);
         } else {
             const [payload, successor] = args;
-            return new State.S199(["Loser", payload, successor]);
+            return new State.S67(["Hit", payload, successor]);
         }
     }
 
 
-    export const S199 = {
-        Loser: S199_Loser,
+    export const S67 = {
+        Hit: S67_Hit,
 
     };
-    type S177_Hit =
-        | [Message.S177_Hit['payload'], (Next: typeof S178) => State.S178]
-        | [Message.S177_Hit['payload'], State.S178]
+    type S81_Sunk =
+        | [Message.S81_Sunk['payload'], (Next: typeof S68) => State.S68]
+        | [Message.S81_Sunk['payload'], State.S68]
         ;
 
-    function S177_Hit(
-        payload: Message.S177_Hit['payload'],
-        generateSuccessor: (Next: typeof S178) => State.S178
-    ): State.S177;
-    function S177_Hit(
-        payload: Message.S177_Hit['payload'],
-        succ: State.S178
-    ): State.S177;
-    function S177_Hit(...args: S177_Hit) {
+    function S81_Sunk(
+        payload: Message.S81_Sunk['payload'],
+        generateSuccessor: (Next: typeof S68) => State.S68
+    ): State.S81;
+    function S81_Sunk(
+        payload: Message.S81_Sunk['payload'],
+        succ: State.S68
+    ): State.S81;
+    function S81_Sunk(...args: S81_Sunk) {
         if (typeof args[1] === 'function') {
             const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S178);
-            return new State.S177(["Hit", payload, successor]);
+            const successor = generateSuccessor(S68);
+            return new State.S81(["Sunk", payload, successor]);
         } else {
             const [payload, successor] = args;
-            return new State.S177(["Hit", payload, successor]);
-        }
-    }
-
-    type S177_Miss =
-        | [Message.S177_Miss['payload'], (Next: typeof S185) => State.S185]
-        | [Message.S177_Miss['payload'], State.S185]
-        ;
-
-    function S177_Miss(
-        payload: Message.S177_Miss['payload'],
-        generateSuccessor: (Next: typeof S185) => State.S185
-    ): State.S177;
-    function S177_Miss(
-        payload: Message.S177_Miss['payload'],
-        succ: State.S185
-    ): State.S177;
-    function S177_Miss(...args: S177_Miss) {
-        if (typeof args[1] === 'function') {
-            const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S185);
-            return new State.S177(["Miss", payload, successor]);
-        } else {
-            const [payload, successor] = args;
-            return new State.S177(["Miss", payload, successor]);
-        }
-    }
-
-    type S177_Sunk =
-        | [Message.S177_Sunk['payload'], (Next: typeof S192) => State.S192]
-        | [Message.S177_Sunk['payload'], State.S192]
-        ;
-
-    function S177_Sunk(
-        payload: Message.S177_Sunk['payload'],
-        generateSuccessor: (Next: typeof S192) => State.S192
-    ): State.S177;
-    function S177_Sunk(
-        payload: Message.S177_Sunk['payload'],
-        succ: State.S192
-    ): State.S177;
-    function S177_Sunk(...args: S177_Sunk) {
-        if (typeof args[1] === 'function') {
-            const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S192);
-            return new State.S177(["Sunk", payload, successor]);
-        } else {
-            const [payload, successor] = args;
-            return new State.S177(["Sunk", payload, successor]);
-        }
-    }
-
-    type S177_Winner =
-        | [Message.S177_Winner['payload'], (Next: typeof S199) => State.S199]
-        | [Message.S177_Winner['payload'], State.S199]
-        ;
-
-    function S177_Winner(
-        payload: Message.S177_Winner['payload'],
-        generateSuccessor: (Next: typeof S199) => State.S199
-    ): State.S177;
-    function S177_Winner(
-        payload: Message.S177_Winner['payload'],
-        succ: State.S199
-    ): State.S177;
-    function S177_Winner(...args: S177_Winner) {
-        if (typeof args[1] === 'function') {
-            const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S199);
-            return new State.S177(["Winner", payload, successor]);
-        } else {
-            const [payload, successor] = args;
-            return new State.S177(["Winner", payload, successor]);
+            return new State.S81(["Sunk", payload, successor]);
         }
     }
 
 
-    export const S177 = {
-        Hit: S177_Hit,
-        Miss: S177_Miss,
-        Sunk: S177_Sunk,
-        Winner: S177_Winner,
+    export const S81 = {
+        Sunk: S81_Sunk,
 
     };
-    type S178_Hit =
-        | [Message.S178_Hit['payload'], (Next: typeof S179) => State.S179]
-        | [Message.S178_Hit['payload'], State.S179]
+    type S88_Loser =
+        | [Message.S88_Loser['payload'], (Next: typeof S63) => State.S63]
+        | [Message.S88_Loser['payload'], State.S63]
         ;
 
-    function S178_Hit(
-        payload: Message.S178_Hit['payload'],
-        generateSuccessor: (Next: typeof S179) => State.S179
-    ): State.S178;
-    function S178_Hit(
-        payload: Message.S178_Hit['payload'],
-        succ: State.S179
-    ): State.S178;
-    function S178_Hit(...args: S178_Hit) {
+    function S88_Loser(
+        payload: Message.S88_Loser['payload'],
+        generateSuccessor: (Next: typeof S63) => State.S63
+    ): State.S88;
+    function S88_Loser(
+        payload: Message.S88_Loser['payload'],
+        succ: State.S63
+    ): State.S88;
+    function S88_Loser(...args: S88_Loser) {
         if (typeof args[1] === 'function') {
             const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S179);
-            return new State.S178(["Hit", payload, successor]);
+            const successor = generateSuccessor(S63);
+            return new State.S88(["Loser", payload, successor]);
         } else {
             const [payload, successor] = args;
-            return new State.S178(["Hit", payload, successor]);
+            return new State.S88(["Loser", payload, successor]);
         }
     }
 
 
-    export const S178 = {
-        Hit: S178_Hit,
+    export const S88 = {
+        Loser: S88_Loser,
 
     };
-    type S180_Hit =
-        | [Message.S180_Hit['payload'], (Next: typeof S181) => State.S181]
-        | [Message.S180_Hit['payload'], State.S181]
+    type S72_Sunk =
+        | [Message.S72_Sunk['payload'], (Next: typeof S65) => State.S65]
+        | [Message.S72_Sunk['payload'], State.S65]
         ;
 
-    function S180_Hit(
-        payload: Message.S180_Hit['payload'],
-        generateSuccessor: (Next: typeof S181) => State.S181
-    ): State.S180;
-    function S180_Hit(
-        payload: Message.S180_Hit['payload'],
-        succ: State.S181
-    ): State.S180;
-    function S180_Hit(...args: S180_Hit) {
+    function S72_Sunk(
+        payload: Message.S72_Sunk['payload'],
+        generateSuccessor: (Next: typeof S65) => State.S65
+    ): State.S72;
+    function S72_Sunk(
+        payload: Message.S72_Sunk['payload'],
+        succ: State.S65
+    ): State.S72;
+    function S72_Sunk(...args: S72_Sunk) {
         if (typeof args[1] === 'function') {
             const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S181);
-            return new State.S180(["Hit", payload, successor]);
+            const successor = generateSuccessor(S65);
+            return new State.S72(["Sunk", payload, successor]);
         } else {
             const [payload, successor] = args;
-            return new State.S180(["Hit", payload, successor]);
-        }
-    }
-
-    type S180_Miss =
-        | [Message.S180_Miss['payload'], (Next: typeof S182) => State.S182]
-        | [Message.S180_Miss['payload'], State.S182]
-        ;
-
-    function S180_Miss(
-        payload: Message.S180_Miss['payload'],
-        generateSuccessor: (Next: typeof S182) => State.S182
-    ): State.S180;
-    function S180_Miss(
-        payload: Message.S180_Miss['payload'],
-        succ: State.S182
-    ): State.S180;
-    function S180_Miss(...args: S180_Miss) {
-        if (typeof args[1] === 'function') {
-            const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S182);
-            return new State.S180(["Miss", payload, successor]);
-        } else {
-            const [payload, successor] = args;
-            return new State.S180(["Miss", payload, successor]);
-        }
-    }
-
-    type S180_Sunk =
-        | [Message.S180_Sunk['payload'], (Next: typeof S183) => State.S183]
-        | [Message.S180_Sunk['payload'], State.S183]
-        ;
-
-    function S180_Sunk(
-        payload: Message.S180_Sunk['payload'],
-        generateSuccessor: (Next: typeof S183) => State.S183
-    ): State.S180;
-    function S180_Sunk(
-        payload: Message.S180_Sunk['payload'],
-        succ: State.S183
-    ): State.S180;
-    function S180_Sunk(...args: S180_Sunk) {
-        if (typeof args[1] === 'function') {
-            const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S183);
-            return new State.S180(["Sunk", payload, successor]);
-        } else {
-            const [payload, successor] = args;
-            return new State.S180(["Sunk", payload, successor]);
-        }
-    }
-
-    type S180_Winner =
-        | [Message.S180_Winner['payload'], (Next: typeof S184) => State.S184]
-        | [Message.S180_Winner['payload'], State.S184]
-        ;
-
-    function S180_Winner(
-        payload: Message.S180_Winner['payload'],
-        generateSuccessor: (Next: typeof S184) => State.S184
-    ): State.S180;
-    function S180_Winner(
-        payload: Message.S180_Winner['payload'],
-        succ: State.S184
-    ): State.S180;
-    function S180_Winner(...args: S180_Winner) {
-        if (typeof args[1] === 'function') {
-            const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S184);
-            return new State.S180(["Winner", payload, successor]);
-        } else {
-            const [payload, successor] = args;
-            return new State.S180(["Winner", payload, successor]);
+            return new State.S72(["Sunk", payload, successor]);
         }
     }
 
 
-    export const S180 = {
-        Hit: S180_Hit,
-        Miss: S180_Miss,
-        Sunk: S180_Sunk,
-        Winner: S180_Winner,
+    export const S72 = {
+        Sunk: S72_Sunk,
 
     };
-    type S181_Hit =
-        | [Message.S181_Hit['payload'], (Next: typeof S176) => State.S176]
-        | [Message.S181_Hit['payload'], State.S176]
+    type S66_Hit =
+        | [Message.S66_Hit['payload'], (Next: typeof S67) => State.S67]
+        | [Message.S66_Hit['payload'], State.S67]
         ;
 
-    function S181_Hit(
-        payload: Message.S181_Hit['payload'],
-        generateSuccessor: (Next: typeof S176) => State.S176
-    ): State.S181;
-    function S181_Hit(
-        payload: Message.S181_Hit['payload'],
-        succ: State.S176
-    ): State.S181;
-    function S181_Hit(...args: S181_Hit) {
+    function S66_Hit(
+        payload: Message.S66_Hit['payload'],
+        generateSuccessor: (Next: typeof S67) => State.S67
+    ): State.S66;
+    function S66_Hit(
+        payload: Message.S66_Hit['payload'],
+        succ: State.S67
+    ): State.S66;
+    function S66_Hit(...args: S66_Hit) {
         if (typeof args[1] === 'function') {
             const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S176);
-            return new State.S181(["Hit", payload, successor]);
+            const successor = generateSuccessor(S67);
+            return new State.S66(["Hit", payload, successor]);
         } else {
             const [payload, successor] = args;
-            return new State.S181(["Hit", payload, successor]);
+            return new State.S66(["Hit", payload, successor]);
+        }
+    }
+
+    type S66_Miss =
+        | [Message.S66_Miss['payload'], (Next: typeof S74) => State.S74]
+        | [Message.S66_Miss['payload'], State.S74]
+        ;
+
+    function S66_Miss(
+        payload: Message.S66_Miss['payload'],
+        generateSuccessor: (Next: typeof S74) => State.S74
+    ): State.S66;
+    function S66_Miss(
+        payload: Message.S66_Miss['payload'],
+        succ: State.S74
+    ): State.S66;
+    function S66_Miss(...args: S66_Miss) {
+        if (typeof args[1] === 'function') {
+            const [payload, generateSuccessor] = args;
+            const successor = generateSuccessor(S74);
+            return new State.S66(["Miss", payload, successor]);
+        } else {
+            const [payload, successor] = args;
+            return new State.S66(["Miss", payload, successor]);
+        }
+    }
+
+    type S66_Sunk =
+        | [Message.S66_Sunk['payload'], (Next: typeof S81) => State.S81]
+        | [Message.S66_Sunk['payload'], State.S81]
+        ;
+
+    function S66_Sunk(
+        payload: Message.S66_Sunk['payload'],
+        generateSuccessor: (Next: typeof S81) => State.S81
+    ): State.S66;
+    function S66_Sunk(
+        payload: Message.S66_Sunk['payload'],
+        succ: State.S81
+    ): State.S66;
+    function S66_Sunk(...args: S66_Sunk) {
+        if (typeof args[1] === 'function') {
+            const [payload, generateSuccessor] = args;
+            const successor = generateSuccessor(S81);
+            return new State.S66(["Sunk", payload, successor]);
+        } else {
+            const [payload, successor] = args;
+            return new State.S66(["Sunk", payload, successor]);
+        }
+    }
+
+    type S66_Winner =
+        | [Message.S66_Winner['payload'], (Next: typeof S88) => State.S88]
+        | [Message.S66_Winner['payload'], State.S88]
+        ;
+
+    function S66_Winner(
+        payload: Message.S66_Winner['payload'],
+        generateSuccessor: (Next: typeof S88) => State.S88
+    ): State.S66;
+    function S66_Winner(
+        payload: Message.S66_Winner['payload'],
+        succ: State.S88
+    ): State.S66;
+    function S66_Winner(...args: S66_Winner) {
+        if (typeof args[1] === 'function') {
+            const [payload, generateSuccessor] = args;
+            const successor = generateSuccessor(S88);
+            return new State.S66(["Winner", payload, successor]);
+        } else {
+            const [payload, successor] = args;
+            return new State.S66(["Winner", payload, successor]);
         }
     }
 
 
-    export const S181 = {
-        Hit: S181_Hit,
+    export const S66 = {
+        Hit: S66_Hit,
+        Miss: S66_Miss,
+        Sunk: S66_Sunk,
+        Winner: S66_Winner,
 
     };
-    type S182_Miss =
-        | [Message.S182_Miss['payload'], (Next: typeof S176) => State.S176]
-        | [Message.S182_Miss['payload'], State.S176]
+    type S69_Hit =
+        | [Message.S69_Hit['payload'], (Next: typeof S70) => State.S70]
+        | [Message.S69_Hit['payload'], State.S70]
         ;
 
-    function S182_Miss(
-        payload: Message.S182_Miss['payload'],
-        generateSuccessor: (Next: typeof S176) => State.S176
-    ): State.S182;
-    function S182_Miss(
-        payload: Message.S182_Miss['payload'],
-        succ: State.S176
-    ): State.S182;
-    function S182_Miss(...args: S182_Miss) {
+    function S69_Hit(
+        payload: Message.S69_Hit['payload'],
+        generateSuccessor: (Next: typeof S70) => State.S70
+    ): State.S69;
+    function S69_Hit(
+        payload: Message.S69_Hit['payload'],
+        succ: State.S70
+    ): State.S69;
+    function S69_Hit(...args: S69_Hit) {
         if (typeof args[1] === 'function') {
             const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S176);
-            return new State.S182(["Miss", payload, successor]);
+            const successor = generateSuccessor(S70);
+            return new State.S69(["Hit", payload, successor]);
         } else {
             const [payload, successor] = args;
-            return new State.S182(["Miss", payload, successor]);
+            return new State.S69(["Hit", payload, successor]);
+        }
+    }
+
+    type S69_Miss =
+        | [Message.S69_Miss['payload'], (Next: typeof S71) => State.S71]
+        | [Message.S69_Miss['payload'], State.S71]
+        ;
+
+    function S69_Miss(
+        payload: Message.S69_Miss['payload'],
+        generateSuccessor: (Next: typeof S71) => State.S71
+    ): State.S69;
+    function S69_Miss(
+        payload: Message.S69_Miss['payload'],
+        succ: State.S71
+    ): State.S69;
+    function S69_Miss(...args: S69_Miss) {
+        if (typeof args[1] === 'function') {
+            const [payload, generateSuccessor] = args;
+            const successor = generateSuccessor(S71);
+            return new State.S69(["Miss", payload, successor]);
+        } else {
+            const [payload, successor] = args;
+            return new State.S69(["Miss", payload, successor]);
+        }
+    }
+
+    type S69_Sunk =
+        | [Message.S69_Sunk['payload'], (Next: typeof S72) => State.S72]
+        | [Message.S69_Sunk['payload'], State.S72]
+        ;
+
+    function S69_Sunk(
+        payload: Message.S69_Sunk['payload'],
+        generateSuccessor: (Next: typeof S72) => State.S72
+    ): State.S69;
+    function S69_Sunk(
+        payload: Message.S69_Sunk['payload'],
+        succ: State.S72
+    ): State.S69;
+    function S69_Sunk(...args: S69_Sunk) {
+        if (typeof args[1] === 'function') {
+            const [payload, generateSuccessor] = args;
+            const successor = generateSuccessor(S72);
+            return new State.S69(["Sunk", payload, successor]);
+        } else {
+            const [payload, successor] = args;
+            return new State.S69(["Sunk", payload, successor]);
+        }
+    }
+
+    type S69_Winner =
+        | [Message.S69_Winner['payload'], (Next: typeof S73) => State.S73]
+        | [Message.S69_Winner['payload'], State.S73]
+        ;
+
+    function S69_Winner(
+        payload: Message.S69_Winner['payload'],
+        generateSuccessor: (Next: typeof S73) => State.S73
+    ): State.S69;
+    function S69_Winner(
+        payload: Message.S69_Winner['payload'],
+        succ: State.S73
+    ): State.S69;
+    function S69_Winner(...args: S69_Winner) {
+        if (typeof args[1] === 'function') {
+            const [payload, generateSuccessor] = args;
+            const successor = generateSuccessor(S73);
+            return new State.S69(["Winner", payload, successor]);
+        } else {
+            const [payload, successor] = args;
+            return new State.S69(["Winner", payload, successor]);
         }
     }
 
 
-    export const S182 = {
-        Miss: S182_Miss,
+    export const S69 = {
+        Hit: S69_Hit,
+        Miss: S69_Miss,
+        Sunk: S69_Sunk,
+        Winner: S69_Winner,
 
     };
-    type S183_Sunk =
-        | [Message.S183_Sunk['payload'], (Next: typeof S176) => State.S176]
-        | [Message.S183_Sunk['payload'], State.S176]
+    type S70_Hit =
+        | [Message.S70_Hit['payload'], (Next: typeof S65) => State.S65]
+        | [Message.S70_Hit['payload'], State.S65]
         ;
 
-    function S183_Sunk(
-        payload: Message.S183_Sunk['payload'],
-        generateSuccessor: (Next: typeof S176) => State.S176
-    ): State.S183;
-    function S183_Sunk(
-        payload: Message.S183_Sunk['payload'],
-        succ: State.S176
-    ): State.S183;
-    function S183_Sunk(...args: S183_Sunk) {
+    function S70_Hit(
+        payload: Message.S70_Hit['payload'],
+        generateSuccessor: (Next: typeof S65) => State.S65
+    ): State.S70;
+    function S70_Hit(
+        payload: Message.S70_Hit['payload'],
+        succ: State.S65
+    ): State.S70;
+    function S70_Hit(...args: S70_Hit) {
         if (typeof args[1] === 'function') {
             const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S176);
-            return new State.S183(["Sunk", payload, successor]);
+            const successor = generateSuccessor(S65);
+            return new State.S70(["Hit", payload, successor]);
         } else {
             const [payload, successor] = args;
-            return new State.S183(["Sunk", payload, successor]);
+            return new State.S70(["Hit", payload, successor]);
         }
     }
 
 
-    export const S183 = {
-        Sunk: S183_Sunk,
+    export const S70 = {
+        Hit: S70_Hit,
 
     };
-    type S184_Loser =
-        | [Message.S184_Loser['payload'], (Next: typeof S174) => State.S174]
-        | [Message.S184_Loser['payload'], State.S174]
+    type S71_Miss =
+        | [Message.S71_Miss['payload'], (Next: typeof S65) => State.S65]
+        | [Message.S71_Miss['payload'], State.S65]
         ;
 
-    function S184_Loser(
-        payload: Message.S184_Loser['payload'],
-        generateSuccessor: (Next: typeof S174) => State.S174
-    ): State.S184;
-    function S184_Loser(
-        payload: Message.S184_Loser['payload'],
-        succ: State.S174
-    ): State.S184;
-    function S184_Loser(...args: S184_Loser) {
+    function S71_Miss(
+        payload: Message.S71_Miss['payload'],
+        generateSuccessor: (Next: typeof S65) => State.S65
+    ): State.S71;
+    function S71_Miss(
+        payload: Message.S71_Miss['payload'],
+        succ: State.S65
+    ): State.S71;
+    function S71_Miss(...args: S71_Miss) {
         if (typeof args[1] === 'function') {
             const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S174);
-            return new State.S184(["Loser", payload, successor]);
+            const successor = generateSuccessor(S65);
+            return new State.S71(["Miss", payload, successor]);
         } else {
             const [payload, successor] = args;
-            return new State.S184(["Loser", payload, successor]);
+            return new State.S71(["Miss", payload, successor]);
         }
     }
 
 
-    export const S184 = {
-        Loser: S184_Loser,
+    export const S71 = {
+        Miss: S71_Miss,
 
     };
-    type S185_Miss =
-        | [Message.S185_Miss['payload'], (Next: typeof S179) => State.S179]
-        | [Message.S185_Miss['payload'], State.S179]
+    type S74_Miss =
+        | [Message.S74_Miss['payload'], (Next: typeof S68) => State.S68]
+        | [Message.S74_Miss['payload'], State.S68]
         ;
 
-    function S185_Miss(
-        payload: Message.S185_Miss['payload'],
-        generateSuccessor: (Next: typeof S179) => State.S179
-    ): State.S185;
-    function S185_Miss(
-        payload: Message.S185_Miss['payload'],
-        succ: State.S179
-    ): State.S185;
-    function S185_Miss(...args: S185_Miss) {
+    function S74_Miss(
+        payload: Message.S74_Miss['payload'],
+        generateSuccessor: (Next: typeof S68) => State.S68
+    ): State.S74;
+    function S74_Miss(
+        payload: Message.S74_Miss['payload'],
+        succ: State.S68
+    ): State.S74;
+    function S74_Miss(...args: S74_Miss) {
         if (typeof args[1] === 'function') {
             const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S179);
-            return new State.S185(["Miss", payload, successor]);
+            const successor = generateSuccessor(S68);
+            return new State.S74(["Miss", payload, successor]);
         } else {
             const [payload, successor] = args;
-            return new State.S185(["Miss", payload, successor]);
+            return new State.S74(["Miss", payload, successor]);
         }
     }
 
 
-    export const S185 = {
-        Miss: S185_Miss,
+    export const S74 = {
+        Miss: S74_Miss,
 
     };
-    type S192_Sunk =
-        | [Message.S192_Sunk['payload'], (Next: typeof S179) => State.S179]
-        | [Message.S192_Sunk['payload'], State.S179]
+    type S73_Loser =
+        | [Message.S73_Loser['payload'], (Next: typeof S63) => State.S63]
+        | [Message.S73_Loser['payload'], State.S63]
         ;
 
-    function S192_Sunk(
-        payload: Message.S192_Sunk['payload'],
-        generateSuccessor: (Next: typeof S179) => State.S179
-    ): State.S192;
-    function S192_Sunk(
-        payload: Message.S192_Sunk['payload'],
-        succ: State.S179
-    ): State.S192;
-    function S192_Sunk(...args: S192_Sunk) {
+    function S73_Loser(
+        payload: Message.S73_Loser['payload'],
+        generateSuccessor: (Next: typeof S63) => State.S63
+    ): State.S73;
+    function S73_Loser(
+        payload: Message.S73_Loser['payload'],
+        succ: State.S63
+    ): State.S73;
+    function S73_Loser(...args: S73_Loser) {
         if (typeof args[1] === 'function') {
             const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S179);
-            return new State.S192(["Sunk", payload, successor]);
+            const successor = generateSuccessor(S63);
+            return new State.S73(["Loser", payload, successor]);
         } else {
             const [payload, successor] = args;
-            return new State.S192(["Sunk", payload, successor]);
+            return new State.S73(["Loser", payload, successor]);
         }
     }
 
 
-    export const S192 = {
-        Sunk: S192_Sunk,
+    export const S73 = {
+        Loser: S73_Loser,
 
     };
 
-    export function S173(handler: Handler.S173) {
-        return new State.S173(handler);
+    export function S65(handler: Handler.S65) {
+        return new State.S65(handler);
     };
-    export function S175(handler: Handler.S175) {
-        return new State.S175(handler);
+    export function S62(handler: Handler.S62) {
+        return new State.S62(handler);
     };
-    export function S176(handler: Handler.S176) {
-        return new State.S176(handler);
+    export function S64(handler: Handler.S64) {
+        return new State.S64(handler);
     };
-    export function S179(handler: Handler.S179) {
-        return new State.S179(handler);
+    export function S68(handler: Handler.S68) {
+        return new State.S68(handler);
     };
 
 
-    export const Initial = S173;
+    export const Initial = S62;
 
-    export const S174 = () => new State.S174();
-    export const Terminal = S174;
-
+    export const S63 = () => new State.S63();
+    export const Terminal = S63;
 
 };

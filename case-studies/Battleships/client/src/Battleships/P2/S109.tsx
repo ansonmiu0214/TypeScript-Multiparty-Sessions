@@ -30,7 +30,7 @@ type Props = {
  *
  * * __Init__(Config)
  */
-export default abstract class S128<ComponentState = {}> extends React.Component<Props, ComponentState>
+export default abstract class S109<ComponentState = {}> extends React.Component<Props, ComponentState>
 {
 
     protected Init: SendComponentFactory<[Config]>;
@@ -38,7 +38,7 @@ export default abstract class S128<ComponentState = {}> extends React.Component<
     constructor(props: Props) {
         super(props);
         this.Init = props.factory<[Config]>(
-            Roles.Peers.Svr, 'Init', SendState.S130
+            Roles.Peers.Svr, 'Init', ReceiveState.S111
         );
 
     }

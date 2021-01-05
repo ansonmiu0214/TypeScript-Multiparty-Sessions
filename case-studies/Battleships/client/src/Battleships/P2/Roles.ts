@@ -1,7 +1,7 @@
 // Roles.ts
 
 export enum Peers {
-    Svr = "Svr",
+    Svr = "Svr", P1 = "P1",
 };
 
 export type All = Self | Peers;

@@ -2,10 +2,10 @@ import React from "react";
 import GameBoard from "../GameManager/GameBoard";
 import GameState, { GamePlayers } from "../GameManager/GameState";
 
-import S132 from "../Battleships/P1/S132";
+import { S21 } from "../Battleships/P1";
 import { CellState, Location } from "../Models";
 
-export default class WaitOpposition extends S132 {
+export default class WaitOpposition extends S21 {
 
   static contextType = GameState;
   declare context: React.ContextType<typeof GameState>;

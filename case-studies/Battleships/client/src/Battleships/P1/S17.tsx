@@ -13,8 +13,8 @@ import {
     SendComponentFactoryFactory
 } from './Session';
 
-import { Location } from "../../Models";
 import { Config } from "../../Models";
+import { Location } from "../../Models";
 
 
 // ===============
@@ -28,17 +28,17 @@ type Props = {
 /**
  * __Sends to  Svr.__ Possible messages:
  *
- * * __Attack__(Location)
+ * * __Init__(Config)
  */
-export default abstract class S130<ComponentState = {}> extends React.Component<Props, ComponentState>
+export default abstract class S17<ComponentState = {}> extends React.Component<Props, ComponentState>
 {
 
-    protected Attack: SendComponentFactory<[Location]>;
+    protected Init: SendComponentFactory<[Config]>;
 
     constructor(props: Props) {
         super(props);
-        this.Attack = props.factory<[Location]>(
-            Roles.Peers.Svr, 'Attack', ReceiveState.S131
+        this.Init = props.factory<[Config]>(
+            Roles.Peers.Svr, 'Init', SendState.S19
         );
 
     }
