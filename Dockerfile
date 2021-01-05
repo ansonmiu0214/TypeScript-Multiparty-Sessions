@@ -4,6 +4,7 @@ FROM ubuntu:focal
 RUN ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime \
   && apt-get update \
   && apt-get install -y --no-install-recommends \
+    build-essential \
     curl \
     default-jdk \
     git \
@@ -34,7 +35,12 @@ RUN mkdir /home/dev/dependencies
 COPY --chown=dev:dev \
   scribble-java /home/dev/scribble-java/
 
+COPY --chown=dev:dev \
+  scribble.patch /home/dev/scribble-java/
+
 RUN cd /home/dev/scribble-java \
+  && patch -p1 < scribble.patch \
+  && rm scribble.patch \
   && ./mvnw -Dlicense.skip install \
   && cd scribble-dist/target \
   && unzip scribble-dist-0.4.4-SNAPSHOT.zip \
@@ -102,7 +108,7 @@ To run the performance benchmarks, you can do\n\
 \n\
 To visualise the benchmarks, you can do\n\
   $ cd ~/perf-benchmarks\n\
-  $ jupyter notebook\n\
+  $ jupyter notebook --ip=0.0.0.0\n\
 then click on the \"localhost\" link on the terminal output,\n\
 open the \"Benchmark Visualisation\" notebook, and run all cells\n\
 "\
