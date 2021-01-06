@@ -20,6 +20,8 @@ A mono-repo for a session type API code generation toolchain for modern web prog
 
 1. [Other documentation](#other-docs)
 
+---
+
 ## <a name="getting-started"></a> 1️⃣ Getting started
 
 ### <a name="docker"></a> Docker workflow (recommended)
