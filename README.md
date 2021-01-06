@@ -5,7 +5,24 @@ A mono-repo for a session type API code generation toolchain for modern web prog
 > [undergraduate Master's thesis](https://www.imperial.ac.uk/media/imperial-college/faculty-of-engineering/computing/public/1920-ug-projects/Miu,-Anson-(kcm116).pdf)
 > at Imperial College London.
 
-## Getting started: Docker workflow (recommended)
+1. [Getting started](#getting-started)
+
+    * [Docker workflow](#docker)
+    * [Repository layout](#layout)
+
+1. [User guide](#user-guide)
+
+    * [Using code generation toolchain](#usage)
+    * [Running tests](#tests)
+    * [Running case studies](#case-studies)
+    * [Running benchmarks](#run-benchmarks)
+    * [Visualising benchmarks](#visualise-benchmarks)
+
+1. [Other documentation](#other-docs)
+
+## <a name="getting-started"></a> 1️⃣ Getting started
+
+### <a name="docker"></a> Docker workflow (recommended)
 
 The following steps assume a Unix environment with Docker
 properly installed. Other platforms supported by Docker may find a similar
@@ -25,7 +42,7 @@ To run the toolchain (e.g. show the helptext):
 dev@dev:~$ codegen --help
 ```
 
-## Directories
+### <a name="layout"></a> Repository Layout
 
 - `scribble-java` contains the [Scribble toolchain](https://github.com/scribble/scribble-java),
   for handling multiparty protocol descriptions, a dependency of our toolchain.
@@ -42,9 +59,9 @@ dev@dev:~$ codegen --help
 - `web-sandbox` contains configuration files for the web development, e.g. TypeScript configurations
   and NPM `package.json` files.
 
-## User guide
+## <a name="user-guide"></a> 2️⃣ User guide
 
-### Using code generation toolchain
+### <a name="usage"></a> Using code generation toolchain
 
 Refer to the helptext for detailed information:
 
@@ -88,7 +105,7 @@ and assume role `S` to be the server;
 
 3. Output the generated APIs under the path `~/case-studies/TravelAgency/client/src`
 
-### Running tests
+### <a name="tests"></a> Running tests
 
 To run the end-to-end tests:
 
@@ -109,7 +126,7 @@ The generated APIs are saved under `~/web-sandbox` (which is a
 sandbox environment set up for the TypeScript Compiler) and are deleted when the test
 finishes.
 
-### Running case studies
+### <a name="case-studies"></a> Running case studies
 
 We include three case studies of realistic
 web applications implemented using the generated APIs.
@@ -140,7 +157,7 @@ Other case studies currently available include:
 * TravelAgency
 * Battleships
 
-### Running benchmarks
+### <a name="run-benchmarks"></a> Running benchmarks
 
 We include a script to run the performance benchmarks on web applications built using
 the generated APIs, against a baseline
@@ -172,7 +189,7 @@ $ ./run_benchmark.sh -m 100 1000 -r 100
 Running `./run_benchmark.sh`
 will clear any existing logs.
 
-### Visualising benchmarks
+### <a name="visualise-benchmarks"></a> Visualising benchmarks
 
 To visualise the performance benchmarks, run:
 
@@ -205,7 +222,7 @@ VARIANTS = ('bare', 'mpst')
 NUM_MSGS = (100, 1000)
 ```
 
-## Other Documentation
+## <a name="other-docs"></a> 3️⃣ Other Documentation
 
 Consult the [wiki](https://github.com/ansonmiu0214/TypeScript-Multiparty-Sessions/wiki) for more documentation.
 
