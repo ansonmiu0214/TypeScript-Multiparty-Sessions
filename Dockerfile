@@ -90,7 +90,7 @@ RUN chmod +x /home/dev/setup/*
 RUN echo 'alias python=python3.8' \
     >> /home/dev/.bashrc
 
-RUN echo '[ ! -z "$TERM" -a -r /etc/welcome ] && ./setup/all && cat /etc/welcome' \
+RUN echo '[ ! -z "$TERM" -a -r /etc/welcome ] && ./setup/setup_scripts && ./setup/setup_web-sandbox && cat /etc/welcome' \
     >> /etc/bash.bashrc \
     ; echo "\
 To run the code generator, you can do\n\

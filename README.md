@@ -130,6 +130,13 @@ finishes.
 
 ### <a name="case-studies"></a> Running case studies
 
+> Run the following to install dependencies for
+> any pre-existing case studies:
+>
+> ```bash
+> $ setup_case-studies
+> ```
+
 We include three case studies of realistic
 web applications implemented using the generated APIs.
 
@@ -160,6 +167,13 @@ Other case studies currently available include:
 * Battleships
 
 ### <a name="run-benchmarks"></a> Running benchmarks
+
+> Run the following to install dependencies for
+> the case studies:
+>
+> ```bash
+> $ setup_benchmarks
+> ```
 
 We include a script to run the performance benchmarks on web applications built using
 the generated APIs, against a baseline
