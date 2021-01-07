@@ -34,7 +34,7 @@ interface WebSocketMessage {
     target: WebSocket
 };
 
-type ConnectionContext = [Set<Role.Peers>, Partial<RoleToSocket>, Map<WebSocket, Role.Peers>]
+type ConnectionContext = [Set<Role.Peers>, Partial<RoleToSocket>, Map<WebSocket, Role.Peers>];
 
 // ================
 // Connection Phase
@@ -54,11 +54,11 @@ namespace Connect {
 // of pending connections before instantiating a session.
 const makeNewContext = (): ConnectionContext => {
     // Keep track of participants that have yet to join.
-    const waiting: Set<Role.Peers> = new Set([Role.Peers.P1, Role.Peers.P2]);
+    const waiting: Set<Role.Peers> = new Set([Role.Peers.P2, Role.Peers.P1]);
 
     // Keep track of mapping between role and WebSocket.
     const roleToSocket: Partial<RoleToSocket> = {
-        [Role.Peers.P1]: undefined, [Role.Peers.P2]: undefined,
+        [Role.Peers.P2]: undefined, [Role.Peers.P1]: undefined,
     };
     const socketToRole = new Map<WebSocket, Role.Peers>();
 
@@ -70,18 +70,20 @@ export class Svr {
         cancellation: Cancellation.Handler<string>,
         initialise: StateInitialiser<string>,
         generateID: () => string = uuidv1) {
-
-        const connectionContexts: ConnectionContext[] = [];
+        let connectionContexts: ConnectionContext[] = [
+            makeNewContext(),
+        ];
 
         // Handle explicit cancellation during the join phase.
         const onClose = ({ target: socket }: WebSocket.CloseEvent) => {
             socket.removeAllListeners();
 
             // Wait for the role again - guaranteed to occur in map by construction.
-            for (const [waiting, roleToSocket, socketToRole] of connectionContexts) {
+            for (const [waiting, _, socketToRole] of connectionContexts) {
                 const role = socketToRole.get(socket);
                 if (role !== undefined) {
                     waiting.add(role);
+                    return;
                 }
             }
         }
@@ -91,7 +93,8 @@ export class Svr {
             const { data, target: socket } = event;
             const { connect: role } = Message.deserialise<Connect.Request>(data);
 
-            for (const [waiting, roleToSocket, socketToRole] of connectionContexts) {
+            for (let i = 0; i < connectionContexts.length; ++i) {
+                const [waiting, roleToSocket, socketToRole] = connectionContexts[i];
                 if (waiting.has(role)) {
                     // Update role-WebSocket mapping.
                     roleToSocket[role] = socket;
@@ -99,8 +102,8 @@ export class Svr {
                     waiting.delete(role);
 
                     if (waiting.size === 0) {
-                        connectionContexts.shift();
-                        
+                        connectionContexts = connectionContexts.filter((_, j) => j !== i);
+
                         // Execute protocol when all participants have joined.
                         new Session(
                             generateID(),
@@ -109,6 +112,10 @@ export class Svr {
                             cancellation,
                             initialise
                         );
+
+                        if (connectionContexts.length === 0) {
+                            connectionContexts.push(makeNewContext());
+                        }
                     }
                     return;
                 }
@@ -161,7 +168,7 @@ class Session {
         this.initialise = initialise;
 
         // Keep track of active participants in the session.
-        this.activeRoles = new Set([Role.Peers.P1, Role.Peers.P2]);
+        this.activeRoles = new Set([Role.Peers.P2, Role.Peers.P1]);
 
         // Bind `this` instances to callbacks
         this.next = this.next.bind(this);
@@ -180,11 +187,11 @@ class Session {
 
         // Initialise queues for receiving.
         this.messageQueue = {
-            [Role.Peers.P1]: [], [Role.Peers.P2]: [],
+            [Role.Peers.P2]: [], [Role.Peers.P1]: [],
         };
 
         this.handlerQueue = {
-            [Role.Peers.P1]: [], [Role.Peers.P2]: [],
+            [Role.Peers.P2]: [], [Role.Peers.P1]: [],
         };
 
         // Notify all roles for confirming the connection.

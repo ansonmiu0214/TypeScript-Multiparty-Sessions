@@ -24,8 +24,8 @@ import {
     FunctionArguments,
 } from './Types';
 
-import S112 from './S112';
 import S109 from './S109';
+import S112 from './S112';
 import S113 from './S113';
 import S111 from './S111';
 import S110 from './S110';
@@ -40,8 +40,8 @@ type RoleToHandlerQueue = Roles.PeersToMapped<ReceiveHandler[]>;
 type Props = {
     endpoint: string,
     states: {
-        S112: Constructor<S112>,
         S109: Constructor<S109>,
+        S112: Constructor<S112>,
         S113: Constructor<S113>,
         S111: Constructor<S111>,
         S110: Constructor<S110>,

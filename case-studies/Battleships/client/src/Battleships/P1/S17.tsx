@@ -13,8 +13,8 @@ import {
     SendComponentFactoryFactory
 } from './Session';
 
-import { Config } from "../../Models";
 import { Location } from "../../Models";
+import { Config } from "../../Models";
 
 
 // ===============

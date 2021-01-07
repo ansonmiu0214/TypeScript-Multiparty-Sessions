@@ -22,7 +22,7 @@ export namespace Role {
     export const Self: Self = "Svr";
 
     export enum Peers {
-        P1 = "P1", P2 = "P2",
+        P2 = "P2", P1 = "P1",
     };
 
     export type All = Self | Peers;
@@ -33,6 +33,20 @@ export namespace Role {
 };
 
 export namespace Message {
+
+    export interface S23_Update {
+        label: "Update",
+        payload: [Point],
+    };
+
+    export type S23 = | S23_Update;
+
+    export interface S17_Draw {
+        label: "Draw",
+        payload: [Point],
+    };
+
+    export type S17 = | S17_Draw;
 
     export interface S20_Lose {
         label: "Lose",
@@ -56,19 +70,12 @@ export namespace Message {
 
     export type S21 = | S21_Win;
 
-    export interface S22_Draw {
-        label: "Draw",
-        payload: [Point],
-    };
-
-    export type S22 = | S22_Draw;
-
-    export interface S23_Update {
+    export interface S18_Update {
         label: "Update",
         payload: [Point],
     };
 
-    export type S23 = | S23_Update;
+    export type S18 = | S18_Update;
 
     export interface S15_Lose {
         label: "Lose",
@@ -92,19 +99,12 @@ export namespace Message {
 
     export type S16 = | S16_Win;
 
-    export interface S17_Draw {
+    export interface S22_Draw {
         label: "Draw",
         payload: [Point],
     };
 
-    export type S17 = | S17_Draw;
-
-    export interface S18_Update {
-        label: "Update",
-        payload: [Point],
-    };
-
-    export type S18 = | S18_Update;
+    export type S22 = | S22_Draw;
 
     export interface S13_Pos {
         label: "Pos",
@@ -133,6 +133,16 @@ export namespace Message {
 };
 
 export namespace Handler {
+    export type S23 =
+        MaybePromise<
+            | ["Update", Message.S23_Update['payload'], State.S13]
+
+        >;
+    export type S17 =
+        MaybePromise<
+            | ["Draw", Message.S17_Draw['payload'], State.S14]
+
+        >;
     export type S20 =
         MaybePromise<
             | ["Lose", Message.S20_Lose['payload'], State.S21]
@@ -145,14 +155,9 @@ export namespace Handler {
             | ["Win", Message.S21_Win['payload'], State.S14]
 
         >;
-    export type S22 =
+    export type S18 =
         MaybePromise<
-            | ["Draw", Message.S22_Draw['payload'], State.S14]
-
-        >;
-    export type S23 =
-        MaybePromise<
-            | ["Update", Message.S23_Update['payload'], State.S13]
+            | ["Update", Message.S18_Update['payload'], State.S19]
 
         >;
     export type S15 =
@@ -167,14 +172,9 @@ export namespace Handler {
             | ["Win", Message.S16_Win['payload'], State.S14]
 
         >;
-    export type S17 =
+    export type S22 =
         MaybePromise<
-            | ["Draw", Message.S17_Draw['payload'], State.S14]
-
-        >;
-    export type S18 =
-        MaybePromise<
-            | ["Update", Message.S18_Update['payload'], State.S19]
+            | ["Draw", Message.S22_Draw['payload'], State.S14]
 
         >;
 
@@ -207,6 +207,48 @@ export namespace State {
 
     export type Type = ISend | IReceive | ITerminal;
 
+    export class S23 implements ISend {
+        readonly type: 'Send' = 'Send';
+        constructor(public handler: Handler.S23) { }
+
+        performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
+            const thunk = ([label, payload, successor]: FromPromise<Handler.S23>) => {
+                send(Role.Peers.P2, label, payload);
+                return next(successor);
+            };
+
+            if (this.handler instanceof Promise) {
+                this.handler.then(thunk).catch(cancel);
+            } else {
+                try {
+                    thunk(this.handler);
+                } catch (error) {
+                    cancel(error);
+                }
+            }
+        }
+    };
+    export class S17 implements ISend {
+        readonly type: 'Send' = 'Send';
+        constructor(public handler: Handler.S17) { }
+
+        performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
+            const thunk = ([label, payload, successor]: FromPromise<Handler.S17>) => {
+                send(Role.Peers.P1, label, payload);
+                return next(successor);
+            };
+
+            if (this.handler instanceof Promise) {
+                this.handler.then(thunk).catch(cancel);
+            } else {
+                try {
+                    thunk(this.handler);
+                } catch (error) {
+                    cancel(error);
+                }
+            }
+        }
+    };
     export class S20 implements ISend {
         readonly type: 'Send' = 'Send';
         constructor(public handler: Handler.S20) { }
@@ -249,34 +291,13 @@ export namespace State {
             }
         }
     };
-    export class S22 implements ISend {
+    export class S18 implements ISend {
         readonly type: 'Send' = 'Send';
-        constructor(public handler: Handler.S22) { }
+        constructor(public handler: Handler.S18) { }
 
         performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
-            const thunk = ([label, payload, successor]: FromPromise<Handler.S22>) => {
-                send(Role.Peers.P2, label, payload);
-                return next(successor);
-            };
-
-            if (this.handler instanceof Promise) {
-                this.handler.then(thunk).catch(cancel);
-            } else {
-                try {
-                    thunk(this.handler);
-                } catch (error) {
-                    cancel(error);
-                }
-            }
-        }
-    };
-    export class S23 implements ISend {
-        readonly type: 'Send' = 'Send';
-        constructor(public handler: Handler.S23) { }
-
-        performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
-            const thunk = ([label, payload, successor]: FromPromise<Handler.S23>) => {
-                send(Role.Peers.P2, label, payload);
+            const thunk = ([label, payload, successor]: FromPromise<Handler.S18>) => {
+                send(Role.Peers.P1, label, payload);
                 return next(successor);
             };
 
@@ -333,34 +354,13 @@ export namespace State {
             }
         }
     };
-    export class S17 implements ISend {
+    export class S22 implements ISend {
         readonly type: 'Send' = 'Send';
-        constructor(public handler: Handler.S17) { }
+        constructor(public handler: Handler.S22) { }
 
         performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
-            const thunk = ([label, payload, successor]: FromPromise<Handler.S17>) => {
-                send(Role.Peers.P1, label, payload);
-                return next(successor);
-            };
-
-            if (this.handler instanceof Promise) {
-                this.handler.then(thunk).catch(cancel);
-            } else {
-                try {
-                    thunk(this.handler);
-                } catch (error) {
-                    cancel(error);
-                }
-            }
-        }
-    };
-    export class S18 implements ISend {
-        readonly type: 'Send' = 'Send';
-        constructor(public handler: Handler.S18) { }
-
-        performSend(next: StateTransitionHandler, cancel: Cancellation, send: SendStateHandler) {
-            const thunk = ([label, payload, successor]: FromPromise<Handler.S18>) => {
-                send(Role.Peers.P1, label, payload);
+            const thunk = ([label, payload, successor]: FromPromise<Handler.S22>) => {
+                send(Role.Peers.P2, label, payload);
                 return next(successor);
             };
 
@@ -446,6 +446,64 @@ export namespace State {
 export namespace Factory {
 
 
+    type S23_Update =
+        | [Message.S23_Update['payload'], (Next: typeof S13) => State.S13]
+        | [Message.S23_Update['payload'], State.S13]
+        ;
+
+    function S23_Update(
+        payload: Message.S23_Update['payload'],
+        generateSuccessor: (Next: typeof S13) => State.S13
+    ): State.S23;
+    function S23_Update(
+        payload: Message.S23_Update['payload'],
+        succ: State.S13
+    ): State.S23;
+    function S23_Update(...args: S23_Update) {
+        if (typeof args[1] === 'function') {
+            const [payload, generateSuccessor] = args;
+            const successor = generateSuccessor(S13);
+            return new State.S23(["Update", payload, successor]);
+        } else {
+            const [payload, successor] = args;
+            return new State.S23(["Update", payload, successor]);
+        }
+    }
+
+
+    export const S23 = {
+        Update: S23_Update,
+
+    };
+    type S17_Draw =
+        | [Message.S17_Draw['payload'], (Next: typeof S14) => State.S14]
+        | [Message.S17_Draw['payload'], State.S14]
+        ;
+
+    function S17_Draw(
+        payload: Message.S17_Draw['payload'],
+        generateSuccessor: (Next: typeof S14) => State.S14
+    ): State.S17;
+    function S17_Draw(
+        payload: Message.S17_Draw['payload'],
+        succ: State.S14
+    ): State.S17;
+    function S17_Draw(...args: S17_Draw) {
+        if (typeof args[1] === 'function') {
+            const [payload, generateSuccessor] = args;
+            const successor = generateSuccessor(S14);
+            return new State.S17(["Draw", payload, successor]);
+        } else {
+            const [payload, successor] = args;
+            return new State.S17(["Draw", payload, successor]);
+        }
+    }
+
+
+    export const S17 = {
+        Draw: S17_Draw,
+
+    };
     type S20_Lose =
         | [Message.S20_Lose['payload'], (Next: typeof S21) => State.S21]
         | [Message.S20_Lose['payload'], State.S21]
@@ -554,62 +612,33 @@ export namespace Factory {
         Win: S21_Win,
 
     };
-    type S22_Draw =
-        | [Message.S22_Draw['payload'], (Next: typeof S14) => State.S14]
-        | [Message.S22_Draw['payload'], State.S14]
+    type S18_Update =
+        | [Message.S18_Update['payload'], (Next: typeof S19) => State.S19]
+        | [Message.S18_Update['payload'], State.S19]
         ;
 
-    function S22_Draw(
-        payload: Message.S22_Draw['payload'],
-        generateSuccessor: (Next: typeof S14) => State.S14
-    ): State.S22;
-    function S22_Draw(
-        payload: Message.S22_Draw['payload'],
-        succ: State.S14
-    ): State.S22;
-    function S22_Draw(...args: S22_Draw) {
+    function S18_Update(
+        payload: Message.S18_Update['payload'],
+        generateSuccessor: (Next: typeof S19) => State.S19
+    ): State.S18;
+    function S18_Update(
+        payload: Message.S18_Update['payload'],
+        succ: State.S19
+    ): State.S18;
+    function S18_Update(...args: S18_Update) {
         if (typeof args[1] === 'function') {
             const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S14);
-            return new State.S22(["Draw", payload, successor]);
+            const successor = generateSuccessor(S19);
+            return new State.S18(["Update", payload, successor]);
         } else {
             const [payload, successor] = args;
-            return new State.S22(["Draw", payload, successor]);
+            return new State.S18(["Update", payload, successor]);
         }
     }
 
 
-    export const S22 = {
-        Draw: S22_Draw,
-
-    };
-    type S23_Update =
-        | [Message.S23_Update['payload'], (Next: typeof S13) => State.S13]
-        | [Message.S23_Update['payload'], State.S13]
-        ;
-
-    function S23_Update(
-        payload: Message.S23_Update['payload'],
-        generateSuccessor: (Next: typeof S13) => State.S13
-    ): State.S23;
-    function S23_Update(
-        payload: Message.S23_Update['payload'],
-        succ: State.S13
-    ): State.S23;
-    function S23_Update(...args: S23_Update) {
-        if (typeof args[1] === 'function') {
-            const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S13);
-            return new State.S23(["Update", payload, successor]);
-        } else {
-            const [payload, successor] = args;
-            return new State.S23(["Update", payload, successor]);
-        }
-    }
-
-
-    export const S23 = {
-        Update: S23_Update,
+    export const S18 = {
+        Update: S18_Update,
 
     };
     type S15_Lose =
@@ -720,62 +749,33 @@ export namespace Factory {
         Win: S16_Win,
 
     };
-    type S17_Draw =
-        | [Message.S17_Draw['payload'], (Next: typeof S14) => State.S14]
-        | [Message.S17_Draw['payload'], State.S14]
+    type S22_Draw =
+        | [Message.S22_Draw['payload'], (Next: typeof S14) => State.S14]
+        | [Message.S22_Draw['payload'], State.S14]
         ;
 
-    function S17_Draw(
-        payload: Message.S17_Draw['payload'],
+    function S22_Draw(
+        payload: Message.S22_Draw['payload'],
         generateSuccessor: (Next: typeof S14) => State.S14
-    ): State.S17;
-    function S17_Draw(
-        payload: Message.S17_Draw['payload'],
+    ): State.S22;
+    function S22_Draw(
+        payload: Message.S22_Draw['payload'],
         succ: State.S14
-    ): State.S17;
-    function S17_Draw(...args: S17_Draw) {
+    ): State.S22;
+    function S22_Draw(...args: S22_Draw) {
         if (typeof args[1] === 'function') {
             const [payload, generateSuccessor] = args;
             const successor = generateSuccessor(S14);
-            return new State.S17(["Draw", payload, successor]);
+            return new State.S22(["Draw", payload, successor]);
         } else {
             const [payload, successor] = args;
-            return new State.S17(["Draw", payload, successor]);
+            return new State.S22(["Draw", payload, successor]);
         }
     }
 
 
-    export const S17 = {
-        Draw: S17_Draw,
-
-    };
-    type S18_Update =
-        | [Message.S18_Update['payload'], (Next: typeof S19) => State.S19]
-        | [Message.S18_Update['payload'], State.S19]
-        ;
-
-    function S18_Update(
-        payload: Message.S18_Update['payload'],
-        generateSuccessor: (Next: typeof S19) => State.S19
-    ): State.S18;
-    function S18_Update(
-        payload: Message.S18_Update['payload'],
-        succ: State.S19
-    ): State.S18;
-    function S18_Update(...args: S18_Update) {
-        if (typeof args[1] === 'function') {
-            const [payload, generateSuccessor] = args;
-            const successor = generateSuccessor(S19);
-            return new State.S18(["Update", payload, successor]);
-        } else {
-            const [payload, successor] = args;
-            return new State.S18(["Update", payload, successor]);
-        }
-    }
-
-
-    export const S18 = {
-        Update: S18_Update,
+    export const S22 = {
+        Draw: S22_Draw,
 
     };
 

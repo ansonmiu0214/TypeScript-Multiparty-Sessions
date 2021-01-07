@@ -111,8 +111,8 @@ export default abstract class S42<ComponentState = {}> extends React.Component<P
         }
     }
 
-    abstract Lose(payload1: Point, ): MaybePromise<void>;
-    abstract Draw(payload1: Point, ): MaybePromise<void>;
-    abstract Update(payload1: Point, ): MaybePromise<void>;
+    abstract Lose(payload1: Point,): MaybePromise<void>;
+    abstract Draw(payload1: Point,): MaybePromise<void>;
+    abstract Update(payload1: Point,): MaybePromise<void>;
 
 }

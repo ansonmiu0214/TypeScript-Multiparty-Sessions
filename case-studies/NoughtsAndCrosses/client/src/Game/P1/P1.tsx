@@ -97,10 +97,10 @@ class P1 extends React.Component<Props & Transport, ComponentState> {
 
         // Set up message and handler queues
         this.messageQueue = {
-            [Roles.Peers.Svr]: [], [Roles.Peers.P2]: [],
+            [Roles.Peers.P2]: [], [Roles.Peers.Svr]: [],
         };
         this.handlerQueue = {
-            [Roles.Peers.Svr]: [], [Roles.Peers.P2]: [],
+            [Roles.Peers.P2]: [], [Roles.Peers.Svr]: [],
         };
 
         // Bind functions
@@ -170,21 +170,31 @@ class P1 extends React.Component<Props & Transport, ComponentState> {
     // ===============
 
     private advance(state: State) {
+
         if (isSendState(state)) {
             const View = this.props.states[state];
             this.setState({
                 elem: <View factory={this.buildSendElement} />
             });
-        } else if (isReceiveState(state)) {
+
+            return;
+        }
+        if (isReceiveState(state)) {
             const View = this.props.states[state];
             this.setState({
                 elem: <View register={this.registerReceiveHandler} />
             });
-        } else if (isTerminalState(state)) {
+
+            return;
+        }
+
+        if (isTerminalState(state)) {
             const View = this.props.states[state];
             this.setState({
                 elem: <View terminate={this.terminate} />
             });
+
+            return;
         }
     }
 

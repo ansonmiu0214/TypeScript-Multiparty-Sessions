@@ -5,7 +5,7 @@
 // ======
 
 export enum SendState {
-    S112 = 'S112', S109 = 'S109',
+    S109 = 'S109', S112 = 'S112',
 };
 
 export enum ReceiveState {

@@ -26,8 +26,8 @@ import {
 
 import S17 from './S17';
 import S19 from './S19';
-import S21 from './S21';
 import S20 from './S20';
+import S21 from './S21';
 import S18 from './S18';
 
 type RoleToMessageQueue = Roles.PeersToMapped<any[]>;
@@ -42,8 +42,8 @@ type Props = {
     states: {
         S17: Constructor<S17>,
         S19: Constructor<S19>,
-        S21: Constructor<S21>,
         S20: Constructor<S20>,
+        S21: Constructor<S21>,
         S18: Constructor<S18>,
 
     },
@@ -99,10 +99,10 @@ class P1 extends React.Component<Props & Transport, ComponentState> {
 
         // Set up message and handler queues
         this.messageQueue = {
-            [Roles.Peers.P2]: [], [Roles.Peers.Svr]: [],
+            [Roles.Peers.Svr]: [], [Roles.Peers.P2]: [],
         };
         this.handlerQueue = {
-            [Roles.Peers.P2]: [], [Roles.Peers.Svr]: [],
+            [Roles.Peers.Svr]: [], [Roles.Peers.P2]: [],
         };
 
         // Bind functions

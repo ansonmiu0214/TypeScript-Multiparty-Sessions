@@ -9,7 +9,7 @@ export enum SendState {
 };
 
 export enum ReceiveState {
-    S42 = 'S42', S45 = 'S45',
+    S45 = 'S45', S42 = 'S42',
 };
 
 export enum TerminalState {

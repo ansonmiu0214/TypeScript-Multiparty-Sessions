@@ -25,8 +25,8 @@ import {
 } from './Types';
 
 import S44 from './S44';
-import S42 from './S42';
 import S45 from './S45';
+import S42 from './S42';
 import S43 from './S43';
 
 type RoleToMessageQueue = Roles.PeersToMapped<any[]>;
@@ -40,8 +40,8 @@ type Props = {
     endpoint: string,
     states: {
         S44: Constructor<S44>,
-        S42: Constructor<S42>,
         S45: Constructor<S45>,
+        S42: Constructor<S42>,
         S43: Constructor<S43>,
 
     },
@@ -170,21 +170,31 @@ class P2 extends React.Component<Props & Transport, ComponentState> {
     // ===============
 
     private advance(state: State) {
+
         if (isSendState(state)) {
             const View = this.props.states[state];
             this.setState({
                 elem: <View factory={this.buildSendElement} />
             });
-        } else if (isReceiveState(state)) {
+
+            return;
+        }
+        if (isReceiveState(state)) {
             const View = this.props.states[state];
             this.setState({
                 elem: <View register={this.registerReceiveHandler} />
             });
-        } else if (isTerminalState(state)) {
+
+            return;
+        }
+
+        if (isTerminalState(state)) {
             const View = this.props.states[state];
             this.setState({
                 elem: <View terminate={this.terminate} />
             });
+
+            return;
         }
     }
 

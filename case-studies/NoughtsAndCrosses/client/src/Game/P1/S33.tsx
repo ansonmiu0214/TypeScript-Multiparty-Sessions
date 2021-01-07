@@ -111,8 +111,8 @@ export default abstract class S33<ComponentState = {}> extends React.Component<P
         }
     }
 
-    abstract Win(payload1: Point, ): MaybePromise<void>;
-    abstract Draw(payload1: Point, ): MaybePromise<void>;
-    abstract Update(payload1: Point, ): MaybePromise<void>;
+    abstract Win(payload1: Point,): MaybePromise<void>;
+    abstract Draw(payload1: Point,): MaybePromise<void>;
+    abstract Update(payload1: Point,): MaybePromise<void>;
 
 }

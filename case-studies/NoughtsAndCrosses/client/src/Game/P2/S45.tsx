@@ -24,9 +24,13 @@ import { Coordinate as Point } from "../../GameTypes";
 // ==================
 
 enum Labels {
-    Win = 'Win', Draw = 'Draw', Update = 'Update',
+    Update = 'Update', Win = 'Win', Draw = 'Draw',
 }
 
+interface UpdateMessage {
+    label: Labels.Update,
+    payload: [Point],
+};
 interface WinMessage {
     label: Labels.Win,
     payload: [Point],
@@ -35,13 +39,9 @@ interface DrawMessage {
     label: Labels.Draw,
     payload: [Point],
 };
-interface UpdateMessage {
-    label: Labels.Update,
-    payload: [Point],
-};
 
 
-type Message = | WinMessage | DrawMessage | UpdateMessage
+type Message = | UpdateMessage | WinMessage | DrawMessage
 
 // ===============
 // Component types
@@ -54,9 +54,9 @@ type Props = {
 /**
  * __Receives from Svr.__ Possible messages:
  *
+ * * __Update__(Point)
  * * __Win__(Point)
  * * __Draw__(Point)
- * * __Update__(Point)
  */
 export default abstract class S45<ComponentState = {}> extends React.Component<Props, ComponentState>
 {
@@ -68,7 +68,20 @@ export default abstract class S45<ComponentState = {}> extends React.Component<P
     handle(message: any): MaybePromise<State> {
         const parsedMessage = JSON.parse(message) as Message;
         switch (parsedMessage.label) {
-            case Labels.Win: {
+            case Labels.Update: {
+                const thunk = () => ReceiveState.S42;
+
+                const continuation = this.Update(...parsedMessage.payload);
+                if (continuation instanceof Promise) {
+                    return new Promise((resolve, reject) => {
+                        continuation.then(() => {
+                            resolve(thunk());
+                        }).catch(reject);
+                    })
+                } else {
+                    return thunk();
+                }
+            } case Labels.Win: {
                 const thunk = () => TerminalState.S43;
 
                 const continuation = this.Win(...parsedMessage.payload);
@@ -94,25 +107,12 @@ export default abstract class S45<ComponentState = {}> extends React.Component<P
                 } else {
                     return thunk();
                 }
-            } case Labels.Update: {
-                const thunk = () => ReceiveState.S42;
-
-                const continuation = this.Update(...parsedMessage.payload);
-                if (continuation instanceof Promise) {
-                    return new Promise((resolve, reject) => {
-                        continuation.then(() => {
-                            resolve(thunk());
-                        }).catch(reject);
-                    })
-                } else {
-                    return thunk();
-                }
             }
         }
     }
 
-    abstract Win(payload1: Point, ): MaybePromise<void>;
-    abstract Draw(payload1: Point, ): MaybePromise<void>;
-    abstract Update(payload1: Point, ): MaybePromise<void>;
+    abstract Update(payload1: Point,): MaybePromise<void>;
+    abstract Win(payload1: Point,): MaybePromise<void>;
+    abstract Draw(payload1: Point,): MaybePromise<void>;
 
 }
