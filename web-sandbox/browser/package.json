@@ -1,0 +1,16 @@
+{
+  "name": "browser",
+  "version": "1.0.0",
+  "description": "Sandbox for browser targets",
+  "scripts": {
+    "test": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/react": "^16.9.0",
+    "@types/react-dom": "^16.9.0",
+    "typescript": "^3.8.3"
+  }
+}

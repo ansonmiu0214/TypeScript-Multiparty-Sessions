@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+
+echo "Setting up case studies..."
+
+cd ~/case-studies
+for app in $(ls -d */); do
+    pushd .
+    cd $app
+    npm i
+    cd client
+    npm i
+    popd
+done

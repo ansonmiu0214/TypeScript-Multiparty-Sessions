@@ -1,0 +1,29 @@
+{
+  "name": "stscript-noughts-and-crosses",
+  "version": "1.0.0",
+  "description": "Noughts and Crosses game implemented using STScript",
+  "main": "build/index.js",
+  "scripts": {
+    "start": "node build",
+    "devstart": "ts-node src",
+    "build": "tsc && cd client && npm run build && mv build client && rm -rf ../build/client && mv client ../build",
+    "heroku-postbuild": "tsc && cd client && npm i && npm run build && mv build client && rm -rf ../build/client && mv client ../build"
+  },
+  "engines": {
+    "node": "12.x"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "uuid": "^8.3.0",
+    "ws": "^7.3.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.7",
+    "@types/uuid": "^8.3.0",
+    "@types/ws": "^7.2.6",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.2"
+  }
+}
