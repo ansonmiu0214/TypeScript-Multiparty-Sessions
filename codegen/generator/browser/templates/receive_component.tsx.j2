@@ -68,7 +68,7 @@ export default abstract class S{{ state }}<ComponentState = {}> extends React.Co
       case Labels.{{ action.label }}: {
         const thunk = () => {{ '{' }}
           {%- if action.succ.id == state.id %}
-          this.props.register(Roles.Peers.{{ state.first_role }}, this.handle.bind(this));
+          this.props.register(Roles.Peers.{{ state.role }}, this.handle.bind(this));
           {%- endif %}
           return {% if endpoint.efsm.is_send_state(action.succ) -%}
           SendState
